@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete(); // The Cashier who made the sale
             $table->decimal('total_amount', 10, 2);
             $table->string('payment_method'); // Strictly 'Cash' or 'Credit'
+            $table->decimal('discount_amount', 10, 2)->nullable()->default(0);
             $table->timestamps();
         });
     }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->restrictOnDelete();
             $table->integer('quantity'); // Number of tanks
+            $table->boolean('is_swap')->default(false);
             
             // STRICTLY FOR COKE COMPANY LOGIC:
             $table->decimal('residual_kg', 8, 2)->nullable(); 

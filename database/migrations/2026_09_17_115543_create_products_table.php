@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price', 10, 2); // Price per piece for normal sales
+            $table->decimal('new_cylinder_price', 10, 2)->nullable();
             $table->integer('stock_quantity')->default(0);
+            $table->integer('empty_quantity')->default(0);
             $table->decimal('standard_capacity_kg', 8, 2)->nullable(); // Used ONLY for Coke actual usage
             $table->timestamps();
         });
