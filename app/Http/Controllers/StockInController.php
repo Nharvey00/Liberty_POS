@@ -2,63 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\StockIn;
+use App\Models\Product;
+use App\Http\Requests\StoreStockInRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class StockInController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $stockIns = StockIn::with('product')->latest()->paginate(15);
+        return view('stock_ins.index', compact('stockIns'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $products = Product::orderBy('name')->get();
+        return view('stock_ins.create', compact('products'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreStockInRequest $request)
     {
-        //
-    }
+        $validated = $request->validated();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        DB::transaction(function () use ($validated) {
+            // lockForUpdate prevents race conditions if multiple managers do stock ins simultaneously
+            $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
+            
+            $quantityReceived = $validated['quantity_received'];
+            $emptyReturnedQty = $validated['empty_returned_qty'] ?? 0;
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            // Security: Prevent emptying more shells than exist
+            if ($emptyReturnedQty > 0 && $product->empty_quantity < $emptyReturnedQty) {
+                throw ValidationException::withMessages([
+                    'empty_returned_qty' => 'Cannot return more empty shells to the supplier than are currently in stock.'
+                ]);
+            }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            // 1. Log the audit trail
+            StockIn::create($validated);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            // 2. Adjust real inventory
+            $product->stock_quantity += $quantityReceived;
+            $product->empty_quantity -= $emptyReturnedQty;
+            $product->save();
+        });
+
+        return redirect()->route('stock-ins.index')->with('success', 'Delivery logged and inventory updated.');
     }
 }

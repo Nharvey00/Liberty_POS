@@ -1,100 +1,54 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
-
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
-            </div>
-
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+<nav class="w-[232px] shrink-0 bg-[#082A52] text-[#EAF1FA] flex flex-col px-3.5 py-5 sticky top-0 h-screen">
+    
+    <div class="flex items-center gap-2.5 px-2.5 pb-6">
+        <div class="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[#0B3B70] to-[#5D89B0] flex items-center justify-center font-['Manrope'] font-extrabold text-[15px] text-white shrink-0">
+            LG
+        </div>
+        <div>
+            <div class="font-['Manrope'] font-extrabold text-[15.5px] leading-tight text-white">Liberty LPG</div>
+            <div class="text-[11px] text-[#9FB3CC] font-medium">Sales & Inventory</div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+    <div class="flex-1 overflow-y-auto">
+        <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Overview</div>
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('dashboard') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+            Dashboard
+        </a>
+
+        <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Operations</div>
+        <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('products.*') || request()->routeIs('stock-ins.*') || request()->routeIs('stock-outs.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('products.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+            Inventory
+        </a>
+        <a href="{{ route('orders.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('orders.*') || request()->routeIs('pos.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('orders.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>
+            Sales
+        </a>
+        <a href="{{ route('customers.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('customers.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('customers.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="8.5" r="2.6"/><path d="M16.2 14.3c2.8.4 4.8 2.4 4.8 5.7"/></svg>
+            Customers
+        </a>
+
+        <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Administration</div>
+        <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('users.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('users.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17.5 3.5 19 5l2-2"/></svg>
+            User Accounts
+        </a>
+    </div>
+
+    <div class="mt-auto p-3 border-t border-[#14345C] flex gap-2.5 items-center">
+        <div class="w-[34px] h-[34px] rounded-full bg-[#3D6AA0] flex items-center justify-center font-bold text-white text-[13px] shrink-0">
+            {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}
         </div>
-
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
+        <div class="overflow-hidden">
+            <div class="text-[12.5px] font-semibold text-white truncate">{{ Auth::user()->name ?? 'User' }}</div>
+            <div class="text-[11px] text-[#9FB3CC] truncate">{{ Auth::user()->role->role_name ?? 'Staff' }}</div>
         </div>
+        <form method="POST" action="{{ route('logout') }}" class="ml-auto">
+            @csrf
+            <button type="submit" class="text-[11px] text-[#9FB3CC] bg-transparent border-none underline p-0 hover:text-white cursor-pointer">Log out</button>
+        </form>
     </div>
 </nav>
