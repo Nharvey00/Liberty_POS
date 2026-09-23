@@ -3,64 +3,53 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\CreditAccount;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     *
+     * Run with: php artisan db:seed
+     *
+     * Order matters — each seeder depends on the ones above it.
+     * All seeders use firstOrCreate / existence checks so they
+     * are safe to run multiple times without duplicating data.
+     */
     public function run(): void
     {
-        // Create Roles
-        $role1 = Role::create(['role_name' => 'Level 1']);
-        $role2 = Role::create(['role_name' => 'Level 2']);
-        $roleOwner = Role::create(['role_name' => 'Level 3']);
+        $this->call([
+            // 1. Foundation: Roles must exist before Users
+            RoleSeeder::class,
 
-        // Create Admin User
-        User::factory()->create([
-            'name' => 'Admin Owner',
-            'email' => 'admin@libertylpg.com',
-            'password' => bcrypt('password'),
-            'role_id' => $roleOwner->id,
+            // 2. Users: need Roles
+            UserSeeder::class,
+
+            // 3. Customers: standalone, no FK dependencies
+            CustomerSeeder::class,
+
+            // 4. Products: standalone, no FK dependencies
+            ProductSeeder::class,
+
+            // 5. Credit Accounts: need Customers
+            CreditAccountSeeder::class,
+
+            // 6. Orders + Order Items + Credit Ledger Charges:
+            //    need Customers, Users, Products, CreditAccounts
+            OrderSeeder::class,
+
+            // 7. Stock Ins: need Products
+            StockInSeeder::class,
+
+            // 8. Stock Outs: need Products
+            StockOutSeeder::class,
+
+            // 9. Payments + Credit Ledger Payment entries:
+            //    need CreditAccounts (must run AFTER OrderSeeder)
+            PaymentSeeder::class,
+
+            // 10. Statements of Account: need CreditAccounts + Ledger data
+            //     (must run LAST — calculates total_due from ledger)
+            StatementOfAccountSeeder::class,
         ]);
-
-        // Create Products
-        Product::create([
-            'name' => '11kg LPG Cylinder',
-            'selling_price' => 950.00,
-            'stock_quantity' => 50,
-            'empty_quantity' => 10,
-        ]);
-
-        Product::create([
-            'name' => '22kg LPG Cylinder',
-            'selling_price' => 1800.00,
-            'stock_quantity' => 20,
-            'empty_quantity' => 5,
-        ]);
-
-        // Create Normal Customer
-        $normal = Customer::create([
-            'name' => 'Juan Dela Cruz',
-            'customer_type' => 'Normal',
-            'phone' => '09123456789',
-            'address' => 'Catalunan Grande',
-        ]);
-        
-        CreditAccount::create(['customer_id' => $normal->id]);
-
-        // Create Company Customer (Replacing 'Coke Company' type with 'Company')
-        $company = Customer::create([
-            'name' => 'Procurement Officer',
-            'customer_type' => 'Company',
-            'business_name' => 'Coke Company',
-            'tin_number' => '123-456-789-000',
-            'phone' => '09987654321',
-            'address' => 'Catalunan Industrial Park',
-        ]);
-
-        CreditAccount::create(['customer_id' => $company->id]);
     }
 }

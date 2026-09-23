@@ -16,6 +16,11 @@
                 <form method="GET" action="{{ route('customers.show', $customer) }}" class="flex items-center gap-2">
                     <input type="month" name="month" value="{{ $currentMonth }}" onchange="this.form.submit()" class="px-3 py-1.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white font-semibold text-[#0B3B70]">
                 </form>
+                @if($customer->creditAccount)
+                    <a href="{{ route('credit-accounts.show', $customer->creditAccount) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">View Ledger & Payments</a>
+                @else
+                    <a href="{{ route('credit-accounts.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit</a>
+                @endif
                 <a href="{{ route('customers.edit', $customer) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">Edit Profile</a>
             </div>
         </div>
