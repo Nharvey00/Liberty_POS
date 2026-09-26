@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name', 'business_name', 'tin_number', 'customer_type', 'phone', 'address'];
 
     public function orders()

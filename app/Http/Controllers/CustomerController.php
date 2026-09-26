@@ -92,9 +92,22 @@ class CustomerController extends Controller
 
     /**
      * Remove the specified customer from the database.
+     * Guard: Cannot delete customer if they have an active credit balance or existing transaction history.
      */
     public function destroy(Customer $customer)
     {
+        $hasBalance = $customer->creditAccount && $customer->creditAccount->remaining_balance > 0;
+        $hasOrders = $customer->orders()->exists();
+        $hasLedgers = $customer->creditAccount && $customer->creditAccount->ledgers()->exists();
+
+        if ($hasBalance) {
+            return back()->withErrors('Cannot delete customer with an outstanding credit (utang) balance of ₱' . number_format($customer->creditAccount->remaining_balance, 2) . '. Settle balance first.');
+        }
+
+        if ($hasOrders || $hasLedgers) {
+            return back()->withErrors('Cannot delete customer with existing sales history or credit records. To maintain financial and tax audit compliance, customer records with transactions cannot be deleted.');
+        }
+
         $customer->delete();
 
         return redirect()

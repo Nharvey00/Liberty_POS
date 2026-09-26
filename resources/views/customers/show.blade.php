@@ -16,6 +16,11 @@
                 <form method="GET" action="{{ route('customers.show', $customer) }}" class="flex items-center gap-2">
                     <input type="month" name="month" value="{{ $currentMonth }}" onchange="this.form.submit()" class="px-3 py-1.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white font-semibold text-[#0B3B70]">
                 </form>
+                @if($customer->creditAccount)
+                    <a href="{{ route('credit-accounts.show', $customer->creditAccount) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">View Ledger &amp; Payments</a>
+                @else
+                    <a href="{{ route('credit-accounts.create') }}?customer_id={{ $customer->id }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit</a>
+                @endif
                 <a href="{{ route('customers.edit', $customer) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">Edit Profile</a>
             </div>
         </div>
@@ -25,7 +30,14 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Outstanding Utang Balance</div>
-            <div class="font-['Manrope'] text-[24px] font-extrabold text-[#B5504B]">₱{{ number_format($customer->creditAccount->remaining_balance ?? 0, 2) }}</div>
+            @php $custBalance = $customer->creditAccount->remaining_balance ?? 0; @endphp
+            @if($custBalance > 0)
+                <div class="font-['Manrope'] text-[24px] font-extrabold text-[#B5504B]">₱{{ number_format($custBalance, 2) }}</div>
+            @elseif($custBalance < 0)
+                <div class="font-['Manrope'] text-[20px] font-extrabold text-[#1E8E5A]">Advance: ₱{{ number_format(abs($custBalance), 2) }}</div>
+            @else
+                <div class="font-['Manrope'] text-[24px] font-extrabold text-[#1E8E5A]">₱0.00</div>
+            @endif
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Phone Number</div>

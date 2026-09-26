@@ -2,11 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = ['customer_id', 'user_id', 'total_amount', 'payment_method', 'discount_amount'];
+    use HasFactory;
+
+    protected $fillable = [
+        'customer_id',
+        'user_id',
+        'total_amount',
+        'payment_method',
+        'discount_amount',
+    ];
 
     public function customer()
     {
@@ -15,7 +24,7 @@ class Order extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class); // The Cashier
+        return $this->belongsTo(User::class);
     }
 
     public function items()
@@ -23,7 +32,7 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public function creditLedgerEntry()
+    public function ledger()
     {
         return $this->hasOne(CreditLedger::class);
     }
