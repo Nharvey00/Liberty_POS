@@ -1,4 +1,5 @@
-<nav class="w-[232px] shrink-0 bg-[#082A52] text-[#EAF1FA] flex flex-col px-3.5 py-5 sticky top-0 h-screen">
+<nav :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+     class="w-[232px] shrink-0 bg-[#082A52] text-[#EAF1FA] flex flex-col px-3.5 py-5 fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:sticky md:top-0 h-screen">
     
     <div class="flex items-center gap-2.5 px-2.5 pb-6">
         <div class="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[#0B3B70] to-[#5D89B0] flex items-center justify-center font-['Manrope'] font-extrabold text-[15px] text-white shrink-0">
@@ -8,6 +9,9 @@
             <div class="font-['Manrope'] font-extrabold text-[15.5px] leading-tight text-white">Liberty LPG</div>
             <div class="text-[11px] text-[#9FB3CC] font-medium">Sales & Inventory</div>
         </div>
+        <button @click="sidebarOpen = false" class="md:hidden text-[#9FB3CC] hover:text-white p-1 ml-auto" aria-label="Close Sidebar">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
 
     <div class="flex-1 overflow-y-auto">
@@ -16,34 +20,42 @@
             <svg class="w-[18px] h-[18px] {{ request()->routeIs('dashboard') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
             Dashboard
         </a>
-
-        <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Operations</div>
-        <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('products.*') || request()->routeIs('stock-ins.*') || request()->routeIs('stock-outs.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('products.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
-            Inventory
-        </a>
-        <a href="{{ route('orders.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('orders.*') || request()->routeIs('pos.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('orders.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>
-            Sales
-        </a>
-        <a href="{{ route('customers.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('customers.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('customers.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="8.5" r="2.6"/><path d="M16.2 14.3c2.8.4 4.8 2.4 4.8 5.7"/></svg>
-            Customers
-        </a>
-        <a href="{{ route('credit-accounts.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('credit-accounts.*') || request()->routeIs('payments.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('credit-accounts.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            Credit (Utang)
-        </a>
-        <a href="{{ route('statements.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('statements.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('statements.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Statements
+        <a href="{{ route('pos.create') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('pos.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+            <svg class="w-[18px] h-[18px] {{ request()->routeIs('pos.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>
+            Point of Sale
         </a>
 
-        <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Administration</div>
-        <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('users.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
-            <svg class="w-[18px] h-[18px] {{ request()->routeIs('users.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17.5 3.5 19 5l2-2"/></svg>
-            User Accounts
-        </a>
+        @if(Auth::user()->isManagerOrOwner())
+            <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Operations</div>
+            <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('products.*') || request()->routeIs('stock-ins.*') || request()->routeIs('stock-outs.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('products.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+                Inventory
+            </a>
+            <a href="{{ route('orders.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('orders.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('orders.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.6 12.6a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>
+                Sales History
+            </a>
+            <a href="{{ route('customers.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('customers.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('customers.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="8.5" r="2.6"/><path d="M16.2 14.3c2.8.4 4.8 2.4 4.8 5.7"/></svg>
+                Customers
+            </a>
+            <a href="{{ route('credit-accounts.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('credit-accounts.*') || request()->routeIs('payments.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('credit-accounts.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Credit (Utang)
+            </a>
+            <a href="{{ route('statements.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('statements.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('statements.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Statements
+            </a>
+        @endif
+
+        @if(Auth::user()->isOwner())
+            <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Administration</div>
+            <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('users.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('users.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17.5 3.5 19 5l2-2"/></svg>
+                User Accounts
+            </a>
+        @endif
     </div>
 
     <div class="mt-auto p-3 border-t border-[#14345C] flex gap-2.5 items-center">

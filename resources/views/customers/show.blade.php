@@ -12,14 +12,16 @@
                     @endif
                 </div>
             </div>
-            <div class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center flex-wrap">
                 <form method="GET" action="{{ route('customers.show', $customer) }}" class="flex items-center gap-2">
                     <input type="month" name="month" value="{{ $currentMonth }}" onchange="this.form.submit()" class="px-3 py-1.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white font-semibold text-[#0B3B70]">
                 </form>
-                @if($customer->creditAccount)
-                    <a href="{{ route('credit-accounts.show', $customer->creditAccount) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">View Ledger &amp; Payments</a>
-                @else
-                    <a href="{{ route('credit-accounts.create') }}?customer_id={{ $customer->id }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit</a>
+                @if(Auth::user()->isManagerOrOwner())
+                    @if($customer->creditAccount)
+                        <a href="{{ route('credit-accounts.show', $customer->creditAccount) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">View Ledger &amp; Payments</a>
+                    @else
+                        <a href="{{ route('credit-accounts.create') }}?customer_id={{ $customer->id }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit</a>
+                    @endif
                 @endif
                 <a href="{{ route('customers.edit', $customer) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">Edit Profile</a>
             </div>
@@ -65,13 +67,13 @@
             </div>
         </div>
 
-        <div class="p-5 overflow-x-auto">
+        <div class="p-5 overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse text-center min-w-[700px]">
                 <thead>
                     <tr class="bg-[#1C2430] text-white">
-                        <th class="py-2.5 px-3 text-[11.5px] font-semibold uppercase tracking-wider text-left rounded-l-lg">Metric</th>
+                        <th class="whitespace-nowrap py-2.5 px-3 text-[11.5px] font-semibold uppercase tracking-wider text-left rounded-l-lg">Metric</th>
                         @for ($day = 1; $day <= $daysInMonth; $day++)
-                            <th class="py-2.5 px-1 text-[11px] font-semibold border-l border-[#2E3A4E]">{{ $day }}</th>
+                            <th class="whitespace-nowrap py-2.5 px-1 text-[11px] font-semibold border-l border-[#2E3A4E]">{{ $day }}</th>
                         @endfor
                     </tr>
                 </thead>
@@ -101,31 +103,33 @@
             <h3 class="text-[14.5px] font-bold text-[#1C2430]">Transaction History</h3>
             <span class="text-[11.5px] text-[#5B6472]">Connected to Developer 2's Utang Module</span>
         </div>
-        <table class="w-full border-collapse">
-            <thead>
-                <tr>
-                    <th class="text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Date &amp; Time</th>
-                    <th class="text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Payment Terms</th>
-                    <th class="text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Total Amount</th>
-                    <th class="text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($customer->orders ?? [] as $order)
+        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+            <table class="w-full border-collapse">
+                <thead>
                     <tr>
-                        <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->created_at->format('M d, Y - h:i A') }}</td>
-                        <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->payment_method ?? 'Cash' }}</td>
-                        <td class="py-3 px-4 text-[13px] font-bold border-b border-[#E5E9EF]">₱{{ number_format($order->total_amount, 2) }}</td>
-                        <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                            <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Recorded</span>
-                        </td>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Date &amp; Time</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Payment Terms</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Total Amount</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Status</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="py-6 text-center text-[12.5px] text-[#5B6472]">No transactions recorded for this client during this month.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($customer->orders ?? [] as $order)
+                        <tr>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->payment_method ?? 'Cash' }}</td>
+                            <td class="py-3 px-4 text-[13px] font-bold border-b border-[#E5E9EF]">₱{{ number_format($order->total_amount, 2) }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Recorded</span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="py-6 text-center text-[12.5px] text-[#5B6472]">No transactions recorded for this client during this month.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </x-app-layout>

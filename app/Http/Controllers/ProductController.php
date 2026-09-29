@@ -54,4 +54,19 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with('success', 'Product details updated successfully.');
     }
+
+    public function destroy(Product $product)
+    {
+        if ($product->orderItems()->exists()) {
+            return back()->withErrors('Cannot delete product that has existing sales order history.');
+        }
+
+        if ($product->stockIns()->exists() || $product->stockOuts()->exists()) {
+            return back()->withErrors('Cannot delete product that has stock movement history.');
+        }
+
+        $product->delete();
+
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+    }
 }

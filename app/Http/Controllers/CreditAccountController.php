@@ -28,7 +28,8 @@ class CreditAccountController extends Controller
     public function create()
     {
         $customers = Customer::whereDoesntHave('creditAccount')
-            ->orderBy('name')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
             ->get();
 
         return view('credit_accounts.create', compact('customers'));

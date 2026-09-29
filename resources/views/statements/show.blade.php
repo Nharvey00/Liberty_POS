@@ -67,15 +67,15 @@
         </div>
 
         {{-- Line Items Table --}}
-        <div class="overflow-x-auto mb-6">
+        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0 mb-6">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="bg-[#F4F6F9]">
-                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF]">Date</th>
-                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF]">Type</th>
-                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF]">Reference</th>
-                        <th class="text-right text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF]">Charges</th>
-                        <th class="text-right text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF]">Payments</th>
+                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Date</th>
+                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Type</th>
+                        <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Reference</th>
+                        <th class="text-right text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Charges</th>
+                        <th class="text-right text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Payments</th>
                     </tr>
                 </thead>
                 <tbody>

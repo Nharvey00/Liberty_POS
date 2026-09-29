@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         // Eager load roles to prevent N+1 query problems
-        $users = User::with('role')->orderBy('name')->paginate(15);
+        $users = User::with('role')->orderBy('first_name')->orderBy('last_name')->paginate(15);
         return view('users.index', compact('users'));
     }
 
@@ -55,5 +55,20 @@ class UserController extends Controller
         $user->update($validated);
 
         return redirect()->route('users.index')->with('success', 'Staff account updated successfully.');
+    }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->withErrors('You cannot delete your own account.');
+        }
+
+        if ($user->orders()->exists()) {
+            return back()->withErrors('Cannot delete a staff account that has processed transactions. Keep for audit compliance.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'Staff account deleted successfully.');
     }
 }

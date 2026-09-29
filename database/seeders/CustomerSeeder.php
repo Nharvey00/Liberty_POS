@@ -12,31 +12,46 @@ class CustomerSeeder extends Seeder
         $customers = [
             // Normal walk-in / delivery customers
             [
-                'name'          => 'Juan Dela Cruz',
+                'first_name'    => 'Juan',
+                'middle_name'   => 'Dela',
+                'last_name'     => 'Cruz',
+                'suffix'        => null,
                 'customer_type' => 'Normal',
                 'phone'         => '09171234567',
                 'address'       => 'Purok 7, Catalunan Grande, Davao City',
             ],
             [
-                'name'          => 'Maria Garcia',
+                'first_name'    => 'Maria',
+                'middle_name'   => null,
+                'last_name'     => 'Garcia',
+                'suffix'        => null,
                 'customer_type' => 'Normal',
                 'phone'         => '09281234567',
                 'address'       => 'Blk 3 Lot 5, Buhangin, Davao City',
             ],
             [
-                'name'          => 'Pedro Bautista',
+                'first_name'    => 'Pedro',
+                'middle_name'   => null,
+                'last_name'     => 'Bautista',
+                'suffix'        => null,
                 'customer_type' => 'Normal',
                 'phone'         => '09351234567',
                 'address'       => 'Purok 2, Toril, Davao City',
             ],
             [
-                'name'          => 'Lorna Villanueva',
+                'first_name'    => 'Lorna',
+                'middle_name'   => null,
+                'last_name'     => 'Villanueva',
+                'suffix'        => null,
                 'customer_type' => 'Normal',
                 'phone'         => '09191234567',
                 'address'       => 'Matina Crossing, Davao City',
             ],
             [
-                'name'          => 'Roberto Tan',
+                'first_name'    => 'Roberto',
+                'middle_name'   => null,
+                'last_name'     => 'Tan',
+                'suffix'        => null,
                 'customer_type' => 'Normal',
                 'phone'         => '09061234567',
                 'address'       => 'Bangkal, Davao City',
@@ -44,7 +59,10 @@ class CustomerSeeder extends Seeder
 
             // Company customers (billed by actual KG consumed via residual weight)
             [
-                'name'          => 'Engr. Rodel Pascual',
+                'first_name'    => 'Rodel',
+                'middle_name'   => null,
+                'last_name'     => 'Pascual',
+                'suffix'        => null,
                 'business_name' => 'Coca-Cola Beverages Philippines',
                 'customer_type' => 'Company',
                 'phone'         => '09987654321',
@@ -52,7 +70,10 @@ class CustomerSeeder extends Seeder
                 'tin_number'    => '123-456-789-000',
             ],
             [
-                'name'          => 'Grace Lim',
+                'first_name'    => 'Grace',
+                'middle_name'   => null,
+                'last_name'     => 'Lim',
+                'suffix'        => null,
                 'business_name' => 'Pepsi-Cola Products Philippines',
                 'customer_type' => 'Company',
                 'phone'         => '09175551234',
@@ -60,7 +81,10 @@ class CustomerSeeder extends Seeder
                 'tin_number'    => '234-567-890-000',
             ],
             [
-                'name'          => 'Dennis Ocampo',
+                'first_name'    => 'Dennis',
+                'middle_name'   => null,
+                'last_name'     => 'Ocampo',
+                'suffix'        => null,
                 'business_name' => 'San Miguel Brewery Inc.',
                 'customer_type' => 'Company',
                 'phone'         => '09228889999',
@@ -71,7 +95,11 @@ class CustomerSeeder extends Seeder
 
         foreach ($customers as $data) {
             Customer::firstOrCreate(
-                ['name' => $data['name'], 'customer_type' => $data['customer_type']],
+                [
+                    'first_name'    => $data['first_name'],
+                    'last_name'     => $data['last_name'],
+                    'customer_type' => $data['customer_type'],
+                ],
                 $data
             );
         }

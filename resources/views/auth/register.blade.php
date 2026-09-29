@@ -2,11 +2,28 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <!-- Name Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_100px] gap-3">
+            <div>
+                <x-input-label for="first_name" :value="__('First Name *')" />
+                <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus />
+                <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+            </div>
+            <div>
+                <x-input-label for="middle_name" :value="__('Middle Name')" />
+                <x-text-input id="middle_name" class="block mt-1 w-full" type="text" name="middle_name" :value="old('middle_name')" />
+                <x-input-error :messages="$errors->get('middle_name')" class="mt-2" />
+            </div>
+            <div>
+                <x-input-label for="last_name" :value="__('Last Name *')" />
+                <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')" required />
+                <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
+            </div>
+            <div>
+                <x-input-label for="suffix" :value="__('Suffix')" />
+                <x-text-input id="suffix" class="block mt-1 w-full" type="text" name="suffix" placeholder="Jr., III" :value="old('suffix')" />
+                <x-input-error :messages="$errors->get('suffix')" class="mt-2" />
+            </div>
         </div>
 
         <!-- Email Address -->

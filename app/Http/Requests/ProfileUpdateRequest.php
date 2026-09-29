@@ -17,8 +17,12 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
+            'name'        => ['nullable', 'string', 'max:255'],
+            'first_name'  => ['nullable', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:255'],
+            'last_name'   => ['nullable', 'string', 'max:255'],
+            'suffix'      => ['nullable', 'string', 'max:50'],
+            'email'       => [
                 'required',
                 'string',
                 'lowercase',
@@ -27,5 +31,14 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (empty($this->input('name')) && empty($this->input('first_name'))) {
+                $validator->errors()->add('first_name', 'The first name field is required.');
+            }
+        });
     }
 }

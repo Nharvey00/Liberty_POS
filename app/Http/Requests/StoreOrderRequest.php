@@ -93,17 +93,16 @@ class StoreOrderRequest extends FormRequest
                         $pricePerKg = $product->price / $product->standard_capacity_kg;
                         $itemSubtotal = $actualConsumed * $pricePerKg * $qty;
                     } else {
-                        // Buying a new cylinder without swap: NO residual required, standard pricing applies
-                        $itemSubtotal = $product->price * $qty;
-                        if (!is_null($product->new_cylinder_price)) {
-                            $itemSubtotal += ($product->new_cylinder_price * $qty);
-                        }
+                        // Buying a new cylinder without swap: NO residual required, flat new_cylinder_price applies
+                        $unitPrice = !is_null($product->new_cylinder_price) ? $product->new_cylinder_price : $product->price;
+                        $itemSubtotal = $unitPrice * $qty;
                     }
                 } else {
                     // Normal customer or accessory
-                    $itemSubtotal = $product->price * $qty;
                     if (!$isSwap && !is_null($product->new_cylinder_price)) {
-                        $itemSubtotal += ($product->new_cylinder_price * $qty);
+                        $itemSubtotal = $product->new_cylinder_price * $qty;
+                    } else {
+                        $itemSubtotal = $product->price * $qty;
                     }
                 }
 

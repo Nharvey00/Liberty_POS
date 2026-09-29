@@ -17,7 +17,7 @@ class PosController extends Controller
     public function create()
     {
         $products = Product::where('stock_quantity', '>', 0)->orderBy('name')->get();
-        $customers = Customer::orderBy('name')->get();
+        $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
         return view('pos.create', compact('products', 'customers'));
     }
 
@@ -52,25 +52,27 @@ class PosController extends Controller
                 $subtotal = 0;
                 $actualConsumedKg = null;
 
-                // Safely check customer type (only applies to Company customers returning/swapping an empty tank)
-                if ($customer && $customer->customer_type === 'Company' && !is_null($product->standard_capacity_kg) && $item['is_swap']) {
-                    $residual = isset($item['residual_kg']) && is_numeric($item['residual_kg']) ? (float)$item['residual_kg'] : 0;
-                    $actualConsumedKg = max(0, $product->standard_capacity_kg - $residual);
-                    $pricePerKg = $product->price / $product->standard_capacity_kg;
-                    $subtotal = round($actualConsumedKg * $pricePerKg * $item['quantity'], 2);
-                } else {
-                    $subtotal = round($product->price * $item['quantity'], 2);
-                }
-
                 if ($item['is_swap']) {
+                    // Refill sale: customer surrendered an empty cylinder
+                    if ($customer && $customer->customer_type === 'Company' && !is_null($product->standard_capacity_kg)) {
+                        $residual = isset($item['residual_kg']) && is_numeric($item['residual_kg']) ? (float)$item['residual_kg'] : 0;
+                        $actualConsumedKg = max(0, $product->standard_capacity_kg - $residual);
+                        $pricePerKg = $product->price / $product->standard_capacity_kg;
+                        $subtotal = round($actualConsumedKg * $pricePerKg * $item['quantity'], 2);
+                    } else {
+                        $subtotal = round($product->price * $item['quantity'], 2);
+                    }
+
                     $product->decrement('stock_quantity', $item['quantity']);
                     if (!is_null($product->new_cylinder_price)) { 
                         $product->increment('empty_quantity', $item['quantity']);
                     }
                 } else {
-                    if (!is_null($product->new_cylinder_price)) {
-                        $subtotal += ($product->new_cylinder_price * $item['quantity']);
-                    }
+                    // New cylinder purchase: customer does NOT surrender an empty cylinder
+                    // Strictly use new_cylinder_price if available (flat total cost of tank + gas); otherwise regular price
+                    $unitPrice = !is_null($product->new_cylinder_price) ? $product->new_cylinder_price : $product->price;
+                    $subtotal = round($unitPrice * $item['quantity'], 2);
+
                     $product->decrement('stock_quantity', $item['quantity']);
                 }
 

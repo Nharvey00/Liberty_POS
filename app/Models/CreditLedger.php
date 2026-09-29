@@ -11,7 +11,8 @@ class CreditLedger extends Model
         'transaction_type', 
         'amount', 
         'order_id', 
-        'payment_id'
+        'payment_id',
+        'created_at',
     ];
 
     public function creditAccount()

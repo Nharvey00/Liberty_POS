@@ -31,34 +31,36 @@
 
             <div class="border-t border-dashed border-[#1C2430] my-4"></div>
 
-            <table class="w-full text-[12.5px] mb-4 border-b border-dashed border-[#E5E9EF] pb-4">
-                <thead>
-                    <tr class="border-b border-[#E5E9EF] text-[#5B6472]">
-                        <th class="text-left py-2 font-semibold">Item</th>
-                        <th class="text-center py-2 font-semibold">Qty</th>
-                        <th class="text-right py-2 font-semibold">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody class="text-[#1C2430]">
-                    @foreach($order->items as $item)
-                        <tr>
-                            <td class="py-2.5 border-b border-[#F4F6F9]">
-                                <span class="font-bold">{{ $item->product->name }}</span>
-                                @if($item->product->new_cylinder_price !== null && !$item->is_swap)
-                                    <br><span class="text-[11px] italic text-[#5B6472]">(New Cylinder Purchased)</span>
-                                @endif
-                                @if($item->residual_kg !== null)
-                                    <br><span class="text-[11px] font-bold text-[#B4700A]">
-                                        Res: {{ $item->residual_kg }}kg | Consumed: {{ $item->actual_consumed_kg }}kg
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-center align-top py-2.5 border-b border-[#F4F6F9] font-semibold">{{ $item->quantity }}</td>
-                            <td class="text-right align-top py-2.5 border-b border-[#F4F6F9] font-bold">₱{{ number_format($item->subtotal, 2) }}</td>
+            <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                <table class="w-full text-[12.5px] mb-4 border-b border-dashed border-[#E5E9EF] pb-4">
+                    <thead>
+                        <tr class="border-b border-[#E5E9EF] text-[#5B6472]">
+                            <th class="text-left py-2 font-semibold whitespace-nowrap">Item</th>
+                            <th class="text-center py-2 font-semibold whitespace-nowrap">Qty</th>
+                            <th class="text-right py-2 font-semibold whitespace-nowrap">Subtotal</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="text-[#1C2430]">
+                        @foreach($order->items as $item)
+                            <tr>
+                                <td class="py-2.5 border-b border-[#F4F6F9]">
+                                    <span class="font-bold">{{ $item->product->name }}</span>
+                                    @if($item->product->new_cylinder_price !== null && !$item->is_swap)
+                                        <br><span class="text-[11px] italic text-[#5B6472]">(New Cylinder Purchased)</span>
+                                    @endif
+                                    @if($item->residual_kg !== null)
+                                        <br><span class="text-[11px] font-bold text-[#B4700A]">
+                                            Res: {{ $item->residual_kg }}kg | Consumed: {{ $item->actual_consumed_kg }}kg
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center align-top py-2.5 border-b border-[#F4F6F9] font-semibold">{{ $item->quantity }}</td>
+                                <td class="text-right align-top py-2.5 border-b border-[#F4F6F9] font-bold">₱{{ number_format($item->subtotal, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
             <div class="text-[13px] border-b border-dashed border-[#E5E9EF] pb-4 mb-4 space-y-1.5">
                 @if($order->discount_amount > 0)

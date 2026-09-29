@@ -19,9 +19,10 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@libertylpg.com'],
             [
-                'name'     => 'Admin Owner',
-                'password' => Hash::make('password'),
-                'role_id'  => $owner->id,
+                'first_name' => 'Admin',
+                'last_name'  => 'Owner',
+                'password'   => Hash::make('password'),
+                'role_id'    => $owner->id,
             ]
         );
 
@@ -29,9 +30,10 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'manager@libertylpg.com'],
             [
-                'name'     => 'Mark Reyes',
-                'password' => Hash::make('password'),
-                'role_id'  => $manager->id,
+                'first_name' => 'Mark',
+                'last_name'  => 'Reyes',
+                'password'   => Hash::make('password'),
+                'role_id'    => $manager->id,
             ]
         );
 
@@ -39,9 +41,10 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'cashier1@libertylpg.com'],
             [
-                'name'     => 'Ana Santos',
-                'password' => Hash::make('password'),
-                'role_id'  => $cashier->id,
+                'first_name' => 'Ana',
+                'last_name'  => 'Santos',
+                'password'   => Hash::make('password'),
+                'role_id'    => $cashier->id,
             ]
         );
 
@@ -49,9 +52,10 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'cashier2@libertylpg.com'],
             [
-                'name'     => 'Rico Mendoza',
-                'password' => Hash::make('password'),
-                'role_id'  => $cashier->id,
+                'first_name' => 'Rico',
+                'last_name'  => 'Mendoza',
+                'password'   => Hash::make('password'),
+                'role_id'    => $cashier->id,
             ]
         );
     }

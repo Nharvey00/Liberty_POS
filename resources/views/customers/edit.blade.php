@@ -9,10 +9,27 @@
         @method('PUT')
 
         <div class="grid grid-cols-2 gap-4 mb-5">
-            <div class="col-span-2">
-                <label for="name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Client Name / Contact Person <span class="text-[#B5504B]">*</span></label>
-                <input type="text" name="name" id="name" value="{{ old('name', $customer->name) }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                @error('name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            <div class="col-span-2 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_100px] gap-3">
+                <div>
+                    <label for="first_name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">First Name <span class="text-[#B5504B]">*</span></label>
+                    <input type="text" name="first_name" id="first_name" value="{{ old('first_name', $customer->first_name) }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    @error('first_name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label for="middle_name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Middle Name</label>
+                    <input type="text" name="middle_name" id="middle_name" value="{{ old('middle_name', $customer->middle_name) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    @error('middle_name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label for="last_name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Last Name <span class="text-[#B5504B]">*</span></label>
+                    <input type="text" name="last_name" id="last_name" value="{{ old('last_name', $customer->last_name) }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    @error('last_name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label for="suffix" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Suffix</label>
+                    <input type="text" name="suffix" id="suffix" placeholder="Jr., III" value="{{ old('suffix', $customer->suffix) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    @error('suffix') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <div class="col-span-2 md:col-span-1">

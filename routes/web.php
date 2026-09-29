@@ -22,37 +22,47 @@ Route::get('/', function () {
 // Authenticated Routes (Requires login)
 Route::middleware(['auth'])->group(function () {
     
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     // Profile Routes (Required by Breeze's navigation bar to prevent crashes)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // POS Checkout Routes
-    Route::get('/pos', [PosController::class, 'create'])->name('pos.create');
-    Route::post('/pos/checkout', [PosController::class, 'store'])->name('pos.store');
-    Route::get('/pos/{order}/receipt', [PosController::class, 'show'])->name('pos.show');
+    // Level 1, 2, 3: Basic POS Access, Dashboard, and Cash Payment Collection
+    Route::middleware(['role:1,2,3'])->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Historical Orders (View Only)
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        // POS Checkout Routes
+        Route::get('/pos', [PosController::class, 'create'])->name('pos.create');
+        Route::post('/pos/checkout', [PosController::class, 'store'])->name('pos.store');
+        Route::get('/pos/{order}/receipt', [PosController::class, 'show'])->name('pos.show');
 
-    // Custom Payment Route (Ensures payment is tied to a specific credit account)
-    Route::get('/credit-accounts/{account}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-    Route::post('/credit-accounts/{account}/payments', [PaymentController::class, 'store'])->name('payments.store');
+        // Cashiers retained access to physically receive Utang payments
+        Route::get('/credit-accounts/{account}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/credit-accounts/{account}/payments', [PaymentController::class, 'store'])->name('payments.store');
+    });
 
-    // Standard Resources (Auto-maps index, create, store, edit, update, show)
-    Route::resources([
-        'users' => UserController::class,
-        'customers' => CustomerController::class,
-        'products' => ProductController::class,
-        'stock-ins' => StockInController::class,
-        'stock-outs' => StockOutController::class,
-        'credit-accounts' => CreditAccountController::class,
-        'statements' => StatementController::class,
-    ]);
+    // Level 2, 3: Operational Controls (Manager & Owner)
+    Route::middleware(['role:2,3'])->group(function () {
+        // Historical Orders (View Only)
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        // Operational Resources
+        Route::resources([
+            'customers' => CustomerController::class,
+            'products' => ProductController::class,
+            'credit-accounts' => CreditAccountController::class,
+        ]);
+        Route::resource('stock-ins', StockInController::class)->only(['index', 'create', 'store']);
+        Route::resource('stock-outs', StockOutController::class)->only(['index', 'create', 'store']);
+        Route::resource('statements', StatementController::class)->except(['edit']);
+    });
+
+    // Level 3: Owner Administration
+    Route::middleware(['role:3'])->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+    });
 
 });
 

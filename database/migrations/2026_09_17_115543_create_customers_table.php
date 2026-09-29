@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('first_name');
+            $table->string('middle_name')->nullable();
+            $table->string('last_name');
+            $table->string('suffix')->nullable();
             $table->string('business_name')->nullable(); // Add this
             $table->string('tin_number')->nullable();
             $table->string('customer_type')->default('Normal'); // 'Normal' or 'Coke Company'

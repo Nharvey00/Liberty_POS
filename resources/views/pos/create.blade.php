@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-2/5 bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden sticky top-24 shadow-sm h-[calc(100vh-140px)] flex flex-col">
+        <div class="w-full lg:w-2/5 bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden lg:sticky lg:top-24 shadow-sm lg:h-[calc(100vh-140px)] flex flex-col">
             <div class="px-5 py-4 border-b border-[#E5E9EF] bg-[#F4F6F9]">
                 <h3 class="text-[14.5px] font-bold text-[#1C2430]">Current Order</h3>
             </div>
@@ -79,9 +79,12 @@
                                 </div>
 
                                 <template x-if="item.new_cylinder_price !== null">
-                                    <div class="flex items-center gap-2 mb-2 bg-white px-2 py-1.5 rounded border border-[#E5E9EF]">
-                                        <input type="checkbox" x-model="item.is_swap" class="rounded border-[#E5E9EF] text-[#0B3B70] focus:ring-[#0B3B70]">
-                                        <label class="text-[11.5px] font-semibold text-[#1C2430]">Tank Swap (Customer gave empty)</label>
+                                    <div class="flex items-center justify-between gap-2 mb-2 bg-white px-2.5 py-1.5 rounded border border-[#E5E9EF]">
+                                        <label class="flex items-center gap-2 text-[11.5px] font-semibold text-[#1C2430] cursor-pointer">
+                                            <input type="checkbox" x-model="item.is_swap" class="rounded border-[#E5E9EF] text-[#0B3B70] focus:ring-[#0B3B70]">
+                                            <span>Tank Swap (Empty returned)</span>
+                                        </label>
+                                        <span class="text-[11px] font-bold" :class="item.is_swap ? 'text-[#1E8E5A]' : 'text-[#0B3B70]'" x-text="item.is_swap ? 'Refill: ₱' + item.price.toFixed(2) : 'New Tank: ₱' + item.new_cylinder_price.toFixed(2)"></span>
                                     </div>
                                 </template>
 
@@ -177,16 +180,20 @@
                     let total = 0;
                     this.cart.forEach(item => {
                         let subtotal = 0;
-                        if (this.isCompany && item.standard_capacity_kg !== null && item.is_swap && item.residual_kg !== null && item.residual_kg !== '') {
-                            const actualConsumed = Math.max(0, item.standard_capacity_kg - parseFloat(item.residual_kg || 0));
-                            const pricePerKg = item.price / item.standard_capacity_kg;
-                            subtotal = actualConsumed * pricePerKg * item.quantity;
+                        if (item.is_swap) {
+                            // Refill: customer returned empty cylinder (or accessory)
+                            if (this.isCompany && item.standard_capacity_kg !== null && item.residual_kg !== null && item.residual_kg !== '') {
+                                const actualConsumed = Math.max(0, item.standard_capacity_kg - parseFloat(item.residual_kg || 0));
+                                const pricePerKg = item.price / item.standard_capacity_kg;
+                                subtotal = actualConsumed * pricePerKg * item.quantity;
+                            } else {
+                                subtotal = item.price * item.quantity;
+                            }
                         } else {
-                            subtotal = item.price * item.quantity;
-                        }
-                        
-                        if (item.new_cylinder_price !== null && !item.is_swap) {
-                            subtotal += (item.new_cylinder_price * item.quantity);
+                            // New cylinder purchase: customer did NOT return empty tank
+                            // Strictly use new_cylinder_price if available; otherwise regular price
+                            const unitPrice = (item.new_cylinder_price !== null) ? item.new_cylinder_price : item.price;
+                            subtotal = unitPrice * item.quantity;
                         }
                         
                         total += subtotal;

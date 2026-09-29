@@ -15,6 +15,7 @@ class Order extends Model
         'total_amount',
         'payment_method',
         'discount_amount',
+        'created_at',
     ];
 
     public function customer()

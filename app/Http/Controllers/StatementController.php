@@ -124,4 +124,9 @@ class StatementController extends Controller
             ->route('statements.show', $statement)
             ->with('success', 'Statement #' . $statement->id . ' marked as ' . ($statement->is_paid ? 'Paid' : 'Unpaid') . '.');
     }
+
+    public function destroy(StatementOfAccount $statement)
+    {
+        abort(403, 'Statements of Account cannot be deleted to preserve financial audit trails.');
+    }
 }
