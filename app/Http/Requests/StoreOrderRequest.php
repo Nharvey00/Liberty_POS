@@ -20,6 +20,8 @@ class StoreOrderRequest extends FormRequest
             'customer_id'       => 'required_if:payment_method,Credit|nullable|exists:customers,id',
             'payment_method'    => 'required|in:Cash,Credit',
             'discount_amount'   => 'nullable|numeric|min:0',
+            'discount_type'     => 'nullable|in:regular,senior,pwd,promo',
+            'senior_id'         => 'nullable|string|max:50',
             'items'             => 'required|array|min:1',
             'items.*.product_id'=> 'required|exists:products,id',
             'items.*.quantity'  => 'required|integer|min:1',
@@ -111,10 +113,28 @@ class StoreOrderRequest extends FormRequest
 
             // Fix #6: Discount cannot exceed the order subtotal
             $discount = (float)$this->input('discount_amount', 0);
-            if ($discount > 0 && $discount > $orderSubtotal) {
+            if ($discount > 0) {
+                if ($discount > $orderSubtotal) {
+                    $validator->errors()->add(
+                        'discount_amount',
+                        'Discount amount (₱' . number_format($discount, 2) . ') cannot exceed the order subtotal (₱' . number_format($orderSubtotal, 2) . ').'
+                    );
+                }
+                
+                if (!$customerId) {
+                    $validator->errors()->add(
+                        'customer_id',
+                        'A registered customer must be selected to apply a discount.'
+                    );
+                }
+            }
+
+            $discountType = $this->input('discount_type');
+            $seniorId = $this->input('senior_id');
+            if ($discountType === 'senior' && empty($seniorId)) {
                 $validator->errors()->add(
-                    'discount_amount',
-                    'Discount amount (₱' . number_format($discount, 2) . ') cannot exceed the order subtotal (₱' . number_format($orderSubtotal, 2) . ').'
+                    'senior_id',
+                    'Senior Citizen ID is required when Senior Citizen discount is applied.'
                 );
             }
         });

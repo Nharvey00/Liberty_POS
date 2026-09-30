@@ -33,12 +33,19 @@ class PosController extends Controller
         try {
             $totalAmount = 0;
 
+            $year = date('Y');
+            $count = Order::whereYear('created_at', $year)->count() + 1;
+            $invoiceNumber = 'INV-' . $year . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+
             $order = Order::create([
                 'customer_id' => $customer ? $customer->id : null,
                 'user_id' => Auth::id(),
                 'total_amount' => 0, 
                 'payment_method' => $validated['payment_method'],
                 'discount_amount' => $validated['discount_amount'] ?? 0,
+                'discount_type' => $validated['discount_type'] ?? null,
+                'senior_id' => $validated['senior_id'] ?? null,
+                'invoice_number' => $invoiceNumber,
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -64,13 +71,13 @@ class PosController extends Controller
                     }
 
                     $product->decrement('stock_quantity', $item['quantity']);
-                    if (!is_null($product->new_cylinder_price)) { 
+                    if (!is_null($product->standard_capacity_kg)) { 
                         $product->increment('empty_quantity', $item['quantity']);
                     }
                 } else {
                     // New cylinder purchase: customer does NOT surrender an empty cylinder
                     // Strictly use new_cylinder_price if available (flat total cost of tank + gas); otherwise regular price
-                    $unitPrice = !is_null($product->new_cylinder_price) ? $product->new_cylinder_price : $product->price;
+                    $unitPrice = !is_null($product->standard_capacity_kg) ? $product->new_cylinder_price : $product->price;
                     $subtotal = round($unitPrice * $item['quantity'], 2);
 
                     $product->decrement('stock_quantity', $item['quantity']);

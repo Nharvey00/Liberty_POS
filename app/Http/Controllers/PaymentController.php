@@ -60,7 +60,7 @@ class PaymentController extends Controller
         // Fix #5: Automatically mark unpaid SOAs as paid if the account's remaining balance is cleared (<= 0)
         if ($account->remaining_balance <= 0) {
             StatementOfAccount::where('credit_account_id', $account->id)
-                ->where('is_paid', false)
+                ->where('is_paid', 'false')
                 ->update(['is_paid' => true]);
         }
 

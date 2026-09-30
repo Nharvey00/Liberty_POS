@@ -10,13 +10,37 @@
         </div>
     @endif
 
-    <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <div class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Search statements..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-        </div>
+    <div class="mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <form method="GET" action="{{ route('statements.index') }}" class="flex-1 flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[200px]">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" name="customer" value="{{ request('customer') }}" placeholder="Search customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+            </div>
+            
+            <select name="status" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All Status</option>
+                <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Paid</option>
+                <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
+            </select>
+            
+            <select name="customer_type" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <option value="">All Types</option>
+                <option value="Individual" {{ request('customer_type') === 'Individual' ? 'selected' : '' }}>Individual</option>
+                <option value="Business" {{ request('customer_type') === 'Business' ? 'selected' : '' }}>Business</option>
+            </select>
+            
+            <div class="flex items-center gap-2">
+                <input type="date" name="from" value="{{ request('from') }}" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <span class="text-[13px] text-[#5B6472]">to</span>
+                <input type="date" name="to" value="{{ request('to') }}" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            </div>
+            
+            <button type="submit" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Filter</button>
+            <a href="{{ route('statements.index') }}" class="text-[13px] text-[#0B3B70] hover:underline">Clear</a>
+        </form>
+        
         <div class="flex gap-2.5 flex-wrap items-center">
-            <a href="{{ route('statements.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Generate SOA</a>
+            <a href="{{ route('statements.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] whitespace-nowrap">+ Generate SOA</a>
         </div>
     </div>
 

@@ -46,4 +46,37 @@
             <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Generate Statement</button>
         </div>
     </form>
+
+    <div class="mt-8 mb-4">
+        <h2 class="font-['Manrope'] text-[17px] font-extrabold m-0">Batch Generate Statements</h2>
+        <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Generate SOAs for all active credit accounts in one go</div>
+    </div>
+
+    <form method="POST" action="{{ route('statements.batch') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+        @csrf
+
+        <div class="grid grid-cols-2 gap-4 mb-5">
+            {{-- Billing Period Start --}}
+            <div class="col-span-2 md:col-span-1">
+                <label for="batch_billing_period_start" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Billing Period Start <span class="text-[#B5504B]">*</span></label>
+                <input type="date" name="billing_period_start" id="batch_billing_period_start" value="{{ old('billing_period_start') }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                @error('billing_period_start') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Billing Period End --}}
+            <div class="col-span-2 md:col-span-1">
+                <label for="batch_billing_period_end" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Billing Period End <span class="text-[#B5504B]">*</span></label>
+                <input type="date" name="billing_period_end" id="batch_billing_period_end" value="{{ old('billing_period_end') }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                @error('billing_period_end') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+        </div>
+
+        <div class="p-4 bg-[#E7EEF7] border border-[#D6E2F0] rounded-lg mb-5">
+            <p class="text-[12px] text-[#0B3B70] font-semibold">ℹ️ Note: This will generate statements for ALL active accounts. Accounts with a zero outstanding balance will be skipped automatically.</p>
+        </div>
+
+        <div class="flex items-center gap-3 pt-5 border-t border-[#E5E9EF]">
+            <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Generate for All Active Accounts</button>
+        </div>
+    </form>
 </x-app-layout>

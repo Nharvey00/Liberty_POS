@@ -78,13 +78,13 @@
                                     </template>
                                 </div>
 
-                                <template x-if="item.new_cylinder_price !== null">
+                                <template x-if="item.standard_capacity_kg !== null">
                                     <div class="flex items-center justify-between gap-2 mb-2 bg-white px-2.5 py-1.5 rounded border border-[#E5E9EF]">
                                         <label class="flex items-center gap-2 text-[11.5px] font-semibold text-[#1C2430] cursor-pointer">
                                             <input type="checkbox" x-model="item.is_swap" class="rounded border-[#E5E9EF] text-[#0B3B70] focus:ring-[#0B3B70]">
                                             <span>Tank Swap (Empty returned)</span>
                                         </label>
-                                        <span class="text-[11px] font-bold" :class="item.is_swap ? 'text-[#1E8E5A]' : 'text-[#0B3B70]'" x-text="item.is_swap ? 'Refill: ₱' + item.price.toFixed(2) : 'New Tank: ₱' + item.new_cylinder_price.toFixed(2)"></span>
+                                        <span class="text-[11px] font-bold" :class="item.is_swap ? 'text-[#1E8E5A]' : 'text-[#0B3B70]'" x-text="item.is_swap ? 'Refill: ₱' + item.price.toFixed(2) : 'New Tank: ₱' + (item.new_cylinder_price || item.price).toFixed(2)"></span>
                                     </div>
                                 </template>
 
@@ -111,9 +111,30 @@
                 </div>
 
                 <div class="p-5 border-t border-[#E5E9EF] bg-white shrink-0">
-                    <div class="mb-4 flex justify-between items-center bg-[#F4F6F9] px-3 py-2 rounded-lg border border-[#E5E9EF]">
-                        <label class="text-[12.5px] font-bold text-[#1C2430]">Less Discount (₱):</label>
-                        <input type="number" name="discount_amount" x-model.number="discount" :max="calculateSubtotal()" class="w-24 text-right px-2 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] focus:ring-[#0B3B70]" min="0" step="0.01" placeholder="0.00">
+                    <div class="mb-4 flex flex-col gap-2 bg-[#F4F6F9] px-3 py-2 rounded-lg border border-[#E5E9EF]">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[12.5px] font-bold text-[#1C2430]">Less Discount (₱):</label>
+                            <input type="number" name="discount_amount" x-model.number="discount" :max="calculateSubtotal()" class="w-24 text-right px-2 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] focus:ring-[#0B3B70]" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <template x-if="discount > 0">
+                            <div class="flex flex-col gap-2 mt-2 border-t border-[#E5E9EF] pt-2">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-[11.5px] font-semibold text-[#5B6472]">Discount Type:</label>
+                                    <select name="discount_type" x-model="discountType" class="w-32 px-2 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] bg-white focus:ring-[#0B3B70]">
+                                        <option value="regular">Regular</option>
+                                        <option value="senior">Senior Citizen</option>
+                                        <option value="pwd">PWD</option>
+                                        <option value="promo">Promo</option>
+                                    </select>
+                                </div>
+                                <template x-if="discountType === 'senior'">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-[11.5px] font-semibold text-[#5B6472]">Senior ID:</label>
+                                        <input type="text" name="senior_id" x-model="seniorId" class="w-32 px-2 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] focus:ring-[#0B3B70]" placeholder="ID Number" required>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
                     </div>
 
                     <div class="mb-5">
@@ -145,6 +166,8 @@
                 isCompany: false,
                 cart: [],
                 discount: 0,
+                discountType: 'regular',
+                seniorId: '',
 
                 checkCustomerType() {
                     const customer = this.customers.find(c => c.id == this.selectedCustomerId);
@@ -166,7 +189,7 @@
                             new_cylinder_price: product.new_cylinder_price !== null ? parseFloat(product.new_cylinder_price) : null,
                             standard_capacity_kg: product.standard_capacity_kg !== null ? parseFloat(product.standard_capacity_kg) : null,
                             quantity: 1,
-                            is_swap: product.new_cylinder_price !== null,
+                            is_swap: product.standard_capacity_kg !== null,
                             residual_kg: null
                         });
                     }

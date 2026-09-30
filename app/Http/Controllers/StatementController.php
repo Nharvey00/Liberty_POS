@@ -14,13 +14,84 @@ class StatementController extends Controller
     /**
      * Display a listing of all generated statements of account.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $statements = StatementOfAccount::with('creditAccount.customer')
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $query = StatementOfAccount::with('creditAccount.customer')
+            ->orderByDesc('created_at');
+
+        if ($request->filled('customer')) {
+            $query->whereHas('creditAccount.customer', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->customer . '%');
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('is_paid', $request->status === 'paid' ? 'true' : 'false');
+        }
+
+        if ($request->filled('from')) {
+            $query->where('billing_period_end', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->where('billing_period_end', '<=', $request->to);
+        }
+
+        if ($request->filled('customer_type')) {
+            $query->whereHas('creditAccount.customer', function ($q) use ($request) {
+                $q->where('customer_type', $request->customer_type);
+            });
+        }
+
+        $statements = $query->paginate(15)->withQueryString();
 
         return view('statements.index', compact('statements'));
+    }
+
+    /**
+     * Batch generate statements for all active accounts.
+     */
+    public function storeBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'billing_period_start' => 'required|date',
+            'billing_period_end'   => 'required|date|after_or_equal:billing_period_start',
+        ]);
+
+        $end = Carbon::parse($validated['billing_period_end'])->endOfDay();
+        
+        $accounts = CreditAccount::where('is_active', 'true')->get();
+        $generatedCount = 0;
+
+        foreach ($accounts as $account) {
+            $totalCharges = CreditLedger::where('credit_account_id', $account->id)
+                ->where('transaction_type', 'Charge')
+                ->where('created_at', '<=', $end)
+                ->sum('amount');
+
+            $totalPayments = CreditLedger::where('credit_account_id', $account->id)
+                ->where('transaction_type', 'Payment')
+                ->where('created_at', '<=', $end)
+                ->sum('amount');
+
+            $totalDue = max($totalCharges - $totalPayments, 0);
+
+            if ($totalDue > 0) {
+                StatementOfAccount::create([
+                    'credit_account_id'    => $account->id,
+                    'billing_period_start' => $validated['billing_period_start'],
+                    'billing_period_end'   => $validated['billing_period_end'],
+                    'total_due'            => $totalDue,
+                    'is_paid'              => false, // Since it's > 0
+                ]);
+                
+                $generatedCount++;
+            }
+        }
+
+        return redirect()
+            ->route('statements.index')
+            ->with('success', "Batch generation complete. {$generatedCount} statements generated.");
     }
 
     /**
@@ -29,7 +100,7 @@ class StatementController extends Controller
     public function create()
     {
         $accounts = CreditAccount::with('customer')
-            ->where('is_active', true)
+            ->where('is_active', 'true')
             ->orderBy('created_at')
             ->get();
 

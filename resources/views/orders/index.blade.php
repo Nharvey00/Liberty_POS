@@ -23,6 +23,7 @@
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Date</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Customer</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Payment</th>
+                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Status</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Total</th>
                         <th class="border-b border-[#E5E9EF]"></th>
                     </tr>
@@ -45,6 +46,13 @@
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Cash Paid</span>
                                 @endif
                             </td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                @if($order->isVoided())
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Voided</span>
+                                @else
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Completed</span>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-[13.5px] border-b border-[#E5E9EF] font-bold text-[#1C2430]">₱{{ number_format($order->total_amount, 2) }}</td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">
                                 <a href="{{ route('orders.show', $order->id) }}" class="text-[#5D89B0] font-bold text-[11.5px] hover:underline">View Receipt</a>
@@ -52,7 +60,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-[13px] text-[#5B6472]">No transactions recorded yet.</td>
+                            <td colspan="7" class="py-8 text-center text-[13px] text-[#5B6472]">No transactions recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

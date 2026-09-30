@@ -1,7 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0 print:hidden">Transaction Receipt</h1>
+        <div class="flex justify-between items-center w-full">
+            <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0 print:hidden">Transaction Receipt</h1>
+            @if(auth()->user()->isManagerOrOwner() && !$order->isVoided())
+                <a href="{{ url('orders/' . $order->id . '/void') }}" class="print:hidden border border-[#B5504B] bg-white text-[#B5504B] font-semibold py-1.5 px-4 rounded-lg text-[13px] hover:bg-[#F7E9E8] transition-colors">
+                    Void This Order
+                </a>
+            @endif
+        </div>
     </x-slot>
+
+    @if($order->isVoided())
+        <div class="max-w-[400px] mx-auto mt-6 mb-2 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] p-4 rounded-[16px] print:hidden">
+            <div class="font-bold text-[14px] flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                VOIDED ORDER
+            </div>
+            <div class="text-[12px] mt-1">
+                <span class="font-semibold">Voided by:</span> {{ $order->voidedByUser->name ?? 'Unknown' }}<br>
+                <span class="font-semibold">Date:</span> {{ $order->voided_at ? \Carbon\Carbon::parse($order->voided_at)->format('M d, Y, h:i A') : 'N/A' }}<br>
+                <span class="font-semibold">Reason:</span> {{ $order->void_reason }}
+            </div>
+        </div>
+    @endif
 
     <div class="flex justify-center py-6 print:py-0">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 w-full max-w-[400px] text-[12.5px] text-[#1C2430] print:border-none print:shadow-none print:p-0 print:max-w-full">
@@ -85,7 +106,9 @@
             </div>
             <div class="flex justify-between py-1">
                 <span class="font-semibold text-[#5B6472]">Status</span>
-                @if($order->payment_method === 'Credit')
+                @if($order->isVoided())
+                    <span class="text-[#B5504B] font-bold uppercase">Voided</span>
+                @elseif($order->payment_method === 'Credit')
                     <span class="text-[#B4700A] font-bold">Added to Ledger</span>
                 @else
                     <span class="text-[#1E8E5A] font-bold">Completed</span>

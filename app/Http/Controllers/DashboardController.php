@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $lowStockProducts = Product::where('stock_quantity', '<=', 10)->get();
         
         $totalCustomers = Customer::count();
-        $activeCreditAccounts = CreditAccount::where('is_active', true)->count();
+        $activeCreditAccounts = CreditAccount::where('is_active', 'true')->count();
 
         return view('dashboard', compact(
             'todaySalesAmount', 

@@ -25,8 +25,20 @@
             Point of Sale
         </a>
 
+        @if(Auth::user()->isCashier())
+            <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Inventory</div>
+            <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('products.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('products.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+                Inventory (View)
+            </a>
+        @endif
+
         @if(Auth::user()->isManagerOrOwner())
             <div class="text-[10.5px] uppercase tracking-wider text-[#7C93B0] mx-3 mt-3.5 mb-1.5 font-semibold">Operations</div>
+            <a href="{{ route('reports.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('reports.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
+                <svg class="w-[18px] h-[18px] {{ request()->routeIs('reports.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                Reports
+            </a>
             <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 {{ request()->routeIs('products.*') || request()->routeIs('stock-ins.*') || request()->routeIs('stock-outs.*') ? 'bg-gradient-to-br from-[#5D89B0] to-[#082A52] text-white' : 'text-[#C9D8EA] hover:bg-[#0F4783] hover:text-white' }}">
                 <svg class="w-[18px] h-[18px] {{ request()->routeIs('products.*') ? 'opacity-100' : 'opacity-85' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
                 Inventory

@@ -15,8 +15,30 @@ class Order extends Model
         'total_amount',
         'payment_method',
         'discount_amount',
+        'discount_type',
+        'senior_id',
+        'invoice_number',
+        'status',
+        'voided_by',
+        'voided_at',
+        'void_reason',
         'created_at',
     ];
+
+    /**
+     * Attribute casts for reliable type handling.
+     */
+    protected $casts = [
+        'voided_at' => 'datetime',
+    ];
+
+    /**
+     * Check if this order has been voided.
+     */
+    public function isVoided(): bool
+    {
+        return $this->status === 'voided';
+    }
 
     public function customer()
     {
@@ -26,6 +48,14 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The manager/owner who voided this order.
+     */
+    public function voidedByUser()
+    {
+        return $this->belongsTo(User::class, 'voided_by');
     }
 
     public function items()

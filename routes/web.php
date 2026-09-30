@@ -13,6 +13,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\StockInController;
 use App\Http\Controllers\StockOutController;
+use App\Http\Controllers\OrderVoidController;
+use App\Http\Controllers\ReportController;
 
 // Public redirect
 Route::get('/', function () {
@@ -40,23 +42,42 @@ Route::middleware(['auth'])->group(function () {
         // Cashiers retained access to physically receive Utang payments
         Route::get('/credit-accounts/{account}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/credit-accounts/{account}/payments', [PaymentController::class, 'store'])->name('payments.store');
+
+        // Cashier View-Only Inventory Access (Feature 2)
+        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
     });
 
     // Level 2, 3: Operational Controls (Manager & Owner)
     Route::middleware(['role:2,3'])->group(function () {
-        // Historical Orders (View Only)
+        // Historical Orders & Voiding (Feature 3)
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/void', [OrderVoidController::class, 'create'])->name('orders.void');
+        Route::post('/orders/{order}/void', [OrderVoidController::class, 'store'])->name('orders.void.store');
 
         // Operational Resources
         Route::resources([
             'customers' => CustomerController::class,
-            'products' => ProductController::class,
             'credit-accounts' => CreditAccountController::class,
         ]);
+        
+        // Products (Create, Edit, Delete only - Read is in Level 1 block)
+        Route::resource('products', ProductController::class)->except(['index', 'show']);
+
         Route::resource('stock-ins', StockInController::class)->only(['index', 'create', 'store']);
         Route::resource('stock-outs', StockOutController::class)->only(['index', 'create', 'store']);
+        
+        // Batch Statements (Feature 5)
+        Route::post('/statements/batch', [StatementController::class, 'storeBatch'])->name('statements.batch');
         Route::resource('statements', StatementController::class)->except(['edit']);
+
+        // Reports Module (Feature 1)
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('/reports/utang', [ReportController::class, 'utang'])->name('reports.utang');
+        Route::get('/reports/discounts', [ReportController::class, 'discounts'])->name('reports.discounts');
     });
 
     // Level 3: Owner Administration

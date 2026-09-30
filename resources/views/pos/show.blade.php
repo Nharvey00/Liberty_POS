@@ -13,6 +13,12 @@
                 <span class="font-semibold text-[#5B6472]">Date</span>
                 <span class="font-bold">{{ $order->created_at->format('M d, Y, h:i A') }}</span>
             </div>
+            @if($order->invoice_number)
+            <div class="flex justify-between py-1 border-b border-dashed border-[#E5E9EF] mb-1">
+                <span class="font-semibold text-[#5B6472]">Invoice No.</span>
+                <span class="font-bold">{{ $order->invoice_number }}</span>
+            </div>
+            @endif
             <div class="flex justify-between py-1 border-b border-dashed border-[#E5E9EF] mb-1">
                 <span class="font-semibold text-[#5B6472]">Order No.</span>
                 <span class="font-bold">OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
@@ -69,13 +75,33 @@
                         <span>₱{{ number_format($order->total_amount + $order->discount_amount, 2) }}</span>
                     </div>
                     <div class="flex justify-between text-[#B5504B] font-bold">
-                        <span>Less Discount:</span>
+                        <span>
+                            Less Discount
+                            @if($order->discount_type)
+                                ({{ ucfirst($order->discount_type) }})
+                            @endif
+                            :
+                        </span>
                         <span>- ₱{{ number_format($order->discount_amount, 2) }}</span>
                     </div>
+                    @if($order->discount_type === 'senior' && $order->senior_id)
+                        <div class="text-[#5B6472] text-[11px]">Senior ID: {{ $order->senior_id }}</div>
+                    @endif
                 @endif
                 <div class="flex justify-between font-['Manrope'] font-extrabold text-[16px] text-[#1C2430] mt-3 pt-3 border-t border-[#E5E9EF]">
                     <span>Total Due:</span>
                     <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-dashed border-[#E5E9EF]">
+                    <div class="flex justify-between text-[#5B6472] text-[11.5px] mb-1">
+                        <span>Vatable Sale:</span>
+                        <span>₱{{ number_format($order->total_amount / 1.12, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between text-[#5B6472] text-[11.5px] mb-1">
+                        <span>VAT (12%):</span>
+                        <span>₱{{ number_format($order->total_amount - ($order->total_amount / 1.12), 2) }}</span>
+                    </div>
                 </div>
             </div>
 

@@ -5,7 +5,9 @@
                 <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">{{ $product->name }}</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Inventory and Pricing Details</div>
             </div>
-            <a href="{{ route('products.edit', $product) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">Edit Details</a>
+            @if(Auth::user()->isManagerOrOwner())
+                <a href="{{ route('products.edit', $product) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">Edit Details</a>
+            @endif
         </div>
     </x-slot>
 
