@@ -41,7 +41,7 @@
             <p class="text-[12px] text-[#0B3B70] font-semibold">ℹ️ Note: The total due is calculated from all outstanding charges minus all payments from the account's inception through the billing period end. Previous unpaid balances are automatically carried forward.</p>
         </div>
 
-        <div class="flex items-center gap-3 pt-5 border-t border-[#E5E9EF]">
+        <div class="flex items-center justify-end gap-3 pt-5 border-t border-[#E5E9EF]">
             <a href="{{ route('statements.index') }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Cancel</a>
             <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Generate Statement</button>
         </div>
@@ -75,7 +75,7 @@
             <p class="text-[12px] text-[#0B3B70] font-semibold">ℹ️ Note: This will generate statements for ALL active accounts. Accounts with a zero outstanding balance will be skipped automatically.</p>
         </div>
 
-        <div class="flex items-center gap-3 pt-5 border-t border-[#E5E9EF]">
+        <div class="flex items-center justify-end gap-3 pt-5 border-t border-[#E5E9EF]">
             <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Generate for All Active Accounts</button>
         </div>
     </form>

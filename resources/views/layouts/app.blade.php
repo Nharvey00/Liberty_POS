@@ -37,11 +37,11 @@
         <!-- Topbar -->
         @if (isset($header))
             <div class="flex items-center justify-between px-4 md:px-7 py-4 bg-white border-b border-[#E5E9EF] sticky top-0 z-10">
-                <div class="flex items-center gap-3">
-                    <button @click="sidebarOpen = true" type="button" class="md:hidden text-[#5B6472] hover:text-[#0B3B70] p-1.5 -ml-1 rounded-lg focus:outline-none" aria-label="Open Sidebar">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <button @click="sidebarOpen = true" type="button" class="md:hidden text-[#5B6472] hover:text-[#0B3B70] p-1.5 -ml-1 rounded-lg focus:outline-none shrink-0" aria-label="Open Sidebar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         {{ $header }}
                     </div>
                 </div>

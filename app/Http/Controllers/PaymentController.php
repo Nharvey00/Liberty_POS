@@ -8,6 +8,7 @@ use App\Models\CreditLedger;
 use App\Models\StatementOfAccount;
 use App\Http\Requests\StorePaymentRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -38,43 +39,52 @@ class PaymentController extends Controller
     public function store(StorePaymentRequest $request, CreditAccount $account)
     {
         $amount = $request->validated('amount');
-        $remainingBalance = $account->remaining_balance;
+        $priorRemainingBalance = 0;
 
-        DB::transaction(function () use ($amount, $account) {
+        DB::transaction(function () use ($amount, $account, &$priorRemainingBalance) {
+            $lockedAccount = CreditAccount::lockForUpdate()->findOrFail($account->id);
+            $priorRemainingBalance = $lockedAccount->remaining_balance;
+
             // 1. Create the payment record
             $payment = Payment::create([
-                'credit_account_id' => $account->id,
+                'credit_account_id' => $lockedAccount->id,
                 'amount'            => $amount,
             ]);
 
             // 2. Create the corresponding credit ledger entry (double-entry)
             CreditLedger::create([
-                'credit_account_id' => $account->id,
+                'credit_account_id' => $lockedAccount->id,
                 'transaction_type'  => 'Payment',
                 'amount'            => $payment->amount,
                 'order_id'          => null,
                 'payment_id'        => $payment->id,
             ]);
-        });
 
-        // Fix #5: Automatically mark unpaid SOAs as paid if the account's remaining balance is cleared (<= 0)
-        if ($account->remaining_balance <= 0) {
-            StatementOfAccount::where('credit_account_id', $account->id)
-                ->where('is_paid', 'false')
-                ->update(['is_paid' => true]);
-        }
+            // Fix #5: Automatically mark unpaid SOAs as paid if the account's remaining balance is cleared (<= 0)
+            if ($lockedAccount->remaining_balance <= 0) {
+                StatementOfAccount::where('credit_account_id', $lockedAccount->id)
+                    ->where('is_paid', 'false')
+                    ->update(['is_paid' => true]);
+            }
+        });
 
         $successMessage = 'Payment of ₱' . number_format($amount, 2) . ' recorded successfully.';
 
         // Soft over-payment note
-        if ($amount > $remainingBalance && $remainingBalance > 0) {
+        if ($amount > $priorRemainingBalance && $priorRemainingBalance > 0) {
             $successMessage .= ' Note: This payment exceeds the outstanding balance. A credit of ₱'
-                . number_format($amount - $remainingBalance, 2)
+                . number_format($amount - $priorRemainingBalance, 2)
                 . ' is now on the account.';
         }
 
+        if (Auth::user()->isManagerOrOwner()) {
+            return redirect()
+                ->route('credit-accounts.show', $account)
+                ->with('success', $successMessage);
+        }
+
         return redirect()
-            ->route('credit-accounts.show', $account)
+            ->route('pos.create')
             ->with('success', $successMessage);
     }
 }

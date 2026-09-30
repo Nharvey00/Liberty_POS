@@ -45,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Cashier View-Only Inventory Access (Feature 2)
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show')->whereNumber('product');
     });
 
     // Level 2, 3: Operational Controls (Manager & Owner)

@@ -34,8 +34,6 @@ class PosController extends Controller
             $totalAmount = 0;
 
             $year = date('Y');
-            $count = Order::whereYear('created_at', $year)->count() + 1;
-            $invoiceNumber = 'INV-' . $year . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
             $order = Order::create([
                 'customer_id' => $customer ? $customer->id : null,
@@ -45,8 +43,13 @@ class PosController extends Controller
                 'discount_amount' => $validated['discount_amount'] ?? 0,
                 'discount_type' => $validated['discount_type'] ?? null,
                 'senior_id' => $validated['senior_id'] ?? null,
-                'invoice_number' => $invoiceNumber,
             ]);
+
+            $invoiceNumber = 'INV-' . $year . '-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
+            if (Order::where('invoice_number', $invoiceNumber)->where('id', '!=', $order->id)->exists()) {
+                $invoiceNumber .= '-' . strtoupper(\Illuminate\Support\Str::random(4));
+            }
+            $order->update(['invoice_number' => $invoiceNumber]);
 
             foreach ($validated['items'] as $item) {
                 $product = Product::lockForUpdate()->findOrFail($item['product_id']);
@@ -71,13 +74,13 @@ class PosController extends Controller
                     }
 
                     $product->decrement('stock_quantity', $item['quantity']);
-                    if (!is_null($product->standard_capacity_kg)) { 
+                    if (!is_null($product->standard_capacity_kg) || !is_null($product->new_cylinder_price)) { 
                         $product->increment('empty_quantity', $item['quantity']);
                     }
                 } else {
                     // New cylinder purchase: customer does NOT surrender an empty cylinder
                     // Strictly use new_cylinder_price if available (flat total cost of tank + gas); otherwise regular price
-                    $unitPrice = !is_null($product->standard_capacity_kg) ? $product->new_cylinder_price : $product->price;
+                    $unitPrice = !is_null($product->new_cylinder_price) ? $product->new_cylinder_price : $product->price;
                     $subtotal = round($unitPrice * $item['quantity'], 2);
 
                     $product->decrement('stock_quantity', $item['quantity']);
@@ -104,7 +107,7 @@ class PosController extends Controller
                     throw new \Exception("A customer must be selected to use credit.");
                 }
                 
-                $creditAccount = CreditAccount::where('customer_id', $customer->id)->first();
+                $creditAccount = CreditAccount::lockForUpdate()->where('customer_id', $customer->id)->first();
                 if (!$creditAccount) {
                     throw new \Exception("Customer does not have an active credit account.");
                 }
@@ -133,6 +136,10 @@ class PosController extends Controller
 
     public function show(Order $order)
     {
+        if (!Auth::user()->isManagerOrOwner() && $order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $order->load(['items.product', 'customer', 'user']);
         return view('pos.show', compact('order'));
     }

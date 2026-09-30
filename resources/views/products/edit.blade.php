@@ -56,7 +56,7 @@
             <p class="text-[11.5px] text-[#B4700A] opacity-80 mt-1">To ensure audit integrity, stock quantities cannot be manually edited here. Please use the <a href="{{ route('stock-ins.create') }}" class="underline font-bold">Stock In</a> or <a href="{{ route('stock-outs.create') }}" class="underline font-bold">Stock Out</a> modules to adjust inventory.</p>
         </div>
 
-        <div class="flex items-center gap-3 pt-5 border-t border-[#E5E9EF]">
+        <div class="flex items-center justify-end gap-3 pt-5 border-t border-[#E5E9EF]">
             <a href="{{ route('products.index') }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Cancel</a>
             <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Update Product Info</button>
         </div>

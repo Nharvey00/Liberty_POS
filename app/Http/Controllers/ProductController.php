@@ -8,10 +8,17 @@ use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $products = Product::orderBy('name')->paginate(15);
-        return view('products.index', compact('products'));
+        $search = $request->query('search');
+        $query = Product::orderBy('name');
+
+        if ($search) {
+            $query->where('name', 'ilike', "%{$search}%");
+        }
+
+        $products = $query->paginate(15)->withQueryString();
+        return view('products.index', compact('products', 'search'));
     }
 
     public function create()
@@ -57,6 +64,10 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->stock_quantity > 0 || $product->empty_quantity > 0) {
+            return back()->withErrors('Cannot delete product that still has existing inventory stock or empty shells on hand. Clear inventory first.');
+        }
+
         if ($product->orderItems()->exists()) {
             return back()->withErrors('Cannot delete product that has existing sales order history.');
         }

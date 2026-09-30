@@ -4,6 +4,12 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Real-time view across all branches</div>
     </x-slot>
 
+    @if(session('success'))
+        <div class="mb-4 bg-[#EAF5EF] border border-[#1E8E5A] text-[#1E8E5A] px-4 py-3 rounded-lg text-[13px] font-semibold">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <!-- KPI Row -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-[18px]">

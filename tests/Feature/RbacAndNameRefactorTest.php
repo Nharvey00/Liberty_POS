@@ -63,11 +63,14 @@ class RbacAndNameRefactorTest extends TestCase
         $response = $this->actingAs($cashier)->get(route('payments.create', $account));
         $response->assertStatus(200);
 
-        // Cashier is forbidden from Staff management, Products index, and Stock Out
+        // Cashier is forbidden from Staff management, Products modification, and Stock Out
         $response = $this->actingAs($cashier)->get('/users');
         $response->assertStatus(403);
 
         $response = $this->actingAs($cashier)->get('/products');
+        $response->assertStatus(200);
+
+        $response = $this->actingAs($cashier)->get('/products/create');
         $response->assertStatus(403);
 
         $response = $this->actingAs($cashier)->get('/stock-outs');

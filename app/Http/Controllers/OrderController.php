@@ -7,10 +7,40 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['customer', 'user'])->latest()->paginate(15);
-        return view('orders.index', compact('orders'));
+        $status = $request->query('status');
+        $search = $request->query('search');
+
+        $query = Order::with(['customer', 'user', 'voidedByUser'])->latest();
+
+        if ($status === 'voided') {
+            $query->where('status', 'voided');
+        } elseif ($status === 'completed') {
+            $query->where('status', 'completed');
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $cleanSearch = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($cleanSearch)) {
+                    $q->where('id', (int)$cleanSearch);
+                }
+                $q->orWhere('invoice_number', 'ilike', "%{$search}%")
+                  ->orWhereHas('customer', function ($cq) use ($search) {
+                      $cq->where('first_name', 'ilike', "%{$search}%")
+                         ->orWhere('last_name', 'ilike', "%{$search}%")
+                         ->orWhere('business_name', 'ilike', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate(15)->withQueryString();
+        $totalCount = Order::count();
+        $completedCount = Order::where('status', 'completed')->count();
+        $voidedCount = Order::where('status', 'voided')->count();
+
+        return view('orders.index', compact('orders', 'status', 'search', 'totalCount', 'completedCount', 'voidedCount'));
     }
 
     public function show(Order $order)

@@ -32,7 +32,7 @@ class ReportController extends Controller
             ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()]);
 
         if ($paymentMethod && $paymentMethod !== 'all') {
-            $query->where('payment_method', $paymentMethod);
+            $query->whereRaw('LOWER(payment_method) = ?', [strtolower($paymentMethod)]);
         }
 
         if ($customerSearch) {
@@ -130,8 +130,8 @@ class ReportController extends Controller
         }
 
         $accounts = $query->get()->map(function($account) {
-            $totalCharged = $account->ledgers->where('transaction_type', 'charge')->sum('amount');
-            $totalPaid = $account->ledgers->where('transaction_type', 'payment')->sum('amount');
+            $totalCharged = $account->ledgers->filter(fn($l) => strcasecmp($l->transaction_type, 'Charge') === 0)->sum('amount');
+            $totalPaid = $account->ledgers->filter(fn($l) => strcasecmp($l->transaction_type, 'Payment') === 0)->sum('amount');
             $balance = $totalCharged - $totalPaid;
             
             $lastActivity = $account->ledgers->max('created_at');
@@ -168,7 +168,7 @@ class ReportController extends Controller
             ->get();
 
         $discountedOrders = $orders->where('discount_amount', '>', 0);
-        $loanedOrders = $orders->where('payment_method', 'credit');
+        $loanedOrders = $orders->filter(fn($o) => strcasecmp($o->payment_method, 'Credit') === 0);
 
         $customersData = [];
         

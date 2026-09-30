@@ -97,12 +97,17 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        $hasBalance = $customer->creditAccount && $customer->creditAccount->remaining_balance > 0;
+        $hasBalance = $customer->creditAccount && abs($customer->creditAccount->remaining_balance) > 0;
         $hasOrders = $customer->orders()->exists();
         $hasLedgers = $customer->creditAccount && $customer->creditAccount->ledgers()->exists();
 
         if ($hasBalance) {
-            return back()->withErrors('Cannot delete customer with an outstanding credit (utang) balance of ₱' . number_format($customer->creditAccount->remaining_balance, 2) . '. Settle balance first.');
+            $balance = $customer->creditAccount->remaining_balance;
+            if ($balance > 0) {
+                return back()->withErrors('Cannot delete customer with an outstanding credit (utang) balance of ₱' . number_format($balance, 2) . '. Settle balance first.');
+            } else {
+                return back()->withErrors('Cannot delete customer with an active advance deposit/credit balance of ₱' . number_format(abs($balance), 2) . '. Reconcile credit balance first.');
+            }
         }
 
         if ($hasOrders || $hasLedgers) {

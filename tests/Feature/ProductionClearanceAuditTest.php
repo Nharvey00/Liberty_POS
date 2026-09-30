@@ -96,7 +96,9 @@ class ProductionClearanceAuditTest extends TestCase
         // Ledger & History
         $this->actingAs($this->cashier)->get('/orders')->assertStatus(403);
         $this->actingAs($this->cashier)->get('/customers')->assertStatus(403);
-        $this->actingAs($this->cashier)->get('/products')->assertStatus(403);
+        $this->actingAs($this->cashier)->get('/products')->assertStatus(200);
+        $this->actingAs($this->cashier)->get('/products/create')->assertStatus(403);
+        $this->actingAs($this->cashier)->post('/products', [])->assertStatus(403);
         $this->actingAs($this->cashier)->get('/credit-accounts')->assertStatus(403);
         $this->actingAs($this->cashier)->get('/statements')->assertStatus(403);
     }

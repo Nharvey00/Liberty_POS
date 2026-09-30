@@ -45,8 +45,10 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Active</span>
                             </td>
-                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">
-                                <a href="{{ route('users.edit', $user) }}" class="border-none bg-transparent text-[#5D89B0] font-bold text-[11.5px] hover:underline">Edit</a>
+                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-3">
+                                     <a href="{{ route('users.edit', $user) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                 </div>
                             </td>
                         </tr>
                     @empty

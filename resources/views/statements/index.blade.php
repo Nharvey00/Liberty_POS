@@ -75,8 +75,10 @@
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FDECEA] text-[#B5504B]">Unpaid</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">
-                                <a href="{{ route('statements.show', $soa) }}" class="text-[#0B3B70] font-bold text-[11.5px] hover:underline">View / Print</a>
+                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-3">
+                                    <a href="{{ route('statements.show', $soa) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View / Print</a>
+                                </div>
                             </td>
                         </tr>
                     @empty

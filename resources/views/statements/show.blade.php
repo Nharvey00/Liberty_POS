@@ -87,10 +87,22 @@
                         <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] font-bold text-[#0B3B70]" colspan="2">
                             Balance Brought Forward / Previous Balance
                         </td>
-                        <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-right font-bold text-[#B5504B]">
-                            {{ $previousBalance > 0 ? '₱' . number_format($previousBalance, 2) : '₱0.00' }}
+                        <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-right font-bold {{ $previousBalance < 0 ? 'text-[#1E8E5A]' : 'text-[#B5504B]' }}">
+                            @if($previousBalance > 0)
+                                ₱{{ number_format($previousBalance, 2) }}
+                            @elseif($previousBalance < 0)
+                                -₱{{ number_format(abs($previousBalance), 2) }}
+                            @else
+                                ₱0.00
+                            @endif
                         </td>
-                        <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-right text-[#5B6472]">—</td>
+                        <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-right text-[#5B6472]">
+                            @if($previousBalance < 0)
+                                <span class="text-[#1E8E5A] font-semibold">₱{{ number_format(abs($previousBalance), 2) }} (Credit)</span>
+                            @else
+                                —
+                            @endif
+                        </td>
                     </tr>
 
                     @php $periodCharges = 0; $periodPayments = 0; @endphp
@@ -140,7 +152,14 @@
         {{-- Total Due Box with Calculation Breakdown --}}
         <div class="flex justify-between items-end">
             <div class="text-[12px] text-[#5B6472] space-y-1">
-                <div><strong>Previous Balance:</strong> ₱{{ number_format($previousBalance, 2) }}</div>
+                <div>
+                    <strong>Previous Balance:</strong> 
+                    @if($previousBalance < 0)
+                        <span class="text-[#1E8E5A] font-semibold">-₱{{ number_format(abs($previousBalance), 2) }} (Advance Credit)</span>
+                    @else
+                        ₱{{ number_format($previousBalance, 2) }}
+                    @endif
+                </div>
                 <div><strong>Current Period Charges:</strong> +₱{{ number_format($periodCharges, 2) }}</div>
                 <div><strong>Current Period Payments:</strong> −₱{{ number_format($periodPayments, 2) }}</div>
             </div>

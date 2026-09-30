@@ -24,8 +24,17 @@ class StatementOfAccount extends Model
         'billing_period_start' => 'date',
         'billing_period_end'   => 'date',
         'total_due'            => 'decimal:2',
-        'is_paid'              => 'boolean',
     ];
+
+    public function setIsPaidAttribute($value): void
+    {
+        $this->attributes['is_paid'] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+    }
+
+    public function getIsPaidAttribute($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
 
     public function creditAccount()
     {

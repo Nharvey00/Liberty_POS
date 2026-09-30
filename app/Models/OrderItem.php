@@ -19,9 +19,15 @@ class OrderItem extends Model
         'subtotal',
     ];
 
-    protected $casts = [
-        'is_swap' => 'boolean',
-    ];
+    public function setIsSwapAttribute($value): void
+    {
+        $this->attributes['is_swap'] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+    }
+
+    public function getIsSwapAttribute($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
 
     public function order()
     {

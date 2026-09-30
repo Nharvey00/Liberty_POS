@@ -1,19 +1,29 @@
 <x-app-layout>
-    <div class="py-12 print:py-0">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-8 print:mb-4">
-                <div>
-                    <h2 class="font-['Manrope'] text-[19px] font-extrabold text-gray-800">
-                        Utang (Credit) Report
-                    </h2>
-                    <p class="text-sm text-gray-500 mt-1 print:hidden">Monitor outstanding credit balances across all customers.</p>
-                </div>
-                <div class="print:hidden">
-                    <button onclick="window.print()" class="bg-[#0B3B70] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0a2f5a]">
-                        Print Report
-                    </button>
-                </div>
+    <x-slot name="header">
+        <div class="flex items-center justify-between w-full gap-4">
+            <div>
+                <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Utang (Credit) Report</h1>
+                <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Outstanding debt balances, credit limit tracking, and collections audit</div>
             </div>
+            <div class="flex items-center justify-end print:hidden shrink-0">
+                <button onclick="window.print()" class="inline-flex items-center gap-2 bg-[#0B3B70] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0a2f5a] shadow-xs cursor-pointer transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Print Report</span>
+                </button>
+            </div>
+        </div>
+    </x-slot>
+
+    <!-- Sub-Navigation Tabs -->
+    <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl mb-6 flex-wrap print:hidden">
+        <a href="{{ route('reports.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Overview Hub</a>
+        <a href="{{ route('reports.sales') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Sales Report</a>
+        <a href="{{ route('reports.inventory') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Inventory Report</a>
+        <a href="{{ route('reports.utang') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold bg-white text-[#0B3B70] shadow-xs">Utang (Credit) Report</a>
+        <a href="{{ route('reports.discounts') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Discounts Summary</a>
+    </div>
+
+    <div>
 
             <!-- Filters -->
             <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 mb-8 print:hidden">
@@ -23,11 +33,16 @@
                         <input type="text" name="customer_search" value="{{ $customerSearch }}" placeholder="Name or business..." class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
                     </div>
                     <div>
-                        <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Type</label>
+                        <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Classification</label>
                         <select name="customer_type" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
-                            <option value="all" {{ $customerType == 'all' ? 'selected' : '' }}>All</option>
-                            <option value="retail" {{ $customerType == 'retail' ? 'selected' : '' }}>Retail</option>
-                            <option value="wholesale" {{ $customerType == 'wholesale' ? 'selected' : '' }}>Wholesale</option>
+                            <option value="all" {{ $customerType == 'all' ? 'selected' : '' }}>All Classifications</option>
+                            <option value="Tertiary" {{ $customerType == 'Tertiary' ? 'selected' : '' }}>Tertiary</option>
+                            <option value="Household" {{ $customerType == 'Household' ? 'selected' : '' }}>Household</option>
+                            <option value="MRO" {{ $customerType == 'MRO' ? 'selected' : '' }}>MRO</option>
+                            <option value="Service Station" {{ $customerType == 'Service Station' ? 'selected' : '' }}>Service Station</option>
+                            <option value="Commercial" {{ $customerType == 'Commercial' ? 'selected' : '' }}>Commercial</option>
+                            <option value="Main Store" {{ $customerType == 'Main Store' ? 'selected' : '' }}>Main Store</option>
+                            <option value="Company" {{ $customerType == 'Company' ? 'selected' : '' }}>Company / Corporate</option>
                         </select>
                     </div>
                     <div>

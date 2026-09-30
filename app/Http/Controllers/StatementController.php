@@ -167,7 +167,7 @@ class StatementController extends Controller
             ->where('created_at', '<', $start)
             ->sum('amount');
 
-        $previousBalance = max(0, $priorCharges - $priorPayments);
+        $previousBalance = $priorCharges - $priorPayments;
 
         // Fetch ledger entries within the billing period for line-item display
         $ledgerEntries = CreditLedger::where('credit_account_id', $statement->credit_account_id)

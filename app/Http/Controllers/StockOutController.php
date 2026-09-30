@@ -10,10 +10,23 @@ use Illuminate\Validation\ValidationException;
 
 class StockOutController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $stockOuts = StockOut::with('product')->latest()->paginate(15);
-        return view('stock_outs.index', compact('stockOuts'));
+        $search = $request->query('search');
+        $query = StockOut::with('product')->latest();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('reason', 'ilike', "%{$search}%")
+                  ->orWhere('remarks', 'ilike', "%{$search}%")
+                  ->orWhereHas('product', function ($pq) use ($search) {
+                      $pq->where('name', 'ilike', "%{$search}%");
+                  });
+            });
+        }
+
+        $stockOuts = $query->paginate(15)->withQueryString();
+        return view('stock_outs.index', compact('stockOuts', 'search'));
     }
 
     public function create()
@@ -31,7 +44,7 @@ class StockOutController extends Controller
             $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
 
             $quantityRemoved = $validated['quantity_removed'] ?? 0;
-            $emptyQuantityRemoved = $validated['empty_quantity_removed'] ?? 0;
+            $emptyQuantityRemoved = $product->isAccessory() ? 0 : ($validated['empty_quantity_removed'] ?? 0);
 
             // Security: Prevent negative stock quantities
             if ($quantityRemoved > 0 && $product->stock_quantity < $quantityRemoved) {
@@ -47,6 +60,7 @@ class StockOutController extends Controller
             }
 
             // 1. Log the audit trail
+            $validated['empty_quantity_removed'] = $emptyQuantityRemoved;
             StockOut::create($validated);
 
             // 2. Safely deduct from inventory

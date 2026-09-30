@@ -12,10 +12,11 @@
                     @endif
                 </div>
             </div>
-            <div class="flex gap-2 items-center flex-wrap">
+            <div class="flex items-center justify-end gap-3 flex-wrap">
                 <form method="GET" action="{{ route('customers.show', $customer) }}" class="flex items-center gap-2">
                     <input type="month" name="month" value="{{ $currentMonth }}" onchange="this.form.submit()" class="px-3 py-1.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white font-semibold text-[#0B3B70]">
                 </form>
+                <a href="{{ route('customers.index') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Back</a>
                 @if(Auth::user()->isManagerOrOwner())
                     @if($customer->creditAccount)
                         <a href="{{ route('credit-accounts.show', $customer->creditAccount) }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">View Ledger &amp; Payments</a>
@@ -107,25 +108,35 @@
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Order #</th>
                         <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Date &amp; Time</th>
                         <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Payment Terms</th>
                         <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Total Amount</th>
                         <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Status</th>
+                        <th class="border-b border-[#E5E9EF]"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($customer->orders ?? [] as $order)
-                        <tr>
+                        <tr class="hover:bg-[#F4F6F9] transition-colors">
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#1C2430]">OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->created_at->format('M d, Y - h:i A') }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $order->payment_method ?? 'Cash' }}</td>
                             <td class="py-3 px-4 text-[13px] font-bold border-b border-[#E5E9EF]">₱{{ number_format($order->total_amount, 2) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Recorded</span>
+                                @if(method_exists($order, 'isVoided') && $order->isVoided())
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Voided</span>
+                                @else
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Completed</span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">
+                                <a href="{{ route('orders.show', $order->id) }}" class="text-[#0B3B70] font-bold text-[11.5px] hover:underline">View Receipt</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-6 text-center text-[12.5px] text-[#5B6472]">No transactions recorded for this client during this month.</td>
+                            <td colspan="6" class="py-6 text-center text-[12.5px] text-[#5B6472]">No transactions recorded for this client during this month.</td>
                         </tr>
                     @endforelse
                 </tbody>

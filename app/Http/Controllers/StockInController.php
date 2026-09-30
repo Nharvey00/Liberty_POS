@@ -10,10 +10,23 @@ use Illuminate\Validation\ValidationException;
 
 class StockInController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $stockIns = StockIn::with('product')->latest()->paginate(15);
-        return view('stock_ins.index', compact('stockIns'));
+        $search = $request->query('search');
+        $query = StockIn::with('product')->latest();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('reference_no', 'ilike', "%{$search}%")
+                  ->orWhere('remarks', 'ilike', "%{$search}%")
+                  ->orWhereHas('product', function ($pq) use ($search) {
+                      $pq->where('name', 'ilike', "%{$search}%");
+                  });
+            });
+        }
+
+        $stockIns = $query->paginate(15)->withQueryString();
+        return view('stock_ins.index', compact('stockIns', 'search'));
     }
 
     public function create()
@@ -31,7 +44,7 @@ class StockInController extends Controller
             $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
             
             $quantityReceived = $validated['quantity_received'];
-            $emptyReturnedQty = $validated['empty_returned_qty'] ?? 0;
+            $emptyReturnedQty = $product->isAccessory() ? 0 : ($validated['empty_returned_qty'] ?? 0);
 
             // Security: Prevent emptying more shells than exist
             if ($emptyReturnedQty > 0 && $product->empty_quantity < $emptyReturnedQty) {
@@ -41,6 +54,7 @@ class StockInController extends Controller
             }
 
             // 1. Log the audit trail
+            $validated['empty_returned_qty'] = $emptyReturnedQty;
             StockIn::create($validated);
 
             // 2. Adjust real inventory

@@ -4,6 +4,12 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Process walk-in and delivery transactions</div>
     </x-slot>
 
+    @if(session('success'))
+        <div class="mb-4 bg-[#EAF5EF] border border-[#1E8E5A] text-[#1E8E5A] px-4 py-3 rounded-lg text-[13px] font-semibold">
+            {{ session('success') }}
+        </div>
+    @endif
+
     @if($errors->any())
         <div class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-4 py-3 rounded-lg text-[13px] font-semibold">
             <ul class="list-disc pl-4">
@@ -73,12 +79,13 @@
                                            :readonly="isCompany && item.standard_capacity_kg !== null && item.is_swap" 
                                            class="w-16 px-2 py-1 text-[13px] border border-[#E5E9EF] rounded-md focus:ring-[#0B3B70]" 
                                            min="1" required>
-                                    <template x-if="isCompany && item.standard_capacity_kg !== null && item.is_swap">
+                                    <template x-if="isCompany && item.is_cylinder && item.standard_capacity_kg !== null && item.is_swap">
                                         <span class="text-[10.5px] text-[#5B6472] italic">(1 tank per line for individual residual tracking)</span>
                                     </template>
                                 </div>
 
-                                <template x-if="item.standard_capacity_kg !== null">
+                                {{-- Tank Swap toggle: strictly cylinders only, hidden for accessories --}}
+                                <template x-if="item.is_cylinder && item.standard_capacity_kg !== null">
                                     <div class="flex items-center justify-between gap-2 mb-2 bg-white px-2.5 py-1.5 rounded border border-[#E5E9EF]">
                                         <label class="flex items-center gap-2 text-[11.5px] font-semibold text-[#1C2430] cursor-pointer">
                                             <input type="checkbox" x-model="item.is_swap" class="rounded border-[#E5E9EF] text-[#0B3B70] focus:ring-[#0B3B70]">
@@ -88,8 +95,8 @@
                                     </div>
                                 </template>
 
-                                {{-- Fix #1 & #7: Only show residual KG if isCompany AND standard_capacity_kg exists AND item.is_swap is TRUE --}}
-                                <template x-if="isCompany && item.standard_capacity_kg !== null && item.is_swap">
+                                {{-- Company Residual: strictly cylinders only, hidden for accessories --}}
+                                <template x-if="isCompany && item.is_cylinder && item.standard_capacity_kg !== null && item.is_swap">
                                     <div class="mt-2 p-2 bg-[#FBF0DD] border border-[#B4700A]/30 rounded-lg">
                                         <div class="flex justify-between items-center mb-1">
                                             <label class="text-[11px] font-bold text-[#B4700A] block">
@@ -103,8 +110,8 @@
 
                                 <input type="hidden" :name="`items[${index}][product_id]`" :value="item.id">
                                 <input type="hidden" :name="`items[${index}][quantity]`" :value="item.quantity">
-                                <input type="hidden" :name="`items[${index}][is_swap]`" :value="item.is_swap ? 1 : 0">
-                                <input type="hidden" :name="`items[${index}][residual_kg]`" :value="item.residual_kg">
+                                <input type="hidden" :name="`items[${index}][is_swap]`" :value="(item.is_cylinder && item.is_swap) ? 1 : 0">
+                                <input type="hidden" :name="`items[${index}][residual_kg]`" :value="item.is_cylinder ? item.residual_kg : ''">
                             </div>
                         </template>
                     </div>
@@ -175,8 +182,10 @@
                 },
 
                 addToCart(product) {
+                    const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null;
+                    const isCylinder = !isAccessory;
                     // Fix #7: If corporate account and product is an LPG cylinder, add each cylinder as an independent line item with qty=1
-                    const isCorporateCylinder = this.isCompany && product.standard_capacity_kg !== null;
+                    const isCorporateCylinder = this.isCompany && isCylinder;
                     const existingItem = isCorporateCylinder ? null : this.cart.find(item => item.id === product.id);
                     
                     if (existingItem) {
@@ -188,8 +197,10 @@
                             price: parseFloat(product.price),
                             new_cylinder_price: product.new_cylinder_price !== null ? parseFloat(product.new_cylinder_price) : null,
                             standard_capacity_kg: product.standard_capacity_kg !== null ? parseFloat(product.standard_capacity_kg) : null,
+                            is_accessory: isAccessory,
+                            is_cylinder: isCylinder,
                             quantity: 1,
-                            is_swap: product.standard_capacity_kg !== null,
+                            is_swap: isCylinder,
                             residual_kg: null
                         });
                     }

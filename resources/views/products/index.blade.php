@@ -10,17 +10,37 @@
         </div>
     @endif
 
-    <!-- Toolbar -->
-    <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <div class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Search product..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-        </div>
-        <div class="flex gap-2.5 flex-wrap items-center">
+    <!-- Inventory Sub-Tabs & Action Toolbar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-5 gap-3">
+        @if(Auth::user()->isManagerOrOwner())
+            <!-- Sub-Tabs -->
+            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
+                <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold bg-white text-[#0B3B70] shadow-xs transition-colors">
+                    Products Catalog
+                </a>
+                <a href="{{ route('stock-ins.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                    Stock In History
+                </a>
+                <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                    Stock Out History
+                </a>
+            </div>
+        @else
+            <div></div>
+        @endif
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <form method="GET" action="{{ route('products.index') }}" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search product name..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+                @if(!empty($search))
+                    <a href="{{ route('products.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
+                @endif
+            </form>
             @if(Auth::user()->isManagerOrOwner())
                 <a href="{{ route('stock-outs.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">↓ Stock Out</a>
                 <a href="{{ route('stock-ins.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">↑ Stock In</a>
-                <a href="{{ route('products.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Add Product</a>
+                <a href="{{ route('products.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] whitespace-nowrap">+ Add Product</a>
             @endif
         </div>
     </div>
@@ -55,9 +75,13 @@
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Healthy</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">
-                                <a href="{{ route('products.show', $product) }}" class="border-none bg-transparent text-[#0B3B70] font-bold text-[11.5px] hover:underline mr-3">View</a>
-                                <a href="{{ route('products.edit', $product) }}" class="border-none bg-transparent text-[#5D89B0] font-bold text-[11.5px] hover:underline">Edit</a>
+                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-3">
+                                    <a href="{{ route('products.show', $product) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View</a>
+                                    @if(Auth::user()->isManagerOrOwner())
+                                        <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

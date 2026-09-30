@@ -46,13 +46,13 @@
                     @enderror
                 </div>
 
-                <div class="flex gap-3 mt-6">
-                    <button type="submit" class="bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] font-semibold py-2 px-6 rounded-lg text-[13px] hover:bg-[#B5504B] hover:text-white transition-colors">
-                        Confirm Void
-                    </button>
-                    <a href="{{ route('orders.show', $order->id) }}" class="border border-[#E5E9EF] bg-white text-[#0B3B70] font-semibold py-2 px-6 rounded-lg text-[13px] hover:bg-[#F4F6F9] transition-colors">
+                <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-[#E5E9EF]">
+                    <a href="{{ route('orders.show', $order->id) }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9] transition-colors">
                         Cancel
                     </a>
+                    <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#B5504B] bg-[#B5504B] text-white hover:bg-[#9a423e] transition-colors">
+                        Confirm Void
+                    </button>
                 </div>
             </form>
         </div>

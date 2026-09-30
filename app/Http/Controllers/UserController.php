@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Order;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Hash;
@@ -45,6 +46,18 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
+        // Prevent Owner lockout: cannot change or downgrade own role
+        if ($user->id === auth()->id() && isset($validated['role_id']) && (int)$validated['role_id'] !== (int)$user->role_id) {
+            return back()->withErrors('You cannot change or downgrade your own role.');
+        }
+
+        // Prevent leaving zero owners in the system
+        if ($user->isOwner() && isset($validated['role_id']) && (int)$validated['role_id'] !== 3) {
+            if (User::where('role_id', 3)->count() <= 1) {
+                return back()->withErrors('Cannot downgrade the sole remaining Owner account in the system.');
+            }
+        }
+
         // Only hash and update the password if a new one was provided
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -63,7 +76,12 @@ class UserController extends Controller
             return back()->withErrors('You cannot delete your own account.');
         }
 
-        if ($user->orders()->exists()) {
+        // Prevent deleting the sole remaining Owner
+        if ($user->isOwner() && User::where('role_id', 3)->count() <= 1) {
+            return back()->withErrors('Cannot delete the sole remaining Owner account in the system.');
+        }
+
+        if ($user->orders()->exists() || Order::where('voided_by', $user->id)->exists()) {
             return back()->withErrors('Cannot delete a staff account that has processed transactions. Keep for audit compliance.');
         }
 

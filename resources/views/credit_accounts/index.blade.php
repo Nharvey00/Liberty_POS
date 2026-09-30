@@ -57,9 +57,11 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
-                                <a href="{{ route('credit-accounts.show', $account) }}" class="text-[#0B3B70] font-bold text-[11.5px] hover:underline mr-3">Ledger</a>
-                                <a href="{{ route('payments.create', $account) }}" class="text-[#1E8E5A] font-bold text-[11.5px] hover:underline mr-3">Record Payment</a>
-                                <a href="{{ route('credit-accounts.edit', $account) }}" class="text-[#5D89B0] font-bold text-[11.5px] hover:underline">Edit</a>
+                                <div class="flex items-center justify-end gap-3">
+                                    <a href="{{ route('credit-accounts.show', $account) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">Ledger</a>
+                                    <a href="{{ route('payments.create', $account) }}" class="text-[#1E8E5A] font-bold text-[12px] hover:underline">Record Payment</a>
+                                    <a href="{{ route('credit-accounts.edit', $account) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3 pt-5 border-t border-[#E5E9EF]">
+        <div class="flex items-center justify-end gap-3 pt-5 border-t border-[#E5E9EF]">
             <a href="{{ route('customers.index') }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Cancel</a>
             <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Update Record</button>
         </div>

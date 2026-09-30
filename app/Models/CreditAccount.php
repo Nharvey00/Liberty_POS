@@ -16,9 +16,18 @@ class CreditAccount extends Model
      * is_active MUST be boolean — the edit form's == 0 / == 1 check depends on it.
      */
     protected $casts = [
-        'is_active'              => 'boolean',
         'agreed_monthly_payment' => 'decimal:2',
     ];
+
+    public function setIsActiveAttribute($value): void
+    {
+        $this->attributes['is_active'] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+    }
+
+    public function getIsActiveAttribute($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
 
     public function customer()
     {
