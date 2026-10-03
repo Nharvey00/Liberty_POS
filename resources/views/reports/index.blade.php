@@ -87,4 +87,30 @@
             </div>
         </a>
     </div>
+
+    <style>
+        @media print {
+            nav, aside, header button, .print\:hidden, .no-print, button, form, input, select {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .bg-white, .border, .rounded-\[16px\], .rounded-lg, .shadow-sm, .shadow-xs {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: 1px solid #000000 !important;
+            }
+        }
+    </style>
 </x-app-layout>

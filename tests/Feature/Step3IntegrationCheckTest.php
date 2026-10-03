@@ -204,4 +204,62 @@ class Step3IntegrationCheckTest extends TestCase
         $this->assertEquals('OSCA-DVO-12345', $order->senior_id);
         $this->assertEquals(50.00, $order->discount_amount);
     }
+
+    /**
+     * CHECK 4: Zero-Dependency Excel Export streams CSV with UTF-8 BOM, chunking, and headers.
+     */
+    public function test_excel_sales_export_streams_csv_with_utf8_bom_and_chunking(): void
+    {
+        $customer = Customer::create([
+            'first_name' => 'Juan',
+            'last_name' => 'Luna',
+            'business_name' => 'Luna Grill',
+            'customer_type' => 'Commercial',
+        ]);
+
+        $order = Order::create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->manager->id,
+            'invoice_number' => 'INV-TEST-99999',
+            'total_amount' => 1120.00,
+            'discount_amount' => 0.00,
+            'payment_method' => 'Cash',
+            'status' => 'completed',
+        ]);
+
+        // Manager accesses export route
+        $response = $this->actingAs($this->manager)->get(route('reports.sales.export'));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        
+        // Capture streamed content
+        $content = $response->streamedContent();
+
+        // 1. Verify UTF-8 Byte Order Mark (BOM) is present at the start
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $content);
+
+        // 2. Verify column headers
+        $this->assertStringContainsString('Invoice #', $content);
+        $this->assertStringContainsString('Subtotal (Vatable)', $content);
+        $this->assertStringContainsString('12% VAT', $content);
+        $this->assertStringContainsString('Total Amount (PHP)', $content);
+
+        // 3. Verify order data row
+        $this->assertStringContainsString('INV-TEST-99999', $content);
+        $this->assertStringContainsString('Juan Luna', $content);
+        $this->assertStringContainsString('Luna Grill', $content);
+        $this->assertStringContainsString('1000.00', $content); // 1120 / 1.12
+        $this->assertStringContainsString('120.00', $content);  // VAT
+        $this->assertStringContainsString('1120.00', $content); // Total
+    }
+
+    /**
+     * CHECK 5: Cashier is strictly blocked from the sales export route (403 Forbidden).
+     */
+    public function test_cashier_is_strictly_blocked_from_excel_export(): void
+    {
+        $response = $this->actingAs($this->cashier)->get(route('reports.sales.export'));
+        $response->assertStatus(403);
+    }
 }

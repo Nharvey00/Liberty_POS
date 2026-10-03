@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -199,5 +200,101 @@ class ReportController extends Controller
             'customersData', 'monthYear',
             'totalTimesDiscounted', 'totalTimesLoaned', 'grandTotalDiscount'
         ));
+    }
+
+    /**
+     * Native streamed CSV export compatible with Microsoft Excel.
+     */
+    public function exportSales(Request $request): StreamedResponse
+    {
+        $fromDate = $request->input('from_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $toDate = $request->input('to_date', Carbon::now()->format('Y-m-d'));
+        $paymentMethod = $request->input('payment_method');
+        $customerSearch = $request->input('customer_search');
+        $cashierId = $request->input('cashier_id');
+
+        $query = Order::with(['customer', 'user'])
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [
+                Carbon::parse($fromDate)->startOfDay(), 
+                Carbon::parse($toDate)->endOfDay()
+            ]);
+
+        if ($paymentMethod && $paymentMethod !== 'all') {
+            $query->whereRaw('LOWER(payment_method) = ?', [strtolower($paymentMethod)]);
+        }
+
+        if ($customerSearch) {
+            $query->whereHas('customer', function($q) use ($customerSearch) {
+                $q->where('first_name', 'like', "%{$customerSearch}%")
+                  ->orWhere('last_name', 'like', "%{$customerSearch}%")
+                  ->orWhere('business_name', 'like', "%{$customerSearch}%");
+            });
+        }
+
+        if ($cashierId) {
+            $query->where('user_id', $cashierId);
+        }
+
+        $filename = 'sales_report_' . Carbon::now()->format('Y_m_d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return new StreamedResponse(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+
+            // Write UTF-8 Byte Order Mark (BOM) so Excel opens seamlessly without encoding errors
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // Column Headers
+            fputcsv($handle, [
+                'Invoice #',
+                'Date & Time',
+                'Customer Name',
+                'Business Name',
+                'Cashier',
+                'Payment Method',
+                'Subtotal (Vatable)',
+                '12% VAT',
+                'Discount Amount',
+                'Total Amount (PHP)',
+                'Status'
+            ]);
+
+            // Chunk through database rows to ensure flat memory usage
+            $query->latest('id')->chunk(250, function ($orders) use ($handle) {
+                foreach ($orders as $order) {
+                    $vatable = $order->total_amount / 1.12;
+                    $vat = $order->total_amount - $vatable;
+
+                    $customerName = $order->customer 
+                        ? trim($order->customer->first_name . ' ' . $order->customer->last_name) 
+                        : 'Walk-in Customer';
+                    $businessName = $order->customer?->business_name ?? '—';
+
+                    fputcsv($handle, [
+                        $order->invoice_number,
+                        $order->created_at->format('M d, Y h:i A'),
+                        $customerName,
+                        $businessName,
+                        $order->user?->name ?? 'N/A',
+                        ucfirst($order->payment_method),
+                        number_format($vatable, 2, '.', ''),
+                        number_format($vat, 2, '.', ''),
+                        number_format($order->discount_amount, 2, '.', ''),
+                        number_format($order->total_amount, 2, '.', ''),
+                        ucfirst($order->status),
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        }, 200, $headers);
     }
 }

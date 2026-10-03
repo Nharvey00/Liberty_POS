@@ -75,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
         // Reports Module (Feature 1)
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.sales.export');
         Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
         Route::get('/reports/utang', [ReportController::class, 'utang'])->name('reports.utang');
         Route::get('/reports/discounts', [ReportController::class, 'discounts'])->name('reports.discounts');

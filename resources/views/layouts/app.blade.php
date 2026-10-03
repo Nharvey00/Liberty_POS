@@ -13,6 +13,22 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        @media print {
+            nav, aside, header button, .print\:hidden, .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
 <body x-data="{ sidebarOpen: false }" class="font-['Inter'] text-[#0F1D3A] antialiased bg-[#F1F5F9] m-0 flex min-h-screen text-[14px]">
 

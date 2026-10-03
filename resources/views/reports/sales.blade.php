@@ -5,7 +5,11 @@
                 <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Sales Report</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Comprehensive sales revenue, 12% VAT breakdown, and discounts analysis</div>
             </div>
-            <div class="flex items-center justify-end print:hidden shrink-0">
+            <div class="flex items-center justify-end gap-2.5 print:hidden shrink-0">
+                <a href="{{ route('reports.sales.export', request()->query()) }}" class="inline-flex items-center gap-2 bg-[#1E8E5A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#166E46] shadow-xs cursor-pointer transition-colors no-underline">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Export to Excel</span>
+                </a>
                 <button onclick="window.print()" class="inline-flex items-center gap-2 bg-[#0B3B70] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0a2f5a] shadow-xs cursor-pointer transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     <span>Print Report</span>
@@ -109,7 +113,7 @@
                                     $vat = $order->total_amount - $vatable;
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 text-[13px] text-gray-900">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-6 py-4 text-[13px] text-gray-900 whitespace-nowrap">{{ $order->created_at->format('M d, Y h:i A') }}</td>
                                     <td class="px-6 py-4 text-[13px] text-gray-900">{{ $order->invoice_number }}</td>
                                     <td class="px-6 py-4 text-[13px] text-gray-900">
                                         {{ $order->customer ? $order->customer->first_name . ' ' . $order->customer->last_name : 'Walk-in' }}
@@ -139,4 +143,52 @@
             </div>
         </div>
     </div>
+
+    <style>
+        @media print {
+            nav, aside, header button, .print\:hidden, .no-print, button, form, input, select {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 10pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 1.5px solid #000000 !important;
+                margin-top: 15px !important;
+            }
+            th, td {
+                border: 1px solid #000000 !important;
+                color: #000000 !important;
+                padding: 6px 8px !important;
+            }
+            thead th {
+                background-color: #f0f0f0 !important;
+                font-weight: 700 !important;
+                border-bottom: 2px solid #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .bg-white, .border, .rounded-\[16px\], .rounded-lg, .shadow-sm, .shadow-xs {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border-color: #000000 !important;
+            }
+        }
+    </style>
 </x-app-layout>

@@ -6,11 +6,14 @@
                 <div class="text-[13px] text-[#5B6B88] mt-1">Real-time store &amp; inventory overview</div>
             </div>
             
-            <div class="flex items-center gap-3 mt-4 md:mt-0">
-                <button class="bg-white border border-[#E5E7EB] rounded-lg px-4 py-2 text-[13px] font-semibold text-[#0F1D3A] shadow-sm hover:bg-gray-50 transition-colors">
-                    Sync to Excel
-                </button>
-            </div>
+            @if(Auth::user()->isManagerOrOwner())
+                <div class="flex items-center gap-3 mt-4 md:mt-0">
+                    <a href="{{ route('reports.sales.export') }}" class="bg-white border border-[#E5E7EB] rounded-lg px-4 py-2 text-[13px] font-semibold text-[#0F1D3A] shadow-sm hover:bg-gray-50 transition-colors inline-flex items-center gap-2 no-underline">
+                        <svg class="w-4 h-4 text-[#1A8A4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Sync to Excel</span>
+                    </a>
+                </div>
+            @endif
         </div>
     </x-slot>
 

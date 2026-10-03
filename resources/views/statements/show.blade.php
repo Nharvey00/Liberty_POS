@@ -115,7 +115,7 @@
                             }
                         @endphp
                         <tr>
-                            <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#5B6472]">{{ $entry->created_at->format('M d, Y') }}</td>
+                            <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#5B6472] whitespace-nowrap">{{ $entry->created_at->format('M d, Y h:i A') }}</td>
                             <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#1C2430] font-semibold">{{ $entry->transaction_type }}</td>
                             <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#5B6472]">
                                 @if($entry->order_id)
@@ -186,12 +186,53 @@
 
     <style>
         @media print {
-            body { background: white; margin: 0; padding: 0; }
-            .print\:hidden { display: none !important; }
+            nav, aside, header, header button, .print\:hidden, .no-print, button, form, input, select {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
             .print\:border-none { border: none !important; }
             .print\:shadow-none { box-shadow: none !important; }
             .print\:p-0 { padding: 0 !important; }
             .print\:max-w-full { max-width: 100% !important; }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 1.5px solid #000000 !important;
+            }
+            th, td {
+                border: 1px solid #000000 !important;
+                color: #000000 !important;
+            }
+            thead th, thead tr {
+                background-color: #f0f0f0 !important;
+                font-weight: 700 !important;
+                border-bottom: 2px solid #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            tfoot tr, tfoot td {
+                background-color: #f9f9f9 !important;
+                font-weight: 700 !important;
+                border-top: 2px solid #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
         }
     </style>
 </x-app-layout>

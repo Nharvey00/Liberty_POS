@@ -88,4 +88,59 @@
             </div>
         </div>
     </div>
+
+    <style>
+        @media print {
+            nav, aside, header button, .print\:hidden, .no-print, button, form, input, select {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 10pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 1.5px solid #000000 !important;
+                margin-top: 15px !important;
+            }
+            th, td {
+                border: 1px solid #000000 !important;
+                color: #000000 !important;
+                padding: 6px 8px !important;
+            }
+            thead th {
+                background-color: #f0f0f0 !important;
+                font-weight: 700 !important;
+                border-bottom: 2px solid #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            tfoot tr, tfoot td {
+                background-color: #f9f9f9 !important;
+                font-weight: 700 !important;
+                border-top: 2px solid #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .bg-white, .border, .rounded-\[16px\], .rounded-lg, .shadow-sm, .shadow-xs {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border-color: #000000 !important;
+            }
+        }
+    </style>
 </x-app-layout>
