@@ -3,21 +3,10 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between w-full">
             <div>
                 <h1 class="font-['Inter'] text-[24px] font-bold text-[#0F1D3A] m-0">Dashboard</h1>
-                <div class="text-[13px] text-[#5B6B88] mt-1">Real-time view across all branches</div>
+                <div class="text-[13px] text-[#5B6B88] mt-1">Real-time store &amp; inventory overview</div>
             </div>
             
             <div class="flex items-center gap-3 mt-4 md:mt-0">
-                <div class="relative bg-white border border-[#E5E7EB] rounded-lg shadow-sm flex items-center px-3 py-2 cursor-pointer">
-                    <svg class="w-[15px] h-[15px] text-[#5B6B88] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <select class="appearance-none bg-transparent border-none p-0 text-[13px] font-semibold text-[#0F1D3A] focus:ring-0 cursor-pointer pr-4">
-                        <option>All branches</option>
-                        <option>Bangkal</option>
-                        <option>Catalunan</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#0F1D3A]">
-                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </div>
-                </div>
                 <button class="bg-white border border-[#E5E7EB] rounded-lg px-4 py-2 text-[13px] font-semibold text-[#0F1D3A] shadow-sm hover:bg-gray-50 transition-colors">
                     Sync to Excel
                 </button>
@@ -95,7 +84,7 @@
                 </div>
                 <div>
                     <div class="font-['Inter'] text-[18px] font-bold">Stock In</div>
-                    <div class="text-[13px] text-[#9FB6DE] mt-1 font-medium">Restock across branches</div>
+                    <div class="text-[13px] text-[#9FB6DE] mt-1 font-medium">Restock inventory</div>
                 </div>
             </a>
 

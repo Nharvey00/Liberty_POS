@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">User Accounts &amp; Staffing</h1>
-        <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Manage system access levels, roles, and branch assignments</div>
+        <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Manage system access levels, roles, and staff permissions</div>
     </x-slot>
 
     @if (session('success'))
