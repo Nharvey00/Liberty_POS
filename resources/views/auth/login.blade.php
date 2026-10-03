@@ -171,6 +171,12 @@
       <h2>Welcome back</h2>
       <p class="lead">Please enter your details to sign in.</p>
 
+      @if (session('status'))
+          <div style="color: #1a8a4f; background: #e2f4ea; border: 1px solid #1a8a4f; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 20px;">
+              {{ session('status') }}
+          </div>
+      @endif
+
       <form method="POST" action="{{ route('login') }}">
           @csrf
           <div class="field">
