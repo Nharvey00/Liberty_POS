@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Transaction History &amp; Audit Log</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Transaction History &amp; Audit Log</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Log of all completed POS checkouts, credit sales, and voided orders</div>
     </x-slot>
 

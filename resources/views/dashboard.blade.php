@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center justify-between w-full">
             <div>
-                <h1 class="font-['Inter'] text-[24px] font-bold text-[#0F1D3A] m-0">Dashboard</h1>
+                <h1 class="font-sans text-[24px] font-bold text-gray-900 m-0">Dashboard</h1>
                 <div class="text-[13px] text-[#5B6B88] mt-1">Real-time store &amp; inventory overview</div>
             </div>
             
@@ -28,7 +28,7 @@
         <div class="bg-white border border-[#E5E7EB] rounded-[14px] p-5 shadow-sm">
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Today's Sales</div>
             <div class="flex items-end justify-between mt-1">
-                <div class="font-['Inter'] text-[26px] font-bold text-[#0F1D3A] leading-none">₱{{ number_format($todaySalesAmount, 2) }}</div>
+                <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">₱{{ number_format($todaySalesAmount, 2) }}</div>
                 <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full {{ $todaySalesAmount > 0 ? 'bg-[#E2F4EA] text-[#1A8A4F]' : 'bg-gray-100 text-[#5B6B88]' }} flex items-center gap-1">
                     {{ $todayTransactions }} Transactions
                 </div>
@@ -38,7 +38,7 @@
         <div class="bg-white border border-[#E5E7EB] rounded-[14px] p-5 shadow-sm">
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Low Stock Alerts</div>
             <div class="flex items-end justify-between mt-1">
-                <div class="font-['Inter'] text-[26px] font-bold text-[#0F1D3A] leading-none">{{ $lowStockProducts->count() }}</div>
+                <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ $lowStockProducts->count() }}</div>
                 <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full {{ $lowStockProducts->count() > 0 ? 'bg-[#FBE5E2] text-[#C0392B]' : 'bg-[#E2F4EA] text-[#1A8A4F]' }} flex items-center gap-1">
                     {{ $lowStockProducts->count() > 0 ? 'Requires attention' : 'Inventory healthy' }}
                 </div>
@@ -48,7 +48,7 @@
         <div class="bg-white border border-[#E5E7EB] rounded-[14px] p-5 shadow-sm">
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Total Customers</div>
             <div class="flex items-end justify-between mt-1">
-                <div class="font-['Inter'] text-[26px] font-bold text-[#0F1D3A] leading-none">{{ number_format($totalCustomers) }}</div>
+                <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ number_format($totalCustomers) }}</div>
                 <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E2F4EA] text-[#1A8A4F] flex items-center gap-1">
                     Active Client Base
                 </div>
@@ -59,7 +59,7 @@
             <div class="bg-white border border-[#E5E7EB] rounded-[14px] p-5 shadow-sm">
                 <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Active Credit Accounts</div>
                 <div class="flex items-end justify-between mt-1">
-                    <div class="font-['Inter'] text-[26px] font-bold text-[#0F1D3A] leading-none">{{ number_format($activeCreditAccounts) }}</div>
+                    <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ number_format($activeCreditAccounts) }}</div>
                     <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#FBF0DD] text-[#B4700A] flex items-center gap-1">
                         Utang ledger active
                     </div>
@@ -75,7 +75,7 @@
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="2"/><circle cx="20" cy="20" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             </div>
             <div>
-                <div class="font-['Inter'] text-[20px] font-bold">+ New Sale</div>
+                <div class="font-sans text-[20px] font-bold text-white">+ New Sale</div>
                 <div class="text-[13px] text-[#9FB6DE] mt-1 font-medium">Walk-in or delivery &mdash; record it in seconds</div>
             </div>
         </a>
@@ -86,7 +86,7 @@
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
                 </div>
                 <div>
-                    <div class="font-['Inter'] text-[18px] font-bold">Stock In</div>
+                    <div class="font-sans text-[18px] font-bold text-white">Stock In</div>
                     <div class="text-[13px] text-[#9FB6DE] mt-1 font-medium">Restock inventory</div>
                 </div>
             </a>
@@ -96,7 +96,7 @@
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
                 </div>
                 <div>
-                    <div class="font-['Inter'] text-[18px] font-bold">Stock Out</div>
+                    <div class="font-sans text-[18px] font-bold text-white">Stock Out</div>
                     <div class="text-[13px] text-[#9FB6DE] mt-1 font-medium">Manual deduction</div>
                 </div>
             </a>
@@ -107,7 +107,7 @@
     <div class="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-sm mb-5">
         <div class="flex items-start justify-between mb-4">
             <div>
-                <h3 class="font-['Inter'] text-[18px] font-bold text-[#0F1D3A] m-0">Sales</h3>
+                <h3 class="font-sans text-[18px] font-bold text-gray-900 m-0">Sales</h3>
                 <div id="chart-subtitle" class="text-[13px] text-[#5B6B88] mt-1">Last 7 days</div>
             </div>
             <div class="flex bg-[#EAF0F9] p-1 rounded-xl">
@@ -120,15 +120,15 @@
         <div class="flex gap-10 mb-8 mt-6">
             <div>
                 <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Total sales</div>
-                <div class="font-['Inter'] text-[20px] font-bold text-[#0F1D3A]">₱<span id="stat-total">0</span></div>
+                <div class="font-sans text-[20px] font-bold text-gray-900">₱<span id="stat-total">0</span></div>
             </div>
             <div>
                 <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Daily average</div>
-                <div class="font-['Inter'] text-[20px] font-bold text-[#0F1D3A]">₱<span id="stat-avg">0</span></div>
+                <div class="font-sans text-[20px] font-bold text-gray-900">₱<span id="stat-avg">0</span></div>
             </div>
             <div>
                 <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Best &middot; <span id="stat-best-label">Sun</span></div>
-                <div class="font-['Inter'] text-[20px] font-bold text-[#0F1D3A]">₱<span id="stat-best">0</span></div>
+                <div class="font-sans text-[20px] font-bold text-gray-900">₱<span id="stat-best">0</span></div>
             </div>
         </div>
 

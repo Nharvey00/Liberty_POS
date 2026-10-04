@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Reports &amp; Analytics Hub</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Reports &amp; Analytics Hub</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Executive reporting, inventory movements, credit summaries, and tax metrics</div>
     </x-slot>
 
@@ -25,7 +25,7 @@
                 </div>
                 <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-['Manrope'] text-[16px] font-bold text-gray-800 group-hover:text-[#0B3B70]">Sales Report</h3>
+                        <h3 class="font-sans text-[16px] font-bold text-gray-900 group-hover:text-[#0B3B70]">Sales Report</h3>
                         <span class="text-[12px] text-[#5D89B0] font-bold group-hover:translate-x-1 transition-transform">Open →</span>
                     </div>
                     <p class="text-sm text-gray-500 mt-1">Track revenue, 12% VAT calculations, daily transactions, discounts, and cashier performance over any date range.</p>
@@ -43,7 +43,7 @@
                 </div>
                 <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-['Manrope'] text-[16px] font-bold text-gray-800 group-hover:text-[#0B3B70]">Inventory Report</h3>
+                        <h3 class="font-sans text-[16px] font-bold text-gray-900 group-hover:text-[#0B3B70]">Inventory Report</h3>
                         <span class="text-[12px] text-[#5D89B0] font-bold group-hover:translate-x-1 transition-transform">Open →</span>
                     </div>
                     <p class="text-sm text-gray-500 mt-1">Audit stock movements, supplier restocks (Stock In), manual deductions (Stock Out), filled tank sales, and empty shell turnover.</p>
@@ -61,7 +61,7 @@
                 </div>
                 <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-['Manrope'] text-[16px] font-bold text-gray-800 group-hover:text-[#0B3B70]">Utang (Credit) Report</h3>
+                        <h3 class="font-sans text-[16px] font-bold text-gray-900 group-hover:text-[#0B3B70]">Utang (Credit) Report</h3>
                         <span class="text-[12px] text-[#5D89B0] font-bold group-hover:translate-x-1 transition-transform">Open →</span>
                     </div>
                     <p class="text-sm text-gray-500 mt-1">Audit receivables, customer credit balances, total charges vs collections, and accounts across all client classifications.</p>
@@ -79,7 +79,7 @@
                 </div>
                 <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-['Manrope'] text-[16px] font-bold text-gray-800 group-hover:text-[#0B3B70]">Discounts Report</h3>
+                        <h3 class="font-sans text-[16px] font-bold text-gray-900 group-hover:text-[#0B3B70]">Discounts Report</h3>
                         <span class="text-[12px] text-[#5D89B0] font-bold group-hover:translate-x-1 transition-transform">Open →</span>
                     </div>
                     <p class="text-sm text-gray-500 mt-1">Monthly summary of discounts provided, Senior Citizen ID compliance, PWD privileges, and loan transactions per customer.</p>

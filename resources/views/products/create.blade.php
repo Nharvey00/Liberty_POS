@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Add New Product</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Add New Product</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Register a new item to the inventory catalog</div>
     </x-slot>
 
@@ -54,7 +54,7 @@
 
         <!-- LPG Specific Fields Container -->
         <div id="lpg-specific-fields" class="bg-[#F4F6F9] border border-[#E5E9EF] p-5 rounded-xl mb-5">
-            <h4 class="text-[12.5px] font-bold text-[#1C2430] mb-4">Cylinder Specifications</h4>
+            <h4 class="font-sans text-[12.5px] font-bold text-gray-900 mb-4">Cylinder Specifications</h4>
             <div class="grid grid-cols-2 gap-4">
                 <!-- New Cylinder Price -->
                 <div>

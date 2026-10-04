@@ -30,7 +30,7 @@
         }
     </style>
 </head>
-<body x-data="{ sidebarOpen: false }" class="font-['Inter'] text-[#0F1D3A] antialiased bg-[#F1F5F9] m-0 flex min-h-screen text-[14px]">
+<body x-data="{ sidebarOpen: false }" class="font-sans text-[#0F1D3A] antialiased bg-[#F1F5F9] m-0 flex min-h-screen text-[14px]">
 
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div x-show="sidebarOpen" 

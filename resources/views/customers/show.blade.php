@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center w-full">
             <div>
-                <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">
+                <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">
                     {{ $customer->business_name ?? $customer->name }}
                 </h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px]">
@@ -35,24 +35,24 @@
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Outstanding Utang Balance</div>
             @php $custBalance = $customer->creditAccount->remaining_balance ?? 0; @endphp
             @if($custBalance > 0)
-                <div class="font-['Manrope'] text-[24px] font-extrabold text-[#B5504B]">₱{{ number_format($custBalance, 2) }}</div>
+                <div class="font-sans text-[24px] font-bold text-[#B5504B]">₱{{ number_format($custBalance, 2) }}</div>
             @elseif($custBalance < 0)
-                <div class="font-['Manrope'] text-[20px] font-extrabold text-[#1E8E5A]">Advance: ₱{{ number_format(abs($custBalance), 2) }}</div>
+                <div class="font-sans text-[20px] font-bold text-[#1E8E5A]">Advance: ₱{{ number_format(abs($custBalance), 2) }}</div>
             @else
-                <div class="font-['Manrope'] text-[24px] font-extrabold text-[#1E8E5A]">₱0.00</div>
+                <div class="font-sans text-[24px] font-bold text-[#1E8E5A]">₱0.00</div>
             @endif
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Phone Number</div>
-            <div class="font-['Manrope'] text-[18px] font-extrabold text-[#1C2430] truncate">{{ $customer->phone ?? 'Not provided' }}</div>
+            <div class="font-sans text-[18px] font-bold text-gray-900 truncate">{{ $customer->phone ?? 'Not provided' }}</div>
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">TIN Number</div>
-            <div class="font-['Manrope'] text-[18px] font-bold text-[#1C2430] truncate">{{ $customer->tin_number ?? 'Not provided' }}</div>
+            <div class="font-sans text-[18px] font-bold text-gray-900 truncate">{{ $customer->tin_number ?? 'Not provided' }}</div>
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Delivery Address</div>
-            <div class="font-['Manrope'] text-[15px] font-bold text-[#1C2430] truncate">{{ $customer->address ?? 'Not provided' }}</div>
+            <div class="font-sans text-[15px] font-bold text-gray-900 truncate">{{ $customer->address ?? 'Not provided' }}</div>
         </div>
     </div>
 
@@ -60,7 +60,7 @@
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden mb-6 shadow-sm">
         <div class="px-5 py-4 border-b border-[#E5E9EF] flex justify-between items-center bg-[#F4F6F9]">
             <div>
-                <h3 class="text-[14.5px] font-bold text-[#1C2430]">Monthly Purchase Volume Matrix</h3>
+                <h3 class="font-sans text-[14.5px] font-bold text-gray-900">Monthly Purchase Volume Matrix</h3>
                 <div class="text-[11.5px] text-[#5B6472]">Digitized daily tracking grid for {{ \Carbon\Carbon::parse($currentMonth)->format('F Y') }}</div>
             </div>
             <div class="text-[12px] font-semibold text-[#0B3B70] bg-[#E7EEF7] px-3 py-1 rounded-full border border-[#D6E2F0]">
@@ -101,7 +101,7 @@
     <!-- Recent Orders & Credit History -->
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
         <div class="px-5 py-4 border-b border-[#E5E9EF] flex justify-between items-center">
-            <h3 class="text-[14.5px] font-bold text-[#1C2430]">Transaction History</h3>
+            <h3 class="font-sans text-[14.5px] font-bold text-gray-900">Transaction History</h3>
         </div>
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse">

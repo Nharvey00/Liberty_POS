@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0 print:hidden">Statement of Account #{{ $statement->id }}</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0 print:hidden">Statement of Account #{{ $statement->id }}</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Billing statement for {{ $statement->creditAccount->customer->name }}</div>
     </x-slot>
 
@@ -31,7 +31,7 @@
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 max-w-4xl print:border-none print:shadow-none print:p-0 print:max-w-full">
         {{-- Company Header --}}
         <div class="text-center mb-6 pb-4 border-b-2 border-[#0B3B70]">
-            <h2 class="font-['Manrope'] text-[22px] font-extrabold text-[#0B3B70] m-0">LIBERTY LPG</h2>
+            <h2 class="font-sans text-[22px] font-bold text-[#0B3B70] m-0">LIBERTY LPG</h2>
             <div class="text-[12px] text-[#5B6472] mt-1">LPG Distributor — Davao City</div>
             <div class="text-[15px] font-bold text-[#1C2430] mt-3 uppercase tracking-wider">Statement of Account</div>
         </div>

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Edit Product</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Edit Product</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">{{ $product->name }}</div>
     </x-slot>
 
@@ -27,7 +27,7 @@
         <!-- LPG Specific Fields Container -->
         <div class="bg-[#F4F6F9] border border-[#E5E9EF] p-5 rounded-xl mb-5">
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-[12.5px] font-bold text-[#1C2430]">Cylinder Specifications</h4>
+                <h4 class="font-sans text-[12.5px] font-bold text-gray-900">Cylinder Specifications</h4>
                 <span class="text-[11px] text-[#5B6472]">Leave blank if this is an accessory.</span>
             </div>
             
@@ -51,7 +51,7 @@
         </div>
 
         <div class="bg-[#FBF0DD] border border-[#B4700A] p-4 rounded-lg mb-6">
-            <h4 class="text-[12.5px] font-bold text-[#B4700A] mb-1">Inventory Control Active</h4>
+            <h4 class="font-sans text-[12.5px] font-bold text-[#B4700A] mb-1">Inventory Control Active</h4>
             <p class="text-[12px] text-[#B4700A] opacity-90">Current Stock: <strong>{{ $product->stock_quantity }}</strong> | Empty Shells: <strong>{{ $product->empty_quantity }}</strong></p>
             <p class="text-[11.5px] text-[#B4700A] opacity-80 mt-1">To ensure audit integrity, stock quantities cannot be manually edited here. Please use the <a href="{{ route('stock-ins.create') }}" class="underline font-bold">Stock In</a> or <a href="{{ route('stock-outs.create') }}" class="underline font-bold">Stock Out</a> modules to adjust inventory.</p>
         </div>

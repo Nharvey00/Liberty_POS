@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Void Order</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Void Order</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Are you sure you want to void this transaction?</div>
     </x-slot>
 
     <div class="max-w-2xl mx-auto py-6">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 shadow-sm">
-            <h2 class="text-[16px] font-bold text-[#1C2430] mb-4">Order Details</h2>
+            <h2 class="font-sans text-[16px] font-bold text-gray-900 mb-4">Order Details</h2>
             
             <div class="space-y-2 text-[13px] text-[#1C2430] mb-6 border-b border-[#E5E9EF] pb-4">
                 <div class="flex justify-between">
@@ -28,7 +28,7 @@
             </div>
 
             <div class="mb-6">
-                <h3 class="text-[13px] font-semibold text-[#5B6472] mb-2 uppercase tracking-[0.02em]">Items:</h3>
+                <h3 class="font-sans text-[13px] font-bold text-gray-900 mb-2 uppercase tracking-[0.02em]">Items:</h3>
                 <ul class="text-[13px] text-[#1C2430] space-y-1 list-disc pl-4">
                     @foreach($order->items as $item)
                         <li>{{ $item->quantity }}x {{ $item->product->name }} - ₱{{ number_format($item->subtotal, 2) }}</li>

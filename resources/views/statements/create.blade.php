@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Generate Statement of Account</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Generate Statement of Account</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Select a credit account and billing period to generate an SOA</div>
     </x-slot>
 
@@ -48,7 +48,7 @@
     </form>
 
     <div class="mt-8 mb-4">
-        <h2 class="font-['Manrope'] text-[17px] font-extrabold m-0">Batch Generate Statements</h2>
+        <h2 class="font-sans text-[17px] font-bold text-gray-900 m-0">Batch Generate Statements</h2>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Generate SOAs for all active credit accounts in one go</div>
     </div>
 

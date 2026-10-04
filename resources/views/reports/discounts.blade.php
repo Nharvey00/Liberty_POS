@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full gap-4">
             <div>
-                <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Discounts Summary Report</h1>
+                <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Discounts Summary Report</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Monthly analysis of customer discounts, Senior Citizen IDs, and loan frequencies</div>
             </div>
             <div class="flex items-center justify-end print:hidden shrink-0">

@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full gap-4">
             <div>
-                <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Sales Report</h1>
+                <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Sales Report</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Comprehensive sales revenue, 12% VAT breakdown, and discounts analysis</div>
             </div>
             <div class="flex items-center justify-end gap-2.5 print:hidden shrink-0">
@@ -73,19 +73,19 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total Sales</p>
-                    <p class="font-['Manrope'] text-2xl font-extrabold text-gray-800 mt-2">₱{{ number_format($totalSales, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">₱{{ number_format($totalSales, 2) }}</p>
                 </div>
                 <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total VAT (12%)</p>
-                    <p class="font-['Manrope'] text-2xl font-extrabold text-gray-800 mt-2">₱{{ number_format($totalVat, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">₱{{ number_format($totalVat, 2) }}</p>
                 </div>
                 <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total Discounts</p>
-                    <p class="font-['Manrope'] text-2xl font-extrabold text-[#B5504B] mt-2">₱{{ number_format($totalDiscounts, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-[#B5504B] mt-2">₱{{ number_format($totalDiscounts, 2) }}</p>
                 </div>
                 <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Transactions</p>
-                    <p class="font-['Manrope'] text-2xl font-extrabold text-gray-800 mt-2">{{ $orderCount }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">{{ $orderCount }}</p>
                 </div>
             </div>
 

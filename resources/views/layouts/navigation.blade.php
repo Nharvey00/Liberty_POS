@@ -3,11 +3,11 @@
     
     <!-- Brand Header -->
     <div class="flex items-center gap-3.5 px-3 pb-8">
-        <div class="w-[42px] h-[42px] rounded-[10px] bg-[#245CA6] flex items-center justify-center font-['Inter'] font-extrabold text-[15px] text-white shrink-0 shadow-sm">
+        <div class="w-[42px] h-[42px] rounded-[10px] bg-[#245CA6] flex items-center justify-center font-sans font-extrabold text-[15px] text-white shrink-0 shadow-sm">
             LG
         </div>
         <div>
-            <div class="font-['Inter'] font-bold text-[16px] leading-tight text-white">Liberty LPG</div>
+            <div class="font-sans font-bold text-[16px] leading-tight text-white">Liberty LPG</div>
             <div class="text-[12px] text-[#7E96B8] mt-[2px] font-medium tracking-wide">Sales &amp; Inventory</div>
         </div>
         <button @click="sidebarOpen = false" class="md:hidden text-[#7E96B8] hover:text-white p-1 ml-auto rounded-lg hover:bg-[#152441]" aria-label="Close Sidebar">

@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0 print:hidden">Transaction Receipt</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0 print:hidden">Transaction Receipt</h1>
     </x-slot>
 
     <div class="flex justify-center py-6 print:py-0">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 w-full max-w-[400px] text-[12.5px] text-[#1C2430] print:border-none print:shadow-none print:p-0 print:max-w-full">
             
-            <div class="text-center font-['Manrope'] font-extrabold text-[18px] mb-1">LIBERTY LPG CENTER</div>
+            <div class="text-center font-sans font-bold text-[18px] text-gray-900 mb-1">LIBERTY LPG CENTER</div>
             <div class="text-center text-[#5B6472] mb-6">Official Receipt</div>
             
             <div class="flex justify-between py-1 border-b border-dashed border-[#E5E9EF] mb-1">
@@ -88,7 +88,7 @@
                         <div class="text-[#5B6472] text-[11px]">Senior ID: {{ $order->senior_id }}</div>
                     @endif
                 @endif
-                <div class="flex justify-between font-['Manrope'] font-extrabold text-[16px] text-[#1C2430] mt-3 pt-3 border-t border-[#E5E9EF]">
+                <div class="flex justify-between font-sans font-bold text-[16px] text-gray-900 mt-3 pt-3 border-t border-[#E5E9EF]">
                     <span>Total Due:</span>
                     <span>₱{{ number_format($order->total_amount, 2) }}</span>
                 </div>

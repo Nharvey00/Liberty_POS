@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full gap-4">
             <div>
-                <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">{{ $product->name }}</h1>
+                <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">{{ $product->name }}</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Inventory and Pricing Details</div>
             </div>
             <div class="flex items-center justify-end gap-3">
@@ -18,19 +18,19 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Filled Stock</div>
-            <div class="font-['Manrope'] text-[24px] font-extrabold">{{ number_format($product->stock_quantity) }}</div>
+            <div class="font-sans text-[24px] font-bold text-gray-900">{{ number_format($product->stock_quantity) }}</div>
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Empty Shells</div>
-            <div class="font-['Manrope'] text-[24px] font-extrabold">{{ number_format($product->empty_quantity) }}</div>
+            <div class="font-sans text-[24px] font-bold text-gray-900">{{ number_format($product->empty_quantity) }}</div>
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Refill Price</div>
-            <div class="font-['Manrope'] text-[24px] font-extrabold">₱{{ number_format($product->price, 2) }}</div>
+            <div class="font-sans text-[24px] font-bold text-gray-900">₱{{ number_format($product->price, 2) }}</div>
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">New Tank Price</div>
-            <div class="font-['Manrope'] text-[24px] font-extrabold">₱{{ number_format($product->new_cylinder_price, 2) }}</div>
+            <div class="font-sans text-[24px] font-bold text-gray-900">₱{{ number_format($product->new_cylinder_price, 2) }}</div>
         </div>
     </div>
 
@@ -38,7 +38,7 @@
         <!-- Recent Stock Ins -->
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
             <div class="px-5 py-4 border-b border-[#E5E9EF]">
-                <h3 class="text-[14.5px] font-bold text-[#1C2430]">Recent Deliveries (Stock In)</h3>
+                <h3 class="font-sans text-[14.5px] font-bold text-gray-900">Recent Deliveries (Stock In)</h3>
             </div>
             <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
                 <table class="w-full border-collapse">
@@ -69,7 +69,7 @@
         <!-- Recent Stock Outs -->
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
             <div class="px-5 py-4 border-b border-[#E5E9EF]">
-                <h3 class="text-[14.5px] font-bold text-[#1C2430]">Recent Deductions (Stock Out)</h3>
+                <h3 class="font-sans text-[14.5px] font-bold text-gray-900">Recent Deductions (Stock Out)</h3>
             </div>
             <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
                 <table class="w-full border-collapse">

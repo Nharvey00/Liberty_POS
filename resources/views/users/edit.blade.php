@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Edit Staff Account</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Edit Staff Account</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">{{ $user->name }}</div>
     </x-slot>
 
@@ -51,7 +51,7 @@
             </div>
 
             <div class="col-span-2 pt-3 border-t border-[#E5E9EF] mt-2">
-                <h4 class="text-[13px] font-bold text-[#1C2430] mb-1">Reset Password (Optional)</h4>
+                <h4 class="font-sans text-[13px] font-bold text-gray-900 mb-1">Reset Password (Optional)</h4>
             </div>
 
             <div class="col-span-2 md:col-span-1">

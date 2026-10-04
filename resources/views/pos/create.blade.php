@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-['Manrope'] text-[19px] font-extrabold m-0">Point of Sale</h1>
+        <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Point of Sale</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Process walk-in and delivery transactions</div>
     </x-slot>
 
@@ -20,10 +20,10 @@
         </div>
     @endif
 
-    <div x-data="posEngine()" class="flex flex-col lg:flex-row gap-6 items-start">
+    <div x-data="posEngine()" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <div class="w-full lg:w-3/5 bg-white border border-[#E5E9EF] rounded-[16px] p-6 h-fit">
-            <h3 class="text-[14.5px] font-bold text-[#1C2430] mb-4">Inventory Items</h3>
+        <div class="w-full lg:col-span-7 bg-white border border-[#E5E9EF] rounded-[16px] p-6 h-fit">
+            <h3 class="font-sans text-[15px] font-bold text-gray-900 mb-4">Inventory Items</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @foreach($products as $product)
                     <button type="button" 
@@ -39,12 +39,12 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-2/5 bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden lg:sticky lg:top-24 shadow-sm lg:h-[calc(100vh-140px)] flex flex-col">
+        <div class="w-full lg:col-span-5 bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden lg:sticky lg:top-24 shadow-sm lg:h-[calc(100vh-140px)] flex flex-col">
             <div class="px-5 py-4 border-b border-[#E5E9EF] bg-[#F4F6F9]">
-                <h3 class="text-[14.5px] font-bold text-[#1C2430]">Current Order</h3>
+                <h3 class="font-sans text-[15px] font-bold text-gray-900">Current Order</h3>
             </div>
 
-            <form method="POST" action="{{ route('pos.store') }}" id="checkout-form" class="flex flex-col h-full overflow-hidden">
+            <form method="POST" action="{{ route('pos.store') }}" id="checkout-form" x-ref="checkoutForm" @submit.prevent="openCheckoutModal()" class="flex flex-col h-full overflow-hidden">
                 @csrf
                 <div class="p-5 flex-1 overflow-y-auto">
                     <div class="mb-5">
@@ -65,22 +65,22 @@
                         </template>
 
                         <template x-for="(item, index) in cart" :key="index">
-                            <div class="p-3 border border-[#E5E9EF] rounded-xl bg-[#F4F6F9]">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-bold text-[13px] text-[#1C2430]" x-text="item.name"></span>
-                                    <button type="button" @click="removeFromCart(index)" class="text-[#B5504B] text-[11.5px] font-bold hover:underline bg-transparent border-none ml-2">✕ Remove</button>
+                            <div class="p-3.5 border border-[#E5E9EF] rounded-xl bg-[#F4F6F9]">
+                                <div class="flex justify-between items-start mb-2.5">
+                                    <span class="font-bold text-base lg:text-lg font-sans text-gray-900 leading-snug" x-text="item.name"></span>
+                                    <button type="button" @click="removeFromCart(index)" class="text-[#B5504B] text-[12px] font-bold hover:underline bg-transparent border-none ml-2 cursor-pointer">✕ Remove</button>
                                 </div>
                                 
-                                <div class="flex items-center gap-3 mb-2">
-                                    <label class="text-[11.5px] font-semibold text-[#5B6472]">Qty:</label>
+                                <div class="flex items-center gap-3 mb-2.5">
+                                    <label class="text-sm font-semibold text-gray-700">Qty:</label>
                                     <input type="number" 
                                            x-model.number="item.quantity" 
                                            :max="(isCompany && item.standard_capacity_kg !== null && item.is_swap) ? 1 : null" 
                                            :readonly="isCompany && item.standard_capacity_kg !== null && item.is_swap" 
-                                           class="w-16 px-2 py-1 text-[13px] border border-[#E5E9EF] rounded-md focus:ring-[#0B3B70]" 
+                                           class="w-20 px-3 py-1.5 text-base font-bold font-sans border border-[#E5E9EF] rounded-md focus:ring-[#0B3B70] bg-white" 
                                            min="1" required>
                                     <template x-if="isCompany && item.is_cylinder && item.standard_capacity_kg !== null && item.is_swap">
-                                        <span class="text-[10.5px] text-[#5B6472] italic">(1 tank per line for individual residual tracking)</span>
+                                        <span class="text-[11px] text-[#5B6472] italic">(1 tank per line for individual residual tracking)</span>
                                     </template>
                                 </div>
 
@@ -153,15 +153,81 @@
                     </div>
 
                     <div class="flex justify-between items-center mb-5 border-t border-dashed border-[#E5E9EF] pt-4">
-                        <span class="font-['Manrope'] font-bold text-[16px] text-[#5B6472] uppercase tracking-[0.02em]">Total Due:</span>
-                        <span x-text="'₱' + calculateTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})" class="font-['Manrope'] font-extrabold text-[24px] text-[#0B3B70]"></span>
+                        <span class="font-sans font-bold text-base text-[#5B6472] uppercase tracking-wider">Total Due:</span>
+                        <span x-text="'₱' + calculateTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})" class="text-4xl font-black font-sans text-gray-900 tracking-tight"></span>
                     </div>
 
-                    <button type="submit" :disabled="cart.length === 0" class="w-full rounded-lg px-[15px] py-[12px] text-[14px] font-bold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <button type="button" 
+                            @click.prevent="openCheckoutModal()" 
+                            :disabled="cart.length === 0" 
+                            class="w-full rounded-lg px-[15px] py-[12px] text-[15px] font-bold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm cursor-pointer">
                         Process Checkout
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Checkout Confirmation Modal -->
+        <div x-show="showConfirmModal" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4" 
+             style="display: none;"
+             @keydown.escape.window="showConfirmModal = false">
+            
+            <!-- Modal Backdrop Click Dismiss -->
+            <div class="fixed inset-0" @click="showConfirmModal = false"></div>
+
+            <!-- Modal Dialog Content Box -->
+            <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 border border-[#E5E9EF] transform transition-all"
+                 @click.stop>
+                
+                <div class="flex items-center gap-3.5 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-[#EAF0F9] text-[#0B3B70] flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-sans text-lg font-bold text-gray-900 m-0">Confirm Checkout</h3>
+                        <p class="text-xs text-[#5B6472] mt-0.5">Please review before processing</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <p class="font-sans text-sm text-gray-700 leading-relaxed font-medium">
+                        Confirm Checkout: Are you sure you want to process this transaction?
+                    </p>
+
+                    <div class="mt-4 p-3.5 bg-[#F4F6F9] rounded-xl border border-[#E5E9EF] space-y-2 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[#5B6472] font-semibold">Total Amount:</span>
+                            <span class="font-sans text-lg font-black text-gray-900" x-text="'₱' + calculateTotal().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[#5B6472] font-semibold">Items in Cart:</span>
+                            <span class="font-sans font-bold text-gray-800" x-text="cart.reduce((sum, item) => sum + item.quantity, 0) + ' item(s)'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#E5E9EF]">
+                    <button type="button" 
+                            @click="showConfirmModal = false" 
+                            class="px-4 py-2.5 rounded-lg text-sm font-semibold border border-[#E5E9EF] bg-white text-gray-700 hover:bg-[#F4F6F9] transition-colors cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            @click="confirmCheckout()" 
+                            class="px-5 py-2.5 rounded-lg text-sm font-bold bg-[#0B3B70] text-white hover:bg-[#082A52] transition-colors shadow-sm cursor-pointer inline-flex items-center gap-2">
+                        <span>Confirm &amp; Process</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -175,6 +241,24 @@
                 discount: 0,
                 discountType: 'regular',
                 seniorId: '',
+                showConfirmModal: false,
+
+                openCheckoutModal() {
+                    if (this.cart.length === 0) return;
+                    const form = document.getElementById('checkout-form');
+                    if (form && !form.checkValidity()) {
+                        form.reportValidity();
+                        return;
+                    }
+                    this.showConfirmModal = true;
+                },
+
+                confirmCheckout() {
+                    const form = document.getElementById('checkout-form');
+                    if (form) {
+                        form.submit();
+                    }
+                },
 
                 checkCustomerType() {
                     const customer = this.customers.find(c => c.id == this.selectedCustomerId);
