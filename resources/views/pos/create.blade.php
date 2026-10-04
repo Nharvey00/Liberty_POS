@@ -184,7 +184,7 @@
                 addToCart(product) {
                     const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null;
                     const isCylinder = !isAccessory;
-                    // Fix #7: If corporate account and product is an LPG cylinder, add each cylinder as an independent line item with qty=1
+                    // Corporate account LPG cylinders: add each cylinder as an independent line item with qty=1
                     const isCorporateCylinder = this.isCompany && isCylinder;
                     const existingItem = isCorporateCylinder ? null : this.cart.find(item => item.id === product.id);
                     

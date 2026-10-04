@@ -14,7 +14,7 @@
     <div class="flex gap-2.5 mb-5 print:hidden items-center">
         <button onclick="window.print()" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">🖨 Print Statement</button>
         
-        {{-- Fix #5: Manual toggle for paid status --}}
+        {{-- Manual toggle for paid status --}}
         <form method="POST" action="{{ route('statements.update', $statement) }}" class="inline">
             @csrf
             @method('PATCH')
@@ -79,7 +79,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- Fix #5: Balance Brought Forward row so line items mathematically reconcile with total due --}}
+                    {{-- Balance Brought Forward row so line items mathematically reconcile with total due --}}
                     <tr class="bg-[#F8FAFC]">
                         <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] font-semibold text-[#5B6472]">
                             Prior to {{ \Carbon\Carbon::parse($statement->billing_period_start)->format('M d, Y') }}

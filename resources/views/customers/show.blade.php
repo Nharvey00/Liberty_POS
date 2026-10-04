@@ -102,7 +102,6 @@
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
         <div class="px-5 py-4 border-b border-[#E5E9EF] flex justify-between items-center">
             <h3 class="text-[14.5px] font-bold text-[#1C2430]">Transaction History</h3>
-            <span class="text-[11.5px] text-[#5B6472]">Connected to Developer 2's Utang Module</span>
         </div>
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse">
