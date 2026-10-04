@@ -222,13 +222,13 @@ class ProductionClearanceAuditTest extends TestCase
         $this->assertEquals($initialEmpty, $this->cylinderProduct->empty_quantity);
     }
 
-    public function test_corporate_swap_credit_enforces_qty_1_and_calculates_residual_charge(): void
+    public function test_coke_residual_swap_credit_enforces_qty_1_and_calculates_residual_charge(): void
     {
         $companyCustomer = Customer::create([
-            'first_name' => 'Corporate',
-            'last_name' => 'Client',
-            'business_name' => 'San Miguel Corp',
-            'customer_type' => 'Company',
+            'first_name' => 'Coca-Cola',
+            'last_name' => 'Plant',
+            'business_name' => 'Coca-Cola Beverages Philippines',
+            'customer_type' => 'Coke (Residual)',
         ]);
         $creditAccount = CreditAccount::create([
             'customer_id' => $companyCustomer->id,
@@ -237,7 +237,7 @@ class ProductionClearanceAuditTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Attempting Corporate Swap with quantity = 2 must fail validation
+        // Attempting Coke (Residual) Swap with quantity = 2 must fail validation
         $responseFailed = $this->actingAs($this->cashier)->post('/pos/checkout', [
             'customer_id' => $companyCustomer->id,
             'payment_method' => 'Credit',
@@ -253,7 +253,7 @@ class ProductionClearanceAuditTest extends TestCase
         ]);
         $responseFailed->assertSessionHasErrors('items.0.quantity');
 
-        // Valid Corporate Swap: quantity = 1, residual_kg = 3.0 kg
+        // Valid Coke (Residual) Swap: quantity = 1, residual_kg = 3.0 kg
         // Consumed = 11.0 - 3.0 = 8.0 kg.
         // Rate = 990 / 11 = 90 / kg.
         // Charge = 8.0 * 90 = 720.00.
@@ -411,7 +411,7 @@ class ProductionClearanceAuditTest extends TestCase
         $customer = Customer::create([
             'first_name' => 'SOA',
             'last_name' => 'Account',
-            'customer_type' => 'Company',
+            'customer_type' => 'Coke (Residual)',
         ]);
         $account = CreditAccount::create([
             'customer_id' => $customer->id,

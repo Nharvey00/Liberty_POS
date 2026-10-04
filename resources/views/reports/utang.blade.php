@@ -42,7 +42,7 @@
                             <option value="Service Station" {{ $customerType == 'Service Station' ? 'selected' : '' }}>Service Station</option>
                             <option value="Commercial" {{ $customerType == 'Commercial' ? 'selected' : '' }}>Commercial</option>
                             <option value="Main Store" {{ $customerType == 'Main Store' ? 'selected' : '' }}>Main Store</option>
-                            <option value="Company" {{ $customerType == 'Company' ? 'selected' : '' }}>Company / Corporate</option>
+                            <option value="Coke (Residual)" {{ $customerType == 'Coke (Residual)' ? 'selected' : '' }}>Coke (Residual)</option>
                         </select>
                     </div>
                     <div>

@@ -57,14 +57,14 @@ class CustomerSeeder extends Seeder
                 'address'       => 'Bangkal, Davao City',
             ],
 
-            // Company customers (billed by actual KG consumed via residual weight)
+            // Company / Coke customers (billed by actual KG consumed via residual weight)
             [
                 'first_name'    => 'Rodel',
                 'middle_name'   => null,
                 'last_name'     => 'Pascual',
                 'suffix'        => null,
                 'business_name' => 'Coca-Cola Beverages Philippines',
-                'customer_type' => 'Company',
+                'customer_type' => 'Coke (Residual)',
                 'phone'         => '09987654321',
                 'address'       => 'NFA Compound, Panacan Industrial Area, Davao City',
                 'tin_number'    => '123-456-789-000',

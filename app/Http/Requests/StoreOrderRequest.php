@@ -38,7 +38,7 @@ class StoreOrderRequest extends FormRequest
         $validator->after(function ($validator) {
             $customerId = $this->input('customer_id');
             $customer = $customerId ? Customer::find($customerId) : null;
-            $isCompany = $customer && $customer->customer_type === 'Company';
+            $isCokeResidual = $customer && in_array($customer->customer_type, ['Coke (Residual)', 'Company', 'Corporate']);
             $items = $this->input('items', []);
 
             if (!is_array($items)) {
@@ -62,22 +62,22 @@ class StoreOrderRequest extends FormRequest
                 $residual = $item['residual_kg'] ?? null;
                 $itemSubtotal = 0;
 
-                // Fix #1 & #7: Corporate cylinder validation rules
-                if ($isCompany && !is_null($product->standard_capacity_kg)) {
+                // Coke (Residual) cylinder validation rules
+                if ($isCokeResidual && !is_null($product->standard_capacity_kg)) {
                     if ($isSwap) {
                         // Enforce quantity = 1 per swapped tank for individual residual tracking
                         if ($qty > 1) {
                             $validator->errors()->add(
                                 "items.{$index}.quantity",
-                                "For Company accounts, swapped tanks must be recorded with quantity = 1 per line item to accurately track individual residual weights."
+                                "For Coke (Residual) accounts, swapped tanks must be recorded with quantity = 1 per line item to accurately track individual residual weights."
                             );
                         }
 
-                        // Residual KG is strictly required for corporate swaps
+                        // Residual KG is strictly required for Coke (Residual) swaps
                         if (is_null($residual) || $residual === '') {
                             $validator->errors()->add(
                                 "items.{$index}.residual_kg",
-                                "Residual KG is required for Company (Corporate) tank swaps."
+                                "Residual KG is required for Coke (Residual) tank swaps."
                             );
                         } elseif (!is_numeric($residual) || $residual < 0) {
                             $validator->errors()->add(

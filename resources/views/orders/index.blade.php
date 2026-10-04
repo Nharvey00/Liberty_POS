@@ -81,8 +81,8 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">{{ $order->created_at->format('M d, Y - h:i A') }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold">
                                 {{ $order->customer->name ?? 'Walk-in Customer' }}
-                                @if($order->customer && $order->customer->customer_type === 'Company')
-                                    <span class="ml-2 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#FBF0DD] text-[#B4700A] uppercase">Company</span>
+                                @if($order->customer && in_array($order->customer->customer_type, ['Coke (Residual)', 'Company']))
+                                    <span class="ml-2 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#FBF0DD] text-[#B4700A] uppercase">Coke (Residual)</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">

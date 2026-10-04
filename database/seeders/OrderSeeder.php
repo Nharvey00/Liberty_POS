@@ -22,7 +22,7 @@ class OrderSeeder extends Seeder
         $accessories = Product::whereNull('standard_capacity_kg')->get();
 
         $normalCustomers  = Customer::where('customer_type', 'Normal')->get();
-        $companyCustomers = Customer::where('customer_type', 'Company')->get();
+        $companyCustomers = Customer::whereIn('customer_type', ['Coke (Residual)', 'Company'])->get();
 
         // --- 5 Walk-in Cash Orders (no customer, cash only) ---
         $walkInProducts = $cylinders->merge($accessories)->all();

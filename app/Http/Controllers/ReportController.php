@@ -122,7 +122,11 @@ class ReportController extends Controller
 
         if ($customerType && $customerType !== 'all') {
             $query->whereHas('customer', function($q) use ($customerType) {
-                $q->where('customer_type', $customerType);
+                if ($customerType === 'Coke (Residual)') {
+                    $q->whereIn('customer_type', ['Coke (Residual)', 'Company']);
+                } else {
+                    $q->where('customer_type', $customerType);
+                }
             });
         }
 

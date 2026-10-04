@@ -64,7 +64,7 @@ class PosController extends Controller
 
                 if ($item['is_swap']) {
                     // Refill sale: customer surrendered an empty cylinder
-                    if ($customer && $customer->customer_type === 'Company' && !is_null($product->standard_capacity_kg)) {
+                    if ($customer && in_array($customer->customer_type, ['Coke (Residual)', 'Company']) && !is_null($product->standard_capacity_kg)) {
                         $residual = isset($item['residual_kg']) && is_numeric($item['residual_kg']) ? (float)$item['residual_kg'] : 0;
                         $actualConsumedKg = max(0, $product->standard_capacity_kg - $residual);
                         $pricePerKg = $product->price / $product->standard_capacity_kg;

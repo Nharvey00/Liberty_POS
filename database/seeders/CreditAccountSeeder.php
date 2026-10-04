@@ -25,7 +25,7 @@ class CreditAccountSeeder extends Seeder
 
             CreditAccount::create([
                 'customer_id'            => $customer->id,
-                'agreed_monthly_payment' => $customer->customer_type === 'Company'
+                'agreed_monthly_payment' => in_array($customer->customer_type, ['Coke (Residual)', 'Company'])
                     ? $companyMonthlyPayment
                     : $normalMonthlyPayment,
                 'is_active'              => true,

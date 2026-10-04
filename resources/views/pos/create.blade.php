@@ -95,12 +95,12 @@
                                     </div>
                                 </template>
 
-                                {{-- Company Residual: strictly cylinders only, hidden for accessories --}}
+                                {{-- Coke Residual: strictly cylinders only, hidden for accessories --}}
                                 <template x-if="isCompany && item.is_cylinder && item.standard_capacity_kg !== null && item.is_swap">
                                     <div class="mt-2 p-2 bg-[#FBF0DD] border border-[#B4700A]/30 rounded-lg">
                                         <div class="flex justify-between items-center mb-1">
                                             <label class="text-[11px] font-bold text-[#B4700A] block">
-                                                Company Residual (KG) <span class="text-[#B5504B]">*</span>
+                                                Coke Residual (KG) <span class="text-[#B5504B]">*</span>
                                             </label>
                                             <span class="text-[10px] text-[#5B6472]" x-text="'Capacity: ' + item.standard_capacity_kg + 'kg'"></span>
                                         </div>
@@ -178,15 +178,15 @@
 
                 checkCustomerType() {
                     const customer = this.customers.find(c => c.id == this.selectedCustomerId);
-                    this.isCompany = customer ? (customer.customer_type === 'Company') : false;
+                    this.isCompany = customer ? (customer.customer_type === 'Coke (Residual)' || customer.customer_type === 'Company') : false;
                 },
 
                 addToCart(product) {
                     const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null;
                     const isCylinder = !isAccessory;
-                    // Corporate account LPG cylinders: add each cylinder as an independent line item with qty=1
-                    const isCorporateCylinder = this.isCompany && isCylinder;
-                    const existingItem = isCorporateCylinder ? null : this.cart.find(item => item.id === product.id);
+                    // Coke (Residual) account LPG cylinders: add each cylinder as an independent line item with qty=1
+                    const isCokeCylinder = this.isCompany && isCylinder;
+                    const existingItem = isCokeCylinder ? null : this.cart.find(item => item.id === product.id);
                     
                     if (existingItem) {
                         existingItem.quantity++;
