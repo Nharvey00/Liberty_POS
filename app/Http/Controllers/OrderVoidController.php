@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\CreditAccount;
 use App\Models\CreditLedger;
+use App\Models\StockIn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +64,13 @@ class OrderVoidController extends Controller
                         if ($item->is_swap && $product->isCylinder()) {
                             $product->decrement('empty_quantity', $item->quantity);
                         }
+
+                        StockIn::create([
+                            'product_id' => $product->id,
+                            'quantity_received' => $item->quantity,
+                            'empty_returned_qty' => 0,
+                            'remarks' => 'Stock In (Void Reversal): ' . ($lockedOrder->invoice_number ?? ('OR-' . str_pad($lockedOrder->id, 6, '0', STR_PAD_LEFT))),
+                        ]);
                     }
                 }
 

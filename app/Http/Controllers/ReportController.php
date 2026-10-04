@@ -29,7 +29,6 @@ class ReportController extends Controller
         $cashierId = $request->input('cashier_id');
 
         $query = Order::with(['customer', 'user'])
-            ->where('status', 'completed')
             ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()]);
 
         if ($paymentMethod && $paymentMethod !== 'all') {
@@ -50,7 +49,8 @@ class ReportController extends Controller
 
         $orders = $query->latest()->paginate(15)->withQueryString();
         
-        $totalsQuery = clone $query;
+        // Sums and counts strictly exclude voided orders
+        $totalsQuery = (clone $query)->excludeVoided();
         $totalSales = $totalsQuery->sum('total_amount');
         $totalDiscounts = $totalsQuery->sum('discount_amount');
         $orderCount = $totalsQuery->count();
@@ -162,8 +162,8 @@ class ReportController extends Controller
         $monthYear = $request->input('month_year', Carbon::now()->format('Y-m'));
         $date = Carbon::parse($monthYear . '-01');
         
-        $orders = Order::with('customer')
-            ->where('status', 'completed')
+        $orders = Order::valid()
+            ->with('customer')
             ->whereNotNull('customer_id')
             ->whereBetween('created_at', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
             ->get();
@@ -213,8 +213,8 @@ class ReportController extends Controller
         $customerSearch = $request->input('customer_search');
         $cashierId = $request->input('cashier_id');
 
-        $query = Order::with(['customer', 'user'])
-            ->where('status', 'completed')
+        $query = Order::valid()
+            ->with(['customer', 'user'])
             ->whereBetween('created_at', [
                 Carbon::parse($fromDate)->startOfDay(), 
                 Carbon::parse($toDate)->endOfDay()

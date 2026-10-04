@@ -78,6 +78,13 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">
                                 @if($entry->order_id)
                                     <a href="{{ route('orders.show', $entry->order_id) }}" class="text-[#0B3B70] hover:underline font-semibold">Order OR-{{ str_pad($entry->order_id, 6, '0', STR_PAD_LEFT) }}</a>
+                                    @if($entry->order && $entry->order->isVoided())
+                                        @if($entry->transaction_type === 'Payment')
+                                            <span class="text-[10.5px] font-semibold text-[#1E8E5A] ml-1">(Void Reversal)</span>
+                                        @else
+                                            <span class="text-[10.5px] font-bold text-[#B5504B] ml-1">[VOIDED]</span>
+                                        @endif
+                                    @endif
                                 @elseif($entry->payment_id)
                                     Payment #{{ $entry->payment_id }}
                                 @else

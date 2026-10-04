@@ -63,6 +63,9 @@ class CustomerController extends Controller
         $dailyVolumes = array_fill(1, $daysInMonth, 0);
 
         foreach ($customer->orders as $order) {
+            if ($order->isVoided()) {
+                continue;
+            }
             $day = $order->created_at->day;
             $qty = $order->items->sum('quantity');
             $dailyVolumes[$day] += ($qty > 0 ? (int)$qty : 1);

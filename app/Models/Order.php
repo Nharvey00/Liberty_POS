@@ -40,6 +40,22 @@ class Order extends Model
         return $this->status === 'voided';
     }
 
+    /**
+     * Scope query to exclude voided orders.
+     */
+    public function scopeExcludeVoided($query)
+    {
+        return $query->where('status', '!=', 'voided');
+    }
+
+    /**
+     * Scope query to only include valid (non-voided) orders.
+     */
+    public function scopeValid($query)
+    {
+        return $query->where('status', '!=', 'voided');
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

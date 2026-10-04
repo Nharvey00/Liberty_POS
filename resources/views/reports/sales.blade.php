@@ -112,9 +112,14 @@
                                     $vatable = $order->total_amount / 1.12;
                                     $vat = $order->total_amount - $vatable;
                                 @endphp
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="hover:bg-gray-50 transition-colors {{ $order->isVoided() ? 'bg-[#FFF8F8] opacity-75' : '' }}">
                                     <td class="px-6 py-4 text-[13px] text-gray-900 whitespace-nowrap">{{ $order->created_at->format('M d, Y h:i A') }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900">{{ $order->invoice_number }}</td>
+                                    <td class="px-6 py-4 text-[13px] text-gray-900">
+                                        {{ $order->invoice_number }}
+                                        @if($order->isVoided())
+                                            <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F7E9E8] text-[#B5504B]">VOIDED</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-[13px] text-gray-900">
                                         {{ $order->customer ? $order->customer->first_name . ' ' . $order->customer->last_name : 'Walk-in' }}
                                     </td>
@@ -124,10 +129,10 @@
                                             {{ ucfirst($order->payment_method) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 text-right">₱{{ number_format($vatable, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 text-right">₱{{ number_format($vat, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-[#B5504B] text-right">₱{{ number_format($order->discount_amount, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] font-bold text-gray-900 text-right">₱{{ number_format($order->total_amount, 2) }}</td>
+                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vatable, 2) }}</td>
+                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vat, 2) }}</td>
+                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-[#B5504B]' }}">₱{{ number_format($order->discount_amount, 2) }}</td>
+                                    <td class="px-6 py-4 text-[13px] font-bold text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($order->total_amount, 2) }}</td>
                                 </tr>
                             @empty
                                 <tr>

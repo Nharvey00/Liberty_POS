@@ -15,8 +15,8 @@ class DashboardController extends Controller
     {
         $today = Carbon::today();
 
-        $todaySalesAmount = Order::whereDate('created_at', $today)->sum('total_amount');
-        $todayTransactions = Order::whereDate('created_at', $today)->count();
+        $todaySalesAmount = Order::valid()->whereDate('created_at', $today)->sum('total_amount');
+        $todayTransactions = Order::valid()->whereDate('created_at', $today)->count();
         
         $lowStockProducts = Product::where('stock_quantity', '<=', 10)->get();
         
@@ -31,7 +31,7 @@ class DashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $weeklyLabels[] = $date->format('D'); // Mon, Tue, etc.
-            $weeklyData[] = Order::whereDate('created_at', $date)->sum('total_amount');
+            $weeklyData[] = Order::valid()->whereDate('created_at', $date)->sum('total_amount');
         }
         $weeklyTotal = array_sum($weeklyData);
         $weeklyAvg = $weeklyTotal / 7;
@@ -47,7 +47,7 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::today()->startOfMonth()->subMonths($i);
             $monthlyLabels[] = $date->format('M Y'); // Jan 2024, etc.
-            $monthlyData[] = Order::whereYear('created_at', $date->year)
+            $monthlyData[] = Order::valid()->whereYear('created_at', $date->year)
                                   ->whereMonth('created_at', $date->month)
                                   ->sum('total_amount');
         }
@@ -56,7 +56,10 @@ class DashboardController extends Controller
         $monthlyBest = empty(array_filter($monthlyData)) ? 0 : max($monthlyData);
         $monthlyBestDay = 'N/A';
         if ($monthlyBest > 0) {
-            $monthlyBestDay = $monthlyLabels[array_search($monthlyBest, $monthlyData)];
+            $monthlyBestDay = $weeklyLabels[array_search($monthlyBest, $monthlyData)] ?? 'N/A';
+            if ($monthlyBest > 0 && isset($monthlyLabels[array_search($monthlyBest, $monthlyData)])) {
+                $monthlyBestDay = $monthlyLabels[array_search($monthlyBest, $monthlyData)];
+            }
         }
 
         // Quarterly (Last 4 Quarters)
@@ -65,7 +68,7 @@ class DashboardController extends Controller
         for ($i = 3; $i >= 0; $i--) {
             $date = Carbon::today()->firstOfQuarter()->subQuarters($i);
             $quarterlyLabels[] = 'Q' . $date->quarter . ' ' . $date->format('y');
-            $quarterlyData[] = Order::whereBetween('created_at', [
+            $quarterlyData[] = Order::valid()->whereBetween('created_at', [
                 $date->copy()->startOfQuarter(),
                 $date->copy()->endOfQuarter()
             ])->sum('total_amount');
