@@ -42,11 +42,8 @@ class PosController extends Controller
             // Safely resolve the customer if one was provided
             $customer = isset($validated['customer_id']) ? Customer::find($validated['customer_id']) : null;
 
-            DB::beginTransaction();
-
-            try {
+            $order = DB::transaction(function () use ($validated, $customer) {
                 $totalAmount = 0;
-
                 $year = date('Y');
 
                 $order = Order::create([
@@ -117,8 +114,14 @@ class PosController extends Controller
                     ]);
                 }
 
-                $finalTotal = $totalAmount - $order->discount_amount;
-                $order->update(['total_amount' => max(0, $finalTotal)]);
+                // Mathematically cap discount to order subtotal
+                $requestedDiscount = (float)($order->discount_amount ?? 0);
+                $discountAmount = min($requestedDiscount, $totalAmount);
+                $finalTotal = max(0, $totalAmount - $discountAmount);
+                $order->update([
+                    'discount_amount' => $discountAmount,
+                    'total_amount' => $finalTotal,
+                ]);
 
                 if ($order->payment_method === 'Credit') {
                     if (!$customer) {
@@ -143,13 +146,13 @@ class PosController extends Controller
                     ]);
                 }
 
-                DB::commit();
-                return redirect()->route('pos.show', $order->id)->with('success', 'Transaction completed successfully.');
+                return $order;
+            });
 
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return back()->withErrors('Transaction failed: ' . $e->getMessage());
-            }
+            return redirect()->route('pos.show', $order->id)->with('success', 'Transaction completed successfully.');
+
+        } catch (\Exception $e) {
+            return back()->withErrors('Transaction failed: ' . $e->getMessage());
         } finally {
             optional($lock)->release();
         }

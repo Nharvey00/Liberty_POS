@@ -28,7 +28,7 @@ class ReportController extends Controller
         $customerSearch = $request->input('customer_search');
         $cashierId = $request->input('cashier_id');
 
-        $query = Order::with(['customer', 'user'])
+        $query = Order::with(['customer', 'items.product', 'user'])
             ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()]);
 
         if ($paymentMethod && $paymentMethod !== 'all') {
@@ -167,7 +167,7 @@ class ReportController extends Controller
         $date = Carbon::parse($monthYear . '-01');
         
         $orders = Order::valid()
-            ->with('customer')
+            ->with(['customer', 'items.product', 'user'])
             ->whereNotNull('customer_id')
             ->whereBetween('created_at', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
             ->get();
@@ -218,7 +218,7 @@ class ReportController extends Controller
         $cashierId = $request->input('cashier_id');
 
         $query = Order::valid()
-            ->with(['customer', 'user'])
+            ->with(['customer', 'items.product', 'user'])
             ->whereBetween('created_at', [
                 Carbon::parse($fromDate)->startOfDay(), 
                 Carbon::parse($toDate)->endOfDay()

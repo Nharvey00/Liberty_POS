@@ -19,8 +19,8 @@ return new class extends Migration
             $table->boolean('is_swap')->default(false);
             
             // STRICTLY FOR COKE COMPANY LOGIC:
-            $table->decimal('residual_kg', 8, 2)->nullable(); 
-            $table->decimal('actual_consumed_kg', 8, 2)->nullable(); 
+            $table->decimal('residual_kg', 10, 2)->nullable(); 
+            $table->decimal('actual_consumed_kg', 10, 2)->nullable(); 
             
             $table->decimal('subtotal', 10, 2);
             $table->timestamps();

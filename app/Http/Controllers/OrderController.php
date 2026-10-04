@@ -12,7 +12,7 @@ class OrderController extends Controller
         $status = $request->query('status');
         $search = $request->query('search');
 
-        $query = Order::with(['customer', 'user', 'voidedByUser'])->latest();
+        $query = Order::with(['customer', 'items.product', 'user', 'voidedByUser'])->latest();
 
         if ($status === 'voided') {
             $query->where('status', 'voided');

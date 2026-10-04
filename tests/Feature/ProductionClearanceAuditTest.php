@@ -403,7 +403,7 @@ class ProductionClearanceAuditTest extends TestCase
         ]);
         $cleanResponse = $this->actingAs($this->manager)->delete(route('customers.destroy', $cleanCustomer));
         $cleanResponse->assertRedirect(route('customers.index'));
-        $this->assertDatabaseMissing('customers', ['id' => $cleanCustomer->id]);
+        $this->assertSoftDeleted('customers', ['id' => $cleanCustomer->id]);
     }
 
     public function test_soa_balance_brought_forward_and_auto_mark_paid_on_zero_balance(): void

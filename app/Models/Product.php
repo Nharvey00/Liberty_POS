@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['name', 'price', 'new_cylinder_price', 'stock_quantity', 'empty_quantity', 'standard_capacity_kg'];
 
     protected $appends = ['is_accessory', 'is_cylinder'];
