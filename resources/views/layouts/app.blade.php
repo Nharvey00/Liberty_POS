@@ -16,11 +16,14 @@
 
     <style>
         @media print {
+            @page { margin: 0; size: auto; }
+            body {
+                margin: 1.5cm !important;
+                background: #ffffff !important;
+                display: block !important;
+            }
             nav, aside, header button, .print\:hidden, .no-print {
                 display: none !important;
-            }
-            body {
-                background: #ffffff !important;
             }
             main {
                 padding: 0 !important;

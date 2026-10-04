@@ -4,6 +4,9 @@
             <div>
                 <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Inventory Report</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Stock turnover, period receipts, deductions, and sales volume</div>
+                <div class="hidden print:block text-xs text-gray-600 mt-1">
+                    Liberty POS &bull; Period: {{ \Carbon\Carbon::parse($fromDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }} &bull; Printed: {{ now()->format('M d, Y h:i A') }}
+                </div>
             </div>
             <div class="flex items-center justify-end print:hidden shrink-0">
                 <button onclick="window.print()" class="inline-flex items-center gap-2 bg-[#0B3B70] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0a2f5a] shadow-xs cursor-pointer transition-colors">
@@ -48,35 +51,55 @@
                 </form>
             </div>
 
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-4 print:grid-cols-4 gap-6 print:gap-3 mb-8 print:mb-4">
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
+                    <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Active Products</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">{{ $products->count() }}</p>
+                </div>
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
+                    <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total Filled Stock</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">{{ $products->sum('stock_quantity') }}</p>
+                </div>
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
+                    <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Empty Shells</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">{{ $products->sum('empty_quantity') }}</p>
+                </div>
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
+                    <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Units Sold (Period)</p>
+                    <p class="font-sans text-2xl font-bold text-[#1E8E5A] mt-2 print:mt-1 print:text-lg">{{ $products->sum('period_sold') }}</p>
+                </div>
+            </div>
+
             <!-- Table -->
-            <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+            <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden print:border-none print:overflow-visible">
+                <div class="overflow-x-auto print:overflow-visible">
+                    <table class="w-full text-left print:text-[11px]">
                         <thead class="bg-gray-50 border-b border-[#E5E9EF]">
                             <tr>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Product</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Price</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Current Stock</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Empty Shells</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Stock In (Period)</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Stock Out (Period)</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Sold (Period)</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Status</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Product</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Price</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Current Stock</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Empty Shells</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Stock In (Period)</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Stock Out (Period)</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Sold (Period)</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#E5E9EF]">
                             @forelse($products as $product)
                                 <tr class="hover:bg-gray-50 transition-colors {{ $product->stock_quantity <= 5 ? 'bg-red-50' : '' }}">
-                                    <td class="px-6 py-4 text-[13px] font-semibold text-gray-900">{{ $product->name }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 text-right">₱{{ number_format($product->price, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] font-bold {{ $product->stock_quantity <= 5 ? 'text-[#B5504B]' : 'text-gray-900' }} text-right">
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] font-semibold text-gray-900">{{ $product->name }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900 text-right">₱{{ number_format($product->price, 2) }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] font-bold {{ $product->stock_quantity <= 5 ? 'text-[#B5504B]' : 'text-gray-900' }} text-right">
                                         {{ $product->stock_quantity }}
                                     </td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 text-right">{{ $product->empty_quantity ?? 0 }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-[#1E8E5A] text-center">+{{ $product->period_in }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-[#B5504B] text-center">-{{ $product->period_out }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 text-center">{{ $product->period_sold }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-center">
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900 text-right">{{ $product->empty_quantity ?? 0 }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-[#1E8E5A] text-center">+{{ $product->period_in }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-[#B5504B] text-center">-{{ $product->period_out }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900 text-center">{{ $product->period_sold }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-center">
                                         @if($product->stock_quantity <= 5)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F7E9E8] text-[#B5504B]">
                                                 Low Stock
@@ -90,7 +113,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-8 text-center text-[13px] text-gray-500">No products found.</td>
+                                    <td colspan="8" class="px-6 py-8 print:px-2 print:py-3 text-center text-[13px] text-gray-500">No products found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

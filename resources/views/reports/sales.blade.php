@@ -4,6 +4,9 @@
             <div>
                 <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Sales Report</h1>
                 <div class="text-[12.5px] text-[#5B6472] mt-[2px] print:hidden">Comprehensive sales revenue, 12% VAT breakdown, and discounts analysis</div>
+                <div class="hidden print:block text-xs text-gray-600 mt-1">
+                    Liberty POS &bull; Period: {{ \Carbon\Carbon::parse($fromDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }} &bull; Printed: {{ now()->format('M d, Y h:i A') }}
+                </div>
             </div>
             <div class="flex items-center justify-end gap-2.5 print:hidden shrink-0">
                 <a href="{{ route('reports.sales.export', request()->query()) }}" class="inline-flex items-center gap-2 bg-[#1E8E5A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#166E46] shadow-xs cursor-pointer transition-colors no-underline">
@@ -70,40 +73,40 @@
             </div>
 
             <!-- KPIs -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 print:grid-cols-4 gap-6 print:gap-3 mb-8 print:mb-4">
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total Sales</p>
-                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">₱{{ number_format($totalSales, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">₱{{ number_format($totalSales, 2) }}</p>
                 </div>
-                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total VAT (12%)</p>
-                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">₱{{ number_format($totalVat, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">₱{{ number_format($totalVat, 2) }}</p>
                 </div>
-                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Total Discounts</p>
-                    <p class="font-sans text-2xl font-bold text-[#B5504B] mt-2">₱{{ number_format($totalDiscounts, 2) }}</p>
+                    <p class="font-sans text-2xl font-bold text-[#B5504B] mt-2 print:mt-1 print:text-lg">₱{{ number_format($totalDiscounts, 2) }}</p>
                 </div>
-                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6">
+                <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg">
                     <p class="text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Transactions</p>
-                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2">{{ $orderCount }}</p>
+                    <p class="font-sans text-2xl font-bold text-gray-900 mt-2 print:mt-1 print:text-lg">{{ $orderCount }}</p>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+            <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden print:border-none print:overflow-visible">
+                <div class="overflow-x-auto print:overflow-visible">
+                    <table class="w-full text-left print:text-[11px]">
                         <thead class="bg-gray-50 border-b border-[#E5E9EF]">
                             <tr>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Date</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Invoice #</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Customer</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Cashier</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Method</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Subtotal</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">VAT</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Discount</th>
-                                <th class="px-6 py-4 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Total</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Date</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Invoice #</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Customer</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Cashier</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold">Method</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Subtotal</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">VAT</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Discount</th>
+                                <th class="px-6 py-4 print:px-2 print:py-1.5 text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold text-right">Total</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#E5E9EF]">
@@ -113,30 +116,30 @@
                                     $vat = $order->total_amount - $vatable;
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition-colors {{ $order->isVoided() ? 'bg-[#FFF8F8] opacity-75' : '' }}">
-                                    <td class="px-6 py-4 text-[13px] text-gray-900 whitespace-nowrap">{{ $order->created_at->format('M d, Y h:i A') }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900">
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900 whitespace-nowrap">{{ $order->created_at->format('M d, Y h:i A') }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900">
                                         {{ $order->invoice_number }}
                                         @if($order->isVoided())
                                             <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F7E9E8] text-[#B5504B]">VOIDED</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900">
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900">
                                         {{ $order->customer ? $order->customer->first_name . ' ' . $order->customer->last_name : 'Walk-in' }}
                                     </td>
-                                    <td class="px-6 py-4 text-[13px] text-gray-900">{{ $order->user ? $order->user->name : '-' }}</td>
-                                    <td class="px-6 py-4 text-[13px]">
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-gray-900">{{ $order->user ? $order->user->name : '-' }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px]">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $order->payment_method == 'cash' ? 'bg-[#E5F5EC] text-[#1E8E5A]' : 'bg-[#FBF0DD] text-[#B4700A]' }}">
                                             {{ ucfirst($order->payment_method) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vatable, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vat, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-[#B5504B]' }}">₱{{ number_format($order->discount_amount, 2) }}</td>
-                                    <td class="px-6 py-4 text-[13px] font-bold text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($order->total_amount, 2) }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vatable, 2) }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($vat, 2) }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-[#B5504B]' }}">₱{{ number_format($order->discount_amount, 2) }}</td>
+                                    <td class="px-6 py-4 print:px-2 print:py-1.5 text-[13px] font-bold text-right {{ $order->isVoided() ? 'line-through text-gray-400' : 'text-gray-900' }}">₱{{ number_format($order->total_amount, 2) }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-6 py-8 text-center text-[13px] text-gray-500">No sales records found.</td>
+                                    <td colspan="9" class="px-6 py-8 print:px-2 print:py-3 text-center text-[13px] text-gray-500">No sales records found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
