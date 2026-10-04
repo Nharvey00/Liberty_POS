@@ -13,6 +13,7 @@ use App\Models\StatementOfAccount;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class SecurityRemediationAuditTest extends TestCase
@@ -374,5 +375,100 @@ class SecurityRemediationAuditTest extends TestCase
         $customer->refresh();
         $this->assertEquals('Household', $customer->customer_type);
         $this->assertEquals('09997654321', $customer->phone);
+    }
+
+    /**
+     * Security Audit: Race conditions, price tampering, negative qty, empty cart, and overselling guards.
+     */
+    public function test_pos_checkout_blocks_duplicate_submissions_and_tampering(): void
+    {
+        // 1. Backend Race Condition Lock: Simulate concurrent in-flight submission by holding cache lock
+        $lock = Cache::lock("checkout_lock_user_{$this->cashier1->id}", 5);
+        $this->assertTrue($lock->get());
+
+        // Concurrent submission from same cashier should immediately abort with 429
+        $concurrentResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [
+                [
+                    'product_id' => $this->cylinderProduct->id,
+                    'quantity' => 1,
+                    'is_swap' => true,
+                ],
+            ],
+        ]);
+        $concurrentResponse->assertStatus(429);
+
+        // Release the lock to resume normal operations
+        $lock->release();
+
+        // 2. Price Tampering Defense: Payload sends manipulated price (e.g. 1.00 or subtotal 2.00),
+        // DB price (950.00) must be strictly enforced.
+        $tamperedResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [
+                [
+                    'product_id' => $this->cylinderProduct->id,
+                    'quantity' => 2,
+                    'is_swap' => true,
+                    'price' => 1.00,        // Tampered!
+                    'subtotal' => 2.00,     // Tampered!
+                ],
+            ],
+        ]);
+        $tamperedResponse->assertSessionHasNoErrors();
+        $order = Order::latest('id')->first();
+        $this->assertNotNull($order);
+        // Expect 2 * 950.00 = 1900.00, NOT 2.00
+        $this->assertEquals(1900.00, (float)$order->total_amount);
+        $this->assertEquals(1900.00, (float)$order->items->first()->subtotal);
+
+        // 3. Negative Quantity & Zero Quantity: Validation rejects non-positive quantities
+        $negativeQtyResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [
+                [
+                    'product_id' => $this->cylinderProduct->id,
+                    'quantity' => -5,
+                    'is_swap' => true,
+                ],
+            ],
+        ]);
+        $negativeQtyResponse->assertSessionHasErrors('items.0.quantity');
+
+        $zeroQtyResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [
+                [
+                    'product_id' => $this->cylinderProduct->id,
+                    'quantity' => 0,
+                    'is_swap' => true,
+                ],
+            ],
+        ]);
+        $zeroQtyResponse->assertSessionHasErrors('items.0.quantity');
+
+        // 4. Empty Cart Payload: Rejected by validation
+        $emptyCartResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [],
+        ]);
+        $emptyCartResponse->assertSessionHasErrors('items');
+
+        // 5. Overselling Guard: Requesting more than available stock is rejected
+        $currentStock = $this->cylinderProduct->fresh()->stock_quantity;
+        $oversellResponse = $this->actingAs($this->cashier1)->post(route('pos.store'), [
+            'payment_method' => 'Cash',
+            'items' => [
+                [
+                    'product_id' => $this->cylinderProduct->id,
+                    'quantity' => $currentStock + 50,
+                    'is_swap' => true,
+                ],
+            ],
+        ]);
+        $oversellResponse->assertSessionHasErrors();
+        // Ensure stock was NOT decremented
+        $this->assertEquals($currentStock, $this->cylinderProduct->fresh()->stock_quantity);
     }
 }

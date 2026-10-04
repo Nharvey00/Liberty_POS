@@ -159,7 +159,8 @@
 
                     <button type="button" 
                             @click.prevent="openCheckoutModal()" 
-                            :disabled="cart.length === 0" 
+                            :disabled="cart.length === 0 || isSubmitting" 
+                            :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
                             class="w-full rounded-lg px-[15px] py-[12px] text-[15px] font-bold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm cursor-pointer">
                         Process Checkout
                     </button>
@@ -177,10 +178,10 @@
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4" 
              style="display: none;"
-             @keydown.escape.window="showConfirmModal = false">
+             @keydown.escape.window="if (!isSubmitting) showConfirmModal = false">
             
             <!-- Modal Backdrop Click Dismiss -->
-            <div class="fixed inset-0" @click="showConfirmModal = false"></div>
+            <div class="fixed inset-0" @click="if (!isSubmitting) showConfirmModal = false"></div>
 
             <!-- Modal Dialog Content Box -->
             <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 border border-[#E5E9EF] transform transition-all"
@@ -218,13 +219,24 @@
                 <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#E5E9EF]">
                     <button type="button" 
                             @click="showConfirmModal = false" 
+                            :disabled="isSubmitting"
+                            :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
                             class="px-4 py-2.5 rounded-lg text-sm font-semibold border border-[#E5E9EF] bg-white text-gray-700 hover:bg-[#F4F6F9] transition-colors cursor-pointer">
                         Cancel
                     </button>
                     <button type="button" 
                             @click="confirmCheckout()" 
+                            :disabled="isSubmitting"
+                            :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
                             class="px-5 py-2.5 rounded-lg text-sm font-bold bg-[#0B3B70] text-white hover:bg-[#082A52] transition-colors shadow-sm cursor-pointer inline-flex items-center gap-2">
-                        <span>Confirm &amp; Process</span>
+                        <span x-show="!isSubmitting">Confirm &amp; Process</span>
+                        <span x-show="isSubmitting" style="display: none;" class="inline-flex items-center gap-2">
+                            <svg class="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            Processing...
+                        </span>
                     </button>
                 </div>
             </div>
@@ -242,9 +254,10 @@
                 discountType: 'regular',
                 seniorId: '',
                 showConfirmModal: false,
+                isSubmitting: false,
 
                 openCheckoutModal() {
-                    if (this.cart.length === 0) return;
+                    if (this.cart.length === 0 || this.isSubmitting) return;
                     const form = document.getElementById('checkout-form');
                     if (form && !form.checkValidity()) {
                         form.reportValidity();
@@ -254,6 +267,8 @@
                 },
 
                 confirmCheckout() {
+                    if (this.isSubmitting) return;
+                    this.isSubmitting = true;
                     const form = document.getElementById('checkout-form');
                     if (form) {
                         form.submit();

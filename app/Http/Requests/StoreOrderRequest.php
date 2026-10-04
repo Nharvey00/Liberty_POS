@@ -144,6 +144,11 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'customer_id.required_if' => 'A registered customer must be selected to process a Credit (Utang) transaction.',
+            'items.required' => 'At least one item must be added to the cart.',
+            'items.min' => 'At least one item must be added to the cart.',
+            'items.*.quantity.required' => 'Item quantity is required.',
+            'items.*.quantity.integer' => 'Item quantity must be a whole number.',
+            'items.*.quantity.min' => 'Item quantity must be at least 1.',
         ];
     }
 }
