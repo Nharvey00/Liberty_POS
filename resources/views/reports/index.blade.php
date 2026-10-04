@@ -18,7 +18,7 @@
         <!-- Sales Report -->
         <a href="{{ route('reports.sales') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 hover:shadow-md hover:border-[#0B3B70] transition-all group">
             <div class="flex items-start">
-                <div class="p-3.5 rounded-xl bg-[#E5F5EC] text-[#1E8E5A] group-hover:bg-[#1E8E5A] group-hover:text-white transition-colors shrink-0">
+                <div class="p-3.5 rounded-xl bg-[#EBF4FF] text-[#0B3B70] group-hover:bg-[#0B3B70] group-hover:text-white transition-colors shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -54,7 +54,7 @@
         <!-- Utang Report -->
         <a href="{{ route('reports.utang') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 hover:shadow-md hover:border-[#0B3B70] transition-all group">
             <div class="flex items-start">
-                <div class="p-3.5 rounded-xl bg-[#FBF0DD] text-[#B4700A] group-hover:bg-[#B4700A] group-hover:text-white transition-colors shrink-0">
+                <div class="p-3.5 rounded-xl bg-[#EBF4FF] text-[#0B3B70] group-hover:bg-[#0B3B70] group-hover:text-white transition-colors shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -72,7 +72,7 @@
         <!-- Discounts Report -->
         <a href="{{ route('reports.discounts') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 hover:shadow-md hover:border-[#0B3B70] transition-all group">
             <div class="flex items-start">
-                <div class="p-3.5 rounded-xl bg-[#F7E9E8] text-[#B5504B] group-hover:bg-[#B5504B] group-hover:text-white transition-colors shrink-0">
+                <div class="p-3.5 rounded-xl bg-[#EBF4FF] text-[#0B3B70] group-hover:bg-[#0B3B70] group-hover:text-white transition-colors shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.391.562l8 8a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-8-8A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>

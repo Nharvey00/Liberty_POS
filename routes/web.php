@@ -39,6 +39,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pos/checkout', [PosController::class, 'store'])->name('pos.store');
         Route::get('/pos/{order}/receipt', [PosController::class, 'show'])->name('pos.show');
 
+        // Historical Orders (View)
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        // Customers
+        Route::resource('customers', CustomerController::class);
+
         // Cashiers retained access to physically receive Utang payments
         Route::get('/credit-accounts/{account}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/credit-accounts/{account}/payments', [PaymentController::class, 'store'])->name('payments.store');
@@ -50,15 +57,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Level 2, 3: Operational Controls (Manager & Owner)
     Route::middleware(['role:2,3'])->group(function () {
-        // Historical Orders & Voiding (Feature 3)
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        // Historical Orders & Voiding (Voiding is restricted to Level 2/3)
         Route::get('/orders/{order}/void', [OrderVoidController::class, 'create'])->name('orders.void');
         Route::post('/orders/{order}/void', [OrderVoidController::class, 'store'])->name('orders.void.store');
 
         // Operational Resources
         Route::resources([
-            'customers' => CustomerController::class,
             'credit-accounts' => CreditAccountController::class,
         ]);
         
