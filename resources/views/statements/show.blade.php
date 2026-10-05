@@ -12,23 +12,23 @@
 
     {{-- Action Buttons --}}
     <div class="flex gap-2.5 mb-5 print:hidden items-center">
-        <button onclick="window.print()" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">🖨 Print Statement</button>
+        <button onclick="window.print()" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print Statement</button>
         
         {{-- Manual toggle for paid status --}}
-        <form method="POST" action="{{ route('statements.update', $statement) }}" class="inline">
+        <form method="POST" action="{{ route('statements.update', $statement) }}" class="inline print:hidden">
             @csrf
             @method('PATCH')
-            <input type="hidden" name="is_paid" value="{{ $statement->is_paid ? '0' : '1' }}">
-            <button type="submit" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border {{ $statement->is_paid ? 'border-[#B5504B] text-[#B5504B] hover:bg-[#FDECEA]' : 'border-[#1E8E5A] text-[#1E8E5A] hover:bg-[#E5F5EC]' }} bg-white">
+            <input type="hidden" name="is_paid" value="{{ $statement->is_paid ? 'false' : 'true' }}">
+            <button type="submit" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border {{ $statement->is_paid ? 'border-[#B5504B] text-[#B5504B] hover:bg-[#FDECEA]' : 'border-[#1E8E5A] text-[#1E8E5A] hover:bg-[#E5F5EC]' }} bg-white print:hidden">
                 {{ $statement->is_paid ? 'Mark as Unpaid' : '✓ Mark as Paid' }}
             </button>
         </form>
 
-        <a href="{{ route('statements.index') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#5B6472] hover:bg-[#F4F6F9]">← Back to List</a>
+        <a href="{{ route('statements.index') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#5B6472] hover:bg-[#F4F6F9] print:hidden">← Back to List</a>
     </div>
 
     {{-- Printable SOA --}}
-    <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 max-w-4xl print:border-none print:shadow-none print:p-0 print:max-w-full">
+    <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 max-w-4xl print:p-10 print:w-full print:max-w-none print:bg-white print:m-0 print:shadow-none print:border-none">
         {{-- Company Header --}}
         <div class="text-center mb-6 pb-4 border-b-2 border-[#0B3B70]">
             <h2 class="font-sans text-[22px] font-bold text-[#0B3B70] m-0">LIBERTY LPG</h2>
@@ -37,7 +37,7 @@
         </div>
 
         {{-- Customer & Billing Info --}}
-        <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-2 gap-6 mb-6 print:flex print:flex-row print:justify-between print:w-full">
             <div>
                 <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Billed To</div>
                 <div class="text-[14px] font-bold text-[#1C2430]">{{ $statement->creditAccount->customer->name }}</div>
@@ -68,9 +68,9 @@
 
         {{-- Line Items Table --}}
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0 mb-6">
-            <table class="w-full border-collapse">
+            <table class="w-full border-collapse print:w-full print:border-collapse print:border print:border-black">
                 <thead>
-                    <tr class="bg-[#F4F6F9]">
+                    <tr class="bg-[#F4F6F9] print:border-b print:border-gray-400">
                         <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Date</th>
                         <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Type</th>
                         <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-2.5 px-3 border border-[#E5E9EF] whitespace-nowrap">Reference</th>
@@ -80,7 +80,7 @@
                 </thead>
                 <tbody>
                     {{-- Balance Brought Forward row so line items mathematically reconcile with total due --}}
-                    <tr class="bg-[#F8FAFC]">
+                    <tr class="bg-[#F8FAFC] print:border-b print:border-gray-400">
                         <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] font-semibold text-[#5B6472]">
                             Prior to {{ \Carbon\Carbon::parse($statement->billing_period_start)->format('M d, Y') }}
                         </td>
@@ -114,7 +114,7 @@
                                 $periodPayments += $entry->amount;
                             }
                         @endphp
-                        <tr>
+                        <tr class="print:border-b print:border-gray-400">
                             <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#5B6472] whitespace-nowrap">{{ $entry->created_at->format('M d, Y h:i A') }}</td>
                             <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#1C2430] font-semibold">{{ $entry->transaction_type }}</td>
                             <td class="py-2.5 px-3 text-[12px] border border-[#E5E9EF] text-[#5B6472]">
@@ -122,7 +122,7 @@
                                     Order OR-{{ str_pad($entry->order_id, 6, '0', STR_PAD_LEFT) }}
                                     @if($entry->order && $entry->order->isVoided())
                                         @if($entry->transaction_type === 'Payment')
-                                            <span class="text-[10.5px] font-semibold text-[#1E8E5A] ml-1">(Void Reversal)</span>
+                                             <span class="text-[10.5px] font-semibold text-[#1E8E5A] ml-1">(Void Reversal)</span>
                                         @else
                                             <span class="text-[10.5px] font-bold text-[#B5504B] ml-1">[VOIDED]</span>
                                         @endif
@@ -141,13 +141,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
+                        <tr class="print:border-b print:border-gray-400">
                             <td colspan="5" class="py-4 text-center text-[12px] text-[#5B6472] border border-[#E5E9EF] italic">No new transactions during this billing period window.</td>
                         </tr>
                     @endforelse
                 </tbody>
                 <tfoot>
-                    <tr class="bg-[#F4F6F9]">
+                    <tr class="bg-[#F4F6F9] print:border-b print:border-gray-400">
                         <td colspan="3" class="py-2.5 px-3 text-[12px] font-bold text-[#1C2430] border border-[#E5E9EF] text-right">Period Subtotals</td>
                         <td class="py-2.5 px-3 text-[12px] font-bold text-[#B5504B] border border-[#E5E9EF] text-right">₱{{ number_format($periodCharges, 2) }}</td>
                         <td class="py-2.5 px-3 text-[12px] font-bold text-[#1E8E5A] border border-[#E5E9EF] text-right">₱{{ number_format($periodPayments, 2) }}</td>
@@ -157,7 +157,7 @@
         </div>
 
         {{-- Total Due Box with Calculation Breakdown --}}
-        <div class="flex justify-between items-end">
+        <div class="flex justify-between items-end print:flex print:flex-row print:justify-between print:items-start print:w-full print:mt-8">
             <div class="text-[12px] text-[#5B6472] space-y-1">
                 <div>
                     <strong>Previous Balance:</strong> 

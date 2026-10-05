@@ -11,7 +11,7 @@
             {{-- Credit Account Selection --}}
             <div class="col-span-2">
                 <label for="credit_account_id" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Credit Account <span class="text-[#B5504B]">*</span></label>
-                <select name="credit_account_id" id="credit_account_id" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <select name="credit_account_id" id="credit_account_id" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="">— Select credit account —</option>
                     @foreach($accounts as $account)
                         <option value="{{ $account->id }}" {{ old('credit_account_id') == $account->id ? 'selected' : '' }}>

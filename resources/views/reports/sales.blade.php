@@ -27,7 +27,7 @@
         <a href="{{ route('reports.discounts') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Discounts Summary</a>
     </div>
 
-    <div class="print:p-10 print:w-full print:bg-white print:max-w-none">
+    <div class="print:p-10 print:w-full print:max-w-none print:bg-white print:m-0 print:shadow-none">
         <!-- Print Document Header -->
         <div class="hidden print:block mb-6">
             <h1 class="font-sans text-2xl font-bold text-gray-900 m-0">Sales Report</h1>
@@ -49,7 +49,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Payment Method</label>
-                    <select name="payment_method" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <select name="payment_method" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="all" {{ $paymentMethod == 'all' ? 'selected' : '' }}>All</option>
                         <option value="cash" {{ $paymentMethod == 'cash' ? 'selected' : '' }}>Cash</option>
                         <option value="credit" {{ $paymentMethod == 'credit' ? 'selected' : '' }}>Credit</option>
@@ -57,7 +57,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Cashier</label>
-                    <select name="cashier_id" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <select name="cashier_id" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="">All Cashiers</option>
                         @foreach($cashiers as $c)
                             <option value="{{ $c->id }}" {{ $cashierId == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>

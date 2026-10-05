@@ -23,7 +23,7 @@
         <a href="{{ route('reports.discounts') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Discounts Summary</a>
     </div>
 
-    <div class="print:p-10 print:w-full print:bg-white print:max-w-none">
+    <div class="print:p-10 print:w-full print:max-w-none print:bg-white print:m-0 print:shadow-none">
         <!-- Print Document Header -->
         <div class="hidden print:block mb-6">
             <h1 class="font-sans text-2xl font-bold text-gray-900 m-0">Utang (Credit) Report</h1>
@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Classification</label>
-                    <select name="customer_type" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <select name="customer_type" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="all" {{ $customerType == 'all' ? 'selected' : '' }}>All Classifications</option>
                         <option value="Tertiary" {{ $customerType == 'Tertiary' ? 'selected' : '' }}>Tertiary</option>
                         <option value="Household" {{ $customerType == 'Household' ? 'selected' : '' }}>Household</option>
@@ -54,7 +54,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Account Status</label>
-                    <select name="status" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <select name="status" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="all" {{ $status == 'all' ? 'selected' : '' }}>All</option>
                         <option value="active" {{ $status == 'active' ? 'selected' : '' }}>Active</option>
                         <option value="inactive" {{ $status == 'inactive' ? 'selected' : '' }}>Inactive</option>

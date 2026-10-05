@@ -131,7 +131,7 @@ class ReportController extends Controller
         }
 
         if ($status !== null && $status !== 'all') {
-            $query->where('is_active', $status == 'active' ? 'true' : 'false');
+            $query->where('is_active', $status == 'active' ? DB::raw('true') : DB::raw('false'));
         }
 
         $accounts = $query->get()->map(function($account) {

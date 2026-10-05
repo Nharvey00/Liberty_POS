@@ -19,6 +19,14 @@ class OrderItem extends Model
         'subtotal',
     ];
 
+    protected $casts = [
+        'is_swap'            => 'boolean',
+        'quantity'           => 'integer',
+        'residual_kg'        => 'decimal:2',
+        'actual_consumed_kg' => 'decimal:2',
+        'subtotal'           => 'decimal:2',
+    ];
+
     public function setIsSwapAttribute($value): void
     {
         $this->attributes['is_swap'] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';

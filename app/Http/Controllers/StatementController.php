@@ -7,6 +7,7 @@ use App\Models\CreditAccount;
 use App\Models\CreditLedger;
 use App\Http\Requests\StoreStatementRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class StatementController extends Controller
@@ -26,7 +27,7 @@ class StatementController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('is_paid', $request->status === 'paid' ? 'true' : 'false');
+            $query->where('is_paid', $request->status === 'paid' ? DB::raw('true') : DB::raw('false'));
         }
 
         if ($request->filled('from')) {
@@ -60,7 +61,7 @@ class StatementController extends Controller
 
         $end = Carbon::parse($validated['billing_period_end'])->endOfDay();
         
-        $accounts = CreditAccount::where('is_active', 'true')->get();
+        $accounts = CreditAccount::where('is_active', DB::raw('true'))->get();
         $generatedCount = 0;
 
         foreach ($accounts as $account) {
@@ -100,7 +101,7 @@ class StatementController extends Controller
     public function create()
     {
         $accounts = CreditAccount::with('customer')
-            ->where('is_active', 'true')
+            ->where('is_active', DB::raw('true'))
             ->orderBy('created_at')
             ->get();
 
@@ -138,7 +139,7 @@ class StatementController extends Controller
             'billing_period_start' => $validated['billing_period_start'],
             'billing_period_end'   => $validated['billing_period_end'],
             'total_due'            => $totalDue,
-            'is_paid'              => $totalDue == 0, // Auto-mark as paid if balance is zero
+            'is_paid'              => (bool)($totalDue == 0), // Auto-mark as paid if balance is zero
         ]);
 
         return redirect()
@@ -187,9 +188,9 @@ class StatementController extends Controller
     {
         $newStatus = $request->has('is_paid') 
             ? $request->boolean('is_paid') 
-            : !$statement->is_paid;
+            : !(bool)$statement->is_paid;
 
-        $statement->update(['is_paid' => $newStatus]);
+        $statement->update(['is_paid' => (bool)$newStatus]);
 
         return redirect()
             ->route('statements.show', $statement)

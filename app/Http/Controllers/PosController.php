@@ -51,9 +51,9 @@ class PosController extends Controller
                     'user_id' => Auth::id(),
                     'total_amount' => 0, 
                     'payment_method' => $validated['payment_method'],
-                    'discount_amount' => $validated['discount_amount'] ?? 0,
-                    'discount_type' => $validated['discount_type'] ?? null,
-                    'senior_id' => $validated['senior_id'] ?? null,
+                    'discount_amount' => (isset($validated['discount_amount']) && $validated['discount_amount'] !== '') ? (float)$validated['discount_amount'] : 0,
+                    'discount_type' => !empty($validated['discount_type']) ? $validated['discount_type'] : null,
+                    'senior_id' => !empty($validated['senior_id']) ? $validated['senior_id'] : null,
                 ]);
 
                 $invoiceNumber = 'INV-' . $year . '-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
@@ -106,10 +106,10 @@ class PosController extends Controller
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $product->id,
-                        'quantity' => $item['quantity'],
-                        'is_swap' => $item['is_swap'],
-                        'residual_kg' => $item['residual_kg'] ?? null,
-                        'actual_consumed_kg' => $actualConsumedKg,
+                        'quantity' => (int)$item['quantity'],
+                        'is_swap' => filter_var($item['is_swap'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'residual_kg' => (isset($item['residual_kg']) && $item['residual_kg'] !== '' && is_numeric($item['residual_kg'])) ? (float)$item['residual_kg'] : null,
+                        'actual_consumed_kg' => $actualConsumedKg !== null ? (float)$actualConsumedKg : null,
                         'subtotal' => $subtotal,
                     ]);
                 }

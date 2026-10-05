@@ -30,7 +30,7 @@
             {{-- Active Status Toggle --}}
             <div class="col-span-2 md:col-span-1">
                 <label for="is_active" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Account Status <span class="text-[#B5504B]">*</span></label>
-                <select name="is_active" id="is_active" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <select name="is_active" id="is_active" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="1" {{ old('is_active', $credit_account->is_active) == 1 ? 'selected' : '' }}>Active — Can purchase on credit</option>
                     <option value="0" {{ old('is_active', $credit_account->is_active) == 0 ? 'selected' : '' }}>Inactive — Credit suspended</option>
                 </select>

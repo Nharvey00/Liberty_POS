@@ -17,13 +17,13 @@
                 <input type="text" name="customer" value="{{ request('customer') }}" placeholder="Search customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
             </div>
             
-            <select name="status" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            <select name="status" class="pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All Status</option>
                 <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Paid</option>
                 <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
             </select>
             
-            <select name="customer_type" class="px-3 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            <select name="customer_type" class="pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 <option value="">All Types</option>
                 <option value="Individual" {{ request('customer_type') === 'Individual' ? 'selected' : '' }}>Individual</option>
                 <option value="Business" {{ request('customer_type') === 'Business' ? 'selected' : '' }}>Business</option>

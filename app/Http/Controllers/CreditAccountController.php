@@ -40,7 +40,11 @@ class CreditAccountController extends Controller
      */
     public function store(StoreCreditAccountRequest $request)
     {
-        CreditAccount::create($request->validated());
+        $validated = $request->validated();
+        $validated['agreed_monthly_payment'] = (isset($validated['agreed_monthly_payment']) && $validated['agreed_monthly_payment'] !== '') ? $validated['agreed_monthly_payment'] : null;
+        $validated['is_active'] = true;
+
+        CreditAccount::create($validated);
 
         return redirect()
             ->route('credit-accounts.index')
@@ -89,7 +93,11 @@ class CreditAccountController extends Controller
      */
     public function update(UpdateCreditAccountRequest $request, CreditAccount $credit_account)
     {
-        $credit_account->update($request->validated());
+        $validated = $request->validated();
+        $validated['agreed_monthly_payment'] = (isset($validated['agreed_monthly_payment']) && $validated['agreed_monthly_payment'] !== '') ? $validated['agreed_monthly_payment'] : null;
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $credit_account->update($validated);
 
         return redirect()
             ->route('credit-accounts.show', $credit_account)

@@ -43,8 +43,10 @@ class StockInController extends Controller
             // lockForUpdate prevents race conditions if multiple managers do stock ins simultaneously
             $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
             
-            $quantityReceived = $validated['quantity_received'];
-            $emptyReturnedQty = $product->isAccessory() ? 0 : ($validated['empty_returned_qty'] ?? 0);
+            $quantityReceived = (int)$validated['quantity_received'];
+            $emptyReturnedQty = $product->isAccessory() 
+                ? 0 
+                : ((isset($validated['empty_returned_qty']) && $validated['empty_returned_qty'] !== '') ? (int)$validated['empty_returned_qty'] : 0);
 
             // Security: Prevent emptying more shells than exist
             if ($emptyReturnedQty > 0 && $product->empty_quantity < $emptyReturnedQty) {
@@ -54,6 +56,7 @@ class StockInController extends Controller
             }
 
             // 1. Log the audit trail
+            $validated['quantity_received'] = $quantityReceived;
             $validated['empty_returned_qty'] = $emptyReturnedQty;
             StockIn::create($validated);
 

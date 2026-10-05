@@ -49,7 +49,7 @@
                 <div class="p-5 flex-1 overflow-y-auto">
                     <div class="mb-5">
                         <label class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5 uppercase tracking-[0.02em]">Customer (Optional for Cash)</label>
-                        <select name="customer_id" x-model="selectedCustomerId" @change="checkCustomerType()" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                        <select name="customer_id" x-model="selectedCustomerId" @change="checkCustomerType()" class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[13px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                             <option value="">-- Walk-in Customer --</option>
                             <template x-for="customer in customers" :key="customer.id">
                                 <option :value="customer.id" x-text="customer.name + (customer.business_name ? ' (' + customer.business_name + ')' : '')"></option>
@@ -127,7 +127,7 @@
                             <div class="flex flex-col gap-2 mt-2 border-t border-[#E5E9EF] pt-2">
                                 <div class="flex justify-between items-center">
                                     <label class="text-[11.5px] font-semibold text-[#5B6472]">Discount Type:</label>
-                                    <select name="discount_type" x-model="discountType" class="w-32 px-2 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] bg-white focus:ring-[#0B3B70]">
+                                    <select name="discount_type" x-model="discountType" class="w-36 pl-2.5 pr-8 py-1.5 border border-[#E5E9EF] rounded-md text-[13px] bg-white focus:ring-[#0B3B70]">
                                         <option value="regular">Regular</option>
                                         <option value="senior">Senior Citizen</option>
                                         <option value="pwd">PWD</option>
@@ -146,7 +146,7 @@
 
                     <div class="mb-5">
                         <label class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5 uppercase tracking-[0.02em]">Payment Method <span class="text-[#B5504B]">*</span></label>
-                        <select name="payment_method" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[13px] font-semibold bg-[#F4F6F9] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                        <select name="payment_method" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[13px] font-semibold bg-[#F4F6F9] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                             <option value="Cash">Cash (Paid Now)</option>
                             <option value="Credit">Credit (Add to Utang Ledger)</option>
                         </select>

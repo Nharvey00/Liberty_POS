@@ -30,8 +30,10 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
         
-        $validated['stock_quantity'] = $validated['stock_quantity'] ?? 0;
-        $validated['empty_quantity'] = $validated['empty_quantity'] ?? 0;
+        $validated['stock_quantity'] = (isset($validated['stock_quantity']) && $validated['stock_quantity'] !== '') ? (int)$validated['stock_quantity'] : 0;
+        $validated['empty_quantity'] = (isset($validated['empty_quantity']) && $validated['empty_quantity'] !== '') ? (int)$validated['empty_quantity'] : 0;
+        $validated['new_cylinder_price'] = (isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
+        $validated['standard_capacity_kg'] = (isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
 
         Product::create($validated);
 
@@ -57,7 +59,11 @@ class ProductController extends Controller
     {
         // STRICT RULE: UpdateProductRequest explicitly EXCLUDES stock_quantity and empty_quantity
         // This enforces the business rule that stock can only be adjusted via Stock In/Out controllers
-        $product->update($request->validated());
+        $validated = $request->validated();
+        $validated['new_cylinder_price'] = (isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
+        $validated['standard_capacity_kg'] = (isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
+
+        $product->update($validated);
 
         return redirect()->route('products.index')->with('success', 'Product details updated successfully.');
     }

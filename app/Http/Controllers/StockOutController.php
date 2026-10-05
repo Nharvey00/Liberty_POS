@@ -43,8 +43,10 @@ class StockOutController extends Controller
             // lockForUpdate prevents race conditions
             $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
 
-            $quantityRemoved = $validated['quantity_removed'] ?? 0;
-            $emptyQuantityRemoved = $product->isAccessory() ? 0 : ($validated['empty_quantity_removed'] ?? 0);
+            $quantityRemoved = (isset($validated['quantity_removed']) && $validated['quantity_removed'] !== '') ? (int)$validated['quantity_removed'] : 0;
+            $emptyQuantityRemoved = $product->isAccessory() 
+                ? 0 
+                : ((isset($validated['empty_quantity_removed']) && $validated['empty_quantity_removed'] !== '') ? (int)$validated['empty_quantity_removed'] : 0);
 
             // Security: Prevent negative stock quantities
             if ($quantityRemoved > 0 && $product->stock_quantity < $quantityRemoved) {
@@ -60,6 +62,7 @@ class StockOutController extends Controller
             }
 
             // 1. Log the audit trail
+            $validated['quantity_removed'] = $quantityRemoved;
             $validated['empty_quantity_removed'] = $emptyQuantityRemoved;
             StockOut::create($validated);
 

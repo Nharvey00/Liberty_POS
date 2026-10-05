@@ -33,7 +33,7 @@
 
             <div class="col-span-2 md:col-span-1">
                 <label for="customer_type" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Account Classification <span class="text-[#B5504B]">*</span></label>
-                <select name="customer_type" id="customer_type" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <select name="customer_type" id="customer_type" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="Tertiary" {{ old('customer_type') == 'Tertiary' ? 'selected' : '' }}>Tertiary</option>
                     <option value="Household" {{ old('customer_type', 'Household') == 'Household' ? 'selected' : '' }}>Household</option>
                     <option value="MRO" {{ old('customer_type') == 'MRO' ? 'selected' : '' }}>MRO</option>

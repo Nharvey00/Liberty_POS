@@ -23,7 +23,7 @@
         <a href="{{ route('reports.discounts') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430]">Discounts Summary</a>
     </div>
 
-    <div class="print:p-10 print:w-full print:bg-white print:max-w-none">
+    <div class="print:p-10 print:w-full print:max-w-none print:bg-white print:m-0 print:shadow-none">
         <!-- Print Document Header -->
         <div class="hidden print:block mb-6">
             <h1 class="font-sans text-2xl font-bold text-gray-900 m-0">Inventory Report</h1>
