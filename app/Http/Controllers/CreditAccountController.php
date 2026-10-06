@@ -6,19 +6,32 @@ use App\Models\CreditAccount;
 use App\Models\Customer;
 use App\Http\Requests\StoreCreditAccountRequest;
 use App\Http\Requests\UpdateCreditAccountRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CreditAccountController extends Controller
 {
     /**
      * Display a listing of all credit accounts with live balances.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $accounts = CreditAccount::with('customer')
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $search = $request->query('search');
+        $query = CreditAccount::with('customer')
+            ->orderByDesc('created_at');
 
-        return view('credit_accounts.index', compact('accounts'));
+        if ($search) {
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->whereHas('customer', function ($q) use ($search, $like) {
+                $q->where('first_name', $like, "%{$search}%")
+                  ->orWhere('last_name', $like, "%{$search}%")
+                  ->orWhere('business_name', $like, "%{$search}%");
+            });
+        }
+
+        $accounts = $query->paginate(15)->withQueryString();
+
+        return view('credit_accounts.index', compact('accounts', 'search'));
     }
 
     /**

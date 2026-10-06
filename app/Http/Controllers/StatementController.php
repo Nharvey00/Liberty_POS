@@ -27,7 +27,15 @@ class StatementController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('is_paid', $request->status === 'paid' ? DB::raw('true') : DB::raw('false'));
+            $val = $request->status === 'paid';
+            $query->where(function ($q) use ($val) {
+                if (DB::connection()->getDriverName() === 'pgsql') {
+                    $q->where('is_paid', $val ? DB::raw('true') : DB::raw('false'));
+                } else {
+                    $q->where('is_paid', $val ? 'true' : 'false')
+                      ->orWhere('is_paid', $val);
+                }
+            });
         }
 
         if ($request->filled('from')) {

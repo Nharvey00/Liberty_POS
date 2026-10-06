@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class CustomerController extends Controller
@@ -13,14 +14,26 @@ class CustomerController extends Controller
     /**
      * Display a listing of customers with eager-loaded credit balances.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::with('creditAccount')
+        $search = $request->query('search');
+        $query = Customer::with('creditAccount')
             ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->paginate(15);
+            ->orderBy('last_name');
 
-        return view('customers.index', compact('customers'));
+        if ($search) {
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('first_name', $like, "%{$search}%")
+                  ->orWhere('last_name', $like, "%{$search}%")
+                  ->orWhere('business_name', $like, "%{$search}%")
+                  ->orWhere('phone', $like, "%{$search}%");
+            });
+        }
+
+        $customers = $query->paginate(15)->withQueryString();
+
+        return view('customers.index', compact('customers', 'search'));
     }
 
     /**

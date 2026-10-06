@@ -127,7 +127,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-4 py-3 border-t border-[#E5E9EF]">
+        <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
             {{ $orders->links() }}
         </div>
     </div>

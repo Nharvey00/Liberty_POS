@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -21,16 +22,17 @@ class OrderController extends Controller
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
                 $cleanSearch = preg_replace('/[^0-9]/', '', $search);
                 if (!empty($cleanSearch)) {
                     $q->where('id', (int)$cleanSearch);
                 }
-                $q->orWhere('invoice_number', 'ilike', "%{$search}%")
-                  ->orWhereHas('customer', function ($cq) use ($search) {
-                      $cq->where('first_name', 'ilike', "%{$search}%")
-                         ->orWhere('last_name', 'ilike', "%{$search}%")
-                         ->orWhere('business_name', 'ilike', "%{$search}%");
+                $q->orWhere('invoice_number', $like, "%{$search}%")
+                  ->orWhereHas('customer', function ($cq) use ($search, $like) {
+                      $cq->where('first_name', $like, "%{$search}%")
+                         ->orWhere('last_name', $like, "%{$search}%")
+                         ->orWhere('business_name', $like, "%{$search}%");
                   });
             });
         }

@@ -8,14 +8,29 @@ use App\Models\Order;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Eager load roles to prevent N+1 query problems
-        $users = User::with('role')->orderBy('first_name')->orderBy('last_name')->paginate(15);
-        return view('users.index', compact('users'));
+        $search = $request->query('search');
+        $query = User::with('role')
+            ->orderBy('first_name')
+            ->orderBy('last_name');
+
+        if ($search) {
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('first_name', $like, "%{$search}%")
+                  ->orWhere('last_name', $like, "%{$search}%")
+                  ->orWhere('email', $like, "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(15)->withQueryString();
+        return view('users.index', compact('users', 'search'));
     }
 
     public function create()

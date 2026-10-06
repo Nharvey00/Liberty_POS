@@ -11,10 +11,13 @@
     @endif
 
     <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <div class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
+        <form method="GET" action="{{ route('credit-accounts.index') }}" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-        </div>
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+            @if(!empty($search))
+                <a href="{{ route('credit-accounts.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
+            @endif
+        </form>
         <div class="flex gap-2.5 flex-wrap items-center">
             <a href="{{ route('credit-accounts.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit Account</a>
         </div>
@@ -72,7 +75,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-4 py-3 border-t border-[#E5E9EF]">
+        <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
             {{ $accounts->links() }}
         </div>
     </div>

@@ -16,11 +16,12 @@ class StockInController extends Controller
         $query = StockIn::with('product')->latest();
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('reference_no', 'ilike', "%{$search}%")
-                  ->orWhere('remarks', 'ilike', "%{$search}%")
-                  ->orWhereHas('product', function ($pq) use ($search) {
-                      $pq->where('name', 'ilike', "%{$search}%");
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('reference_no', $like, "%{$search}%")
+                  ->orWhere('remarks', $like, "%{$search}%")
+                  ->orWhereHas('product', function ($pq) use ($search, $like) {
+                      $pq->where('name', $like, "%{$search}%");
                   });
             });
         }
