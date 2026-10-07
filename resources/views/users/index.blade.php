@@ -3,10 +3,21 @@
         <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">User Accounts &amp; Staffing</h1>
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Manage system access levels, roles, and staff permissions</div>
     </x-slot>
+    <div x-data="{ showDeleteModal: false, deleteAction: '' }">
 
     @if (session('success'))
         <div class="mb-4 bg-[#E5F5EC] border border-[#1E8E5A] text-[#1E8E5A] px-4 py-3 rounded-lg text-[13px] font-semibold">
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-4 py-3 rounded-lg text-[13px] font-semibold">
+            <ul class="list-disc pl-4 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -50,8 +61,13 @@
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-3">
-                                     <a href="{{ route('users.edit', $user) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
-                                 </div>
+                                    <a href="{{ route('users.edit', $user) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                    @if(Auth::id() !== $user->id)
+                                        <button type="button" @click="deleteAction = '{{ route('users.destroy', $user) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
+                                            Delete
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -66,4 +82,24 @@
             {{ $users->links() }}
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div @click.away="showDeleteModal = false" x-show="showDeleteModal" x-transition.opacity class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-[#F7E9E8] rounded-full mb-4">
+                <svg class="w-6 h-6 text-[#B5504B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-[17px] font-bold text-center text-gray-900 mb-2">Are you sure?</h3>
+            <p class="text-[13px] text-center text-[#5B6472] mb-6 leading-relaxed">This action cannot be undone. This record will be safely removed from active views.</p>
+            <div class="flex gap-3 justify-center">
+                <button type="button" @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 bg-[#F4F6F9] hover:bg-[#E5E9EF] text-[#1C2430] rounded-lg font-bold text-[13px] transition-colors">Cancel</button>
+                <form :action="deleteAction" method="POST" class="flex-1 flex m-0">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="w-full px-4 py-2.5 bg-[#B5504B] hover:bg-[#9c423e] text-white rounded-lg font-bold text-[13px] transition-colors">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 </x-app-layout>

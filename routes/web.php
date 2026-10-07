@@ -79,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
         Route::get('/reports/utang', [ReportController::class, 'utang'])->name('reports.utang');
         Route::get('/reports/discounts', [ReportController::class, 'discounts'])->name('reports.discounts');
+        Route::get('/reports/discounts/export', [ReportController::class, 'exportDiscounts'])->name('reports.discounts.export');
     });
 
     // Level 3: Owner Administration

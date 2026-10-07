@@ -52,8 +52,10 @@ class PosController extends Controller
                     'total_amount' => 0, 
                     'payment_method' => $validated['payment_method'],
                     'discount_amount' => (isset($validated['discount_amount']) && $validated['discount_amount'] !== '') ? (float)$validated['discount_amount'] : 0,
-                    'discount_type' => !empty($validated['discount_type']) ? $validated['discount_type'] : null,
-                    'senior_id' => !empty($validated['senior_id']) ? $validated['senior_id'] : null,
+                    'discount_type' => (!empty($validated['discount_type']) && $validated['discount_type'] !== 'none') ? $validated['discount_type'] : null,
+                    'discount_reference_name' => !empty($validated['discount_reference_name']) ? $validated['discount_reference_name'] : null,
+                    'discount_reference_id' => !empty($validated['discount_reference_id']) ? $validated['discount_reference_id'] : null,
+                    'senior_id' => !empty($validated['discount_reference_id']) ? $validated['discount_reference_id'] : (!empty($validated['senior_id']) ? $validated['senior_id'] : null),
                 ]);
 
                 $invoiceNumber = 'INV-' . $year . '-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);

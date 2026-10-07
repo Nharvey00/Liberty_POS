@@ -87,6 +87,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if (!auth()->user()->isOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($user->id === auth()->id()) {
             return back()->withErrors('You cannot delete your own account.');
         }
@@ -94,10 +98,6 @@ class UserController extends Controller
         // Prevent deleting the sole remaining Owner
         if ($user->isOwner() && User::where('role_id', 3)->count() <= 1) {
             return back()->withErrors('Cannot delete the sole remaining Owner account in the system.');
-        }
-
-        if ($user->orders()->exists() || Order::where('voided_by', $user->id)->exists()) {
-            return back()->withErrors('Cannot delete a staff account that has processed transactions. Keep for audit compliance.');
         }
 
         $user->delete();

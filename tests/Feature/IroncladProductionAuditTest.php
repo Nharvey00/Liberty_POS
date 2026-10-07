@@ -150,10 +150,10 @@ class IroncladProductionAuditTest extends TestCase
         $delProdResponse->assertRedirect(route('products.index'));
         $this->assertSoftDeleted('products', ['id' => $tempProduct->id]);
 
-        // 3. Deleting product with inventory blocked
+        // 3. Deleting product with inventory triggers soft-delete safely
         $blockedProdResponse = $this->actingAs($this->manager)->delete(route('products.destroy', $this->product));
-        $blockedProdResponse->assertSessionHasErrors();
-        $this->assertNull($this->product->fresh()->deleted_at);
+        $blockedProdResponse->assertRedirect(route('products.index'));
+        $this->assertSoftDeleted('products', ['id' => $this->product->id]);
 
         // 4. Soft-delete clean staff user without sales history
         $tempStaff = User::factory()->create([

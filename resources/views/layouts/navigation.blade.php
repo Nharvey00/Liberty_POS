@@ -1,14 +1,12 @@
 <nav :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-     class="w-[260px] shrink-0 bg-gradient-to-b from-[#050A15] to-[#0D1D3A] text-white flex flex-col px-4 py-6 fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:sticky md:top-0 h-screen select-none border-r border-[#0D1D3A]">
+     class="print:hidden w-[260px] shrink-0 bg-gradient-to-b from-[#050A15] to-[#0D1D3A] text-white flex flex-col px-4 py-6 fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:sticky md:top-0 h-screen select-none border-r border-[#0D1D3A]">
     
     <!-- Brand Header -->
     <div class="flex items-center gap-3.5 px-3 pb-8">
-        <div class="w-[42px] h-[42px] rounded-[10px] bg-[#245CA6] flex items-center justify-center font-sans font-extrabold text-[15px] text-white shrink-0 shadow-sm">
-            LG
-        </div>
+        <img src="{{ asset('logo.png') }}" alt="Liberty LPG Center" class="w-[42px] h-[42px] rounded-[10px] object-cover bg-white shrink-0 shadow-sm p-0.5">
         <div>
-            <div class="font-sans font-bold text-[16px] leading-tight text-white">Liberty LPG</div>
-            <div class="text-[12px] text-[#7E96B8] mt-[2px] font-medium tracking-wide">Sales &amp; Inventory</div>
+            <div class="font-sans font-bold text-[15px] leading-tight text-white">Liberty LPG Center</div>
+            <div class="text-[11.5px] text-[#7E96B8] mt-[2px] font-medium tracking-wide">Sales &amp; Inventory</div>
         </div>
         <button @click="sidebarOpen = false" class="md:hidden text-[#7E96B8] hover:text-white p-1 ml-auto rounded-lg hover:bg-[#152441]" aria-label="Close Sidebar">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>

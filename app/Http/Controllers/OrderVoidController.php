@@ -57,7 +57,7 @@ class OrderVoidController extends Controller
                 ]);
 
                 foreach ($lockedOrder->items as $item) {
-                    $product = Product::lockForUpdate()->find($item->product_id);
+                    $product = Product::withTrashed()->lockForUpdate()->find($item->product_id);
                     if ($product) {
                         $product->increment('stock_quantity', $item->quantity);
                         

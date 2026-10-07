@@ -20,8 +20,10 @@ class StoreOrderRequest extends FormRequest
             'customer_id'       => 'required_if:payment_method,Credit|nullable|exists:customers,id',
             'payment_method'    => 'required|in:Cash,Credit',
             'discount_amount'   => 'nullable|numeric|min:0',
-            'discount_type'     => 'nullable|in:regular,senior,pwd,promo',
-            'senior_id'         => 'nullable|string|max:50',
+            'discount_type'     => 'nullable|in:none,regular,senior,pwd,promo',
+            'discount_reference_name' => 'nullable|string|max:255',
+            'discount_reference_id'   => 'nullable|string|max:255',
+            'senior_id'         => 'nullable|string|max:50', // kept for backwards compatibility if needed
             'items'             => 'required|array|min:1',
             'items.*.product_id'=> 'required|exists:products,id',
             'items.*.quantity'  => 'required|integer|min:1',
@@ -111,6 +113,8 @@ class StoreOrderRequest extends FormRequest
                 $orderSubtotal += $itemSubtotal;
             }
 
+            $discountType = $this->input('discount_type');
+
             // Fix #6: Discount cannot exceed the order subtotal
             $discount = (float)$this->input('discount_amount', 0);
             if ($discount > 0) {
@@ -121,21 +125,27 @@ class StoreOrderRequest extends FormRequest
                     );
                 }
                 
-                if (!$customerId) {
+                if (!$customerId && !in_array($discountType, ['senior', 'pwd'])) {
                     $validator->errors()->add(
                         'customer_id',
-                        'A registered customer must be selected to apply a discount.'
+                        'A registered customer must be selected to apply this discount.'
                     );
                 }
             }
 
-            $discountType = $this->input('discount_type');
-            $seniorId = $this->input('senior_id');
-            if ($discountType === 'senior' && empty($seniorId)) {
-                $validator->errors()->add(
-                    'senior_id',
-                    'Senior Citizen ID is required when Senior Citizen discount is applied.'
-                );
+            if (in_array($discountType, ['senior', 'pwd'])) {
+                if (empty($this->input('discount_reference_name'))) {
+                    $validator->errors()->add(
+                        'discount_reference_name',
+                        'Senior/PWD Name is required for this discount type.'
+                    );
+                }
+                if (empty($this->input('discount_reference_id'))) {
+                    $validator->errors()->add(
+                        'discount_reference_id',
+                        'ID Number is required for this discount type.'
+                    );
+                }
             }
         });
     }

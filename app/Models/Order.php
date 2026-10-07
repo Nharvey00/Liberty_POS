@@ -16,6 +16,8 @@ class Order extends Model
         'payment_method',
         'discount_amount',
         'discount_type',
+        'discount_reference_name',
+        'discount_reference_id',
         'senior_id',
         'invoice_number',
         'status',
@@ -58,12 +60,12 @@ class Order extends Model
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)->withTrashed();
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     /**
@@ -71,7 +73,7 @@ class Order extends Model
      */
     public function voidedByUser()
     {
-        return $this->belongsTo(User::class, 'voided_by');
+        return $this->belongsTo(User::class, 'voided_by')->withTrashed();
     }
 
     public function items()

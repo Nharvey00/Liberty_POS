@@ -28,7 +28,11 @@ class ReportController extends Controller
         $customerSearch = $request->input('customer_search');
         $cashierId = $request->input('cashier_id');
 
-        $query = Order::with(['customer', 'items.product', 'user'])
+        $query = Order::with([
+            'customer' => fn($q) => $q->withTrashed(),
+            'items.product' => fn($q) => $q->withTrashed(),
+            'user' => fn($q) => $q->withTrashed(),
+        ])
             ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()]);
 
         if ($paymentMethod && $paymentMethod !== 'all') {
@@ -71,7 +75,7 @@ class ReportController extends Controller
         $toDate = $request->input('to_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $productSearch = $request->input('product_search');
 
-        $query = Product::query();
+        $query = Product::withTrashed();
 
         if ($productSearch) {
             $query->where('name', 'like', "%{$productSearch}%");
@@ -167,32 +171,76 @@ class ReportController extends Controller
         $date = Carbon::parse($monthYear . '-01');
         
         $orders = Order::valid()
-            ->with(['customer', 'items.product', 'user'])
-            ->whereNotNull('customer_id')
+            ->with([
+                'customer' => fn($q) => $q->withTrashed(),
+                'user' => fn($q) => $q->withTrashed(),
+                'items.product' => fn($q) => $q->withTrashed(),
+            ])
+            ->select([
+                'id',
+                'customer_id',
+                'user_id',
+                'invoice_number',
+                'payment_method',
+                'discount_type',
+                'discount_amount',
+                'discount_reference_name',
+                'discount_reference_id',
+                'senior_id',
+                'total_amount',
+                'status',
+                'created_at',
+            ])
             ->whereBetween('created_at', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
             ->get();
 
         $discountedOrders = $orders->where('discount_amount', '>', 0);
         $loanedOrders = $orders->filter(fn($o) => strcasecmp($o->payment_method, 'Credit') === 0);
 
+        $groupedOrders = $discountedOrders->groupBy(function ($order) {
+            if ($order->customer_id) {
+                return 'customer_' . $order->customer_id;
+            }
+            if (!empty($order->discount_reference_id)) {
+                return 'walkin_' . $order->discount_reference_id;
+            }
+            return 'walkin_order_' . $order->id;
+        });
+
         $customersData = [];
         
-        foreach ($discountedOrders->groupBy('customer_id') as $customerId => $customerOrders) {
-            $customer = $customerOrders->first()->customer;
+        foreach ($groupedOrders as $customerOrders) {
+            $firstOrder = $customerOrders->first();
+            $customer = $firstOrder->customer;
+            $customerId = $firstOrder->customer_id;
+
             $timesDiscounted = $customerOrders->count();
-            $totalDiscount = $customerOrders->sum('discount_amount');
-            $discountTypes = $customerOrders->pluck('discount_type')->filter()->unique()->implode(', ');
+            $totalDiscount = (float) $customerOrders->sum('discount_amount');
+            $discountTypes = $customerOrders->pluck('discount_type')->filter()->unique()->map(fn($t) => ucfirst($t))->implode(', ');
             
-            $timesLoaned = $loanedOrders->where('customer_id', $customerId)->count();
+            $timesLoaned = $customerId ? $loanedOrders->where('customer_id', $customerId)->count() : 0;
+
+            $refName = $customerOrders->pluck('discount_reference_name')->filter()->unique()->implode(', ') 
+                ?: ($customer ? trim($customer->first_name . ' ' . $customer->last_name) : '—');
+            $refId = $customerOrders->pluck('discount_reference_id')->filter()->unique()->implode(', ') 
+                ?: ($customerOrders->pluck('senior_id')->filter()->unique()->implode(', ') ?: '—');
+
+            $customerName = $customer 
+                ? trim($customer->first_name . ' ' . $customer->last_name) 
+                : ($customerOrders->pluck('discount_reference_name')->filter()->first() ?: 'Walk-in Customer');
+
+            $customerType = $customer ? $customer->customer_type : 'Walk-in';
 
             $customersData[] = (object) [
-                'customer_name' => $customer->first_name . ' ' . $customer->last_name,
-                'customer_type' => $customer->customer_type,
-                'senior_id' => $customerOrders->pluck('senior_id')->filter()->first(),
+                'customer_name' => $customerName,
+                'customer_type' => $customerType,
+                'discount_reference_name' => $refName !== '—' ? $refName : ($customerName !== 'Walk-in Customer' ? $customerName : '—'),
+                'discount_reference_id' => $refId,
+                'senior_id' => $refId,
                 'times_discounted' => $timesDiscounted,
                 'times_loaned' => $timesLoaned,
                 'total_discount' => $totalDiscount,
-                'discount_types' => $discountTypes,
+                'discount_types' => $discountTypes ?: 'None',
             ];
         }
 
@@ -204,6 +252,110 @@ class ReportController extends Controller
             'customersData', 'monthYear',
             'totalTimesDiscounted', 'totalTimesLoaned', 'grandTotalDiscount'
         ));
+    }
+
+    public function exportDiscounts(Request $request): StreamedResponse
+    {
+        $monthYear = $request->input('month_year', Carbon::now()->format('Y-m'));
+        $date = Carbon::parse($monthYear . '-01');
+
+        $orders = Order::valid()
+            ->with([
+                'customer' => fn($q) => $q->withTrashed(),
+                'user' => fn($q) => $q->withTrashed(),
+                'items.product' => fn($q) => $q->withTrashed(),
+            ])
+            ->select([
+                'id',
+                'customer_id',
+                'user_id',
+                'invoice_number',
+                'payment_method',
+                'discount_type',
+                'discount_amount',
+                'discount_reference_name',
+                'discount_reference_id',
+                'senior_id',
+                'total_amount',
+                'status',
+                'created_at',
+            ])
+            ->whereBetween('created_at', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
+            ->get();
+
+        $discountedOrders = $orders->where('discount_amount', '>', 0);
+        $loanedOrders = $orders->filter(fn($o) => strcasecmp($o->payment_method, 'Credit') === 0);
+
+        $groupedOrders = $discountedOrders->groupBy(function ($order) {
+            if ($order->customer_id) {
+                return 'customer_' . $order->customer_id;
+            }
+            if (!empty($order->discount_reference_id)) {
+                return 'walkin_' . $order->discount_reference_id;
+            }
+            return 'walkin_order_' . $order->id;
+        });
+
+        $filename = 'discounts_report_' . $monthYear . '_' . Carbon::now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return new StreamedResponse(function () use ($groupedOrders, $loanedOrders) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                'Customer Name',
+                'Customer Type',
+                'Reference Name',
+                'ID Number',
+                'Times Discounted',
+                'Times Loaned',
+                'Total Discount (PHP)',
+                'Discount Types'
+            ]);
+
+            foreach ($groupedOrders as $customerOrders) {
+                $firstOrder = $customerOrders->first();
+                $customer = $firstOrder->customer;
+                $customerId = $firstOrder->customer_id;
+
+                $timesDiscounted = $customerOrders->count();
+                $totalDiscount = (float) $customerOrders->sum('discount_amount');
+                $discountTypes = $customerOrders->pluck('discount_type')->filter()->unique()->map(fn($t) => ucfirst($t))->implode(', ');
+                $timesLoaned = $customerId ? $loanedOrders->where('customer_id', $customerId)->count() : 0;
+
+                $refName = $customerOrders->pluck('discount_reference_name')->filter()->unique()->implode(', ') 
+                    ?: ($customer ? trim($customer->first_name . ' ' . $customer->last_name) : '—');
+                $refId = $customerOrders->pluck('discount_reference_id')->filter()->unique()->implode(', ') 
+                    ?: ($customerOrders->pluck('senior_id')->filter()->unique()->implode(', ') ?: '—');
+
+                $customerName = $customer 
+                    ? trim($customer->first_name . ' ' . $customer->last_name) 
+                    : ($customerOrders->pluck('discount_reference_name')->filter()->first() ?: 'Walk-in Customer');
+
+                $customerType = $customer ? $customer->customer_type : 'Walk-in';
+
+                fputcsv($handle, [
+                    $customerName,
+                    ucfirst($customerType),
+                    $refName,
+                    $refId,
+                    $timesDiscounted,
+                    $timesLoaned,
+                    number_format($totalDiscount, 2, '.', ''),
+                    $discountTypes ?: 'None'
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
     }
 
     /**
@@ -218,7 +370,11 @@ class ReportController extends Controller
         $cashierId = $request->input('cashier_id');
 
         $query = Order::valid()
-            ->with(['customer', 'items.product', 'user'])
+            ->with([
+                'customer' => fn($q) => $q->withTrashed(),
+                'items.product' => fn($q) => $q->withTrashed(),
+                'user' => fn($q) => $q->withTrashed(),
+            ])
             ->whereBetween('created_at', [
                 Carbon::parse($fromDate)->startOfDay(), 
                 Carbon::parse($toDate)->endOfDay()

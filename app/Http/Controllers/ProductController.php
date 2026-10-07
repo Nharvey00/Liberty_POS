@@ -72,16 +72,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->stock_quantity > 0 || $product->empty_quantity > 0) {
-            return back()->withErrors('Cannot delete product that still has existing inventory stock or empty shells on hand. Clear inventory first.');
-        }
-
-        if ($product->orderItems()->exists()) {
-            return back()->withErrors('Cannot delete product that has existing sales order history.');
-        }
-
-        if ($product->stockIns()->exists() || $product->stockOuts()->exists()) {
-            return back()->withErrors('Cannot delete product that has stock movement history.');
+        if (!auth()->user()->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
         }
 
         $product->delete();

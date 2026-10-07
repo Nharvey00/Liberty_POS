@@ -270,12 +270,12 @@ class SecurityRemediationAuditTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->manager)->delete(route('products.destroy', $product));
-        $response->assertSessionHasErrors();
-        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $response->assertRedirect(route('products.index'));
+        $this->assertSoftDeleted('products', ['id' => $product->id]);
     }
 
     /**
-     * Final Audit: Customer deletion blocked if advance credit balance exists
+     * Final Audit: Customer deletion soft deletes if advance credit balance exists
      */
     public function test_customer_deletion_blocked_if_advance_credit_balance_exists(): void
     {
@@ -298,8 +298,8 @@ class SecurityRemediationAuditTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->manager)->delete(route('customers.destroy', $advCustomer));
-        $response->assertSessionHasErrors();
-        $this->assertDatabaseHas('customers', ['id' => $advCustomer->id]);
+        $response->assertRedirect(route('customers.index'));
+        $this->assertSoftDeleted('customers', ['id' => $advCustomer->id]);
     }
 
     /**

@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Liberty LPG') }}</title>
+    <title>{{ config('app.name', 'Liberty LPG Center') }}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,8 +21,10 @@
 
     <style>
         @media print {
-            @page { margin: 0; size: auto; }
+            @page { margin: 5mm; }
             body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
@@ -40,19 +47,19 @@
     <div x-show="sidebarOpen" 
          x-transition.opacity.duration.200ms
          @click="sidebarOpen = false" 
-         class="fixed inset-0 bg-black/50 z-40 md:hidden" 
+         class="fixed inset-0 bg-black/50 z-40 md:hidden print:hidden" 
          style="display: none;"></div>
 
     <!-- Sidebar Navigation -->
     @include('layouts.navigation')
 
     <!-- Main Content Wrapper -->
-    <div class="flex-1 min-w-0 flex flex-col">
+    <div class="flex-1 min-w-0 flex flex-col print:w-full print:p-0 print:m-0">
         
         <!-- Page Content -->
-        <main class="px-6 md:px-8 py-6 pb-16">
+        <main class="px-6 md:px-8 py-6 pb-16 print:p-0 print:m-0 print:w-full">
             @if (isset($header))
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-6 print:hidden">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
                         <button @click="sidebarOpen = true" type="button" class="md:hidden text-[#5B6472] hover:text-[#0B3B70] p-1.5 -ml-1 rounded-lg focus:outline-none shrink-0" aria-label="Open Sidebar">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>

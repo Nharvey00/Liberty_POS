@@ -390,10 +390,10 @@ class ProductionClearanceAuditTest extends TestCase
             'amount' => 500.00,
         ]);
 
-        // Attempt deletion as Manager
+        // Attempt deletion as Manager - now soft deletes safely
         $response = $this->actingAs($this->manager)->delete(route('customers.destroy', $customer));
-        $response->assertSessionHasErrors();
-        $this->assertDatabaseHas('customers', ['id' => $customer->id]);
+        $response->assertRedirect(route('customers.index'));
+        $this->assertSoftDeleted('customers', ['id' => $customer->id]);
 
         // Empty customer with no history can be deleted
         $cleanCustomer = Customer::create([

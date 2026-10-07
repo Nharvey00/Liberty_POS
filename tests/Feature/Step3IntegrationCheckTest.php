@@ -169,7 +169,8 @@ class Step3IntegrationCheckTest extends TestCase
             'payment_method' => 'Cash',
             'discount_amount' => 50,
             'discount_type' => 'senior',
-            'senior_id' => '', // Empty!
+            'discount_reference_name' => '', // Empty!
+            'discount_reference_id' => '', // Empty!
             'items' => [
                 [
                     'product_id' => $this->cylinderProduct->id,
@@ -179,15 +180,16 @@ class Step3IntegrationCheckTest extends TestCase
             ],
         ]);
 
-        $responseFailed->assertSessionHasErrors(['senior_id']);
+        $responseFailed->assertSessionHasErrors(['discount_reference_name', 'discount_reference_id']);
 
-        // Attempt checkout with Senior Citizen discount WITH valid Senior ID -> MUST SUCCEED
+        // Attempt checkout with Senior Citizen discount WITH valid Senior details -> MUST SUCCEED
         $responseSuccess = $this->actingAs($this->cashier)->post(route('pos.store'), [
             'customer_id' => $customer->id,
             'payment_method' => 'Cash',
             'discount_amount' => 50,
             'discount_type' => 'senior',
-            'senior_id' => 'OSCA-DVO-12345',
+            'discount_reference_name' => 'Lolo Dela Cruz',
+            'discount_reference_id' => 'OSCA-DVO-12345',
             'items' => [
                 [
                     'product_id' => $this->cylinderProduct->id,
