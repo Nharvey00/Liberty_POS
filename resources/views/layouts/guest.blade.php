@@ -23,7 +23,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <img src="{{ asset('logo.png') }}" alt="Liberty LPG Center" class="w-20 h-20 object-contain rounded-2xl shadow-sm bg-white p-1">
+                    <img src="{{ asset('logo.png') }}" alt="Liberty LPG Center" class="block h-20 w-auto object-contain mx-auto">
                 </a>
             </div>
 

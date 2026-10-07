@@ -3,7 +3,7 @@
     
     <!-- Brand Header -->
     <div class="flex items-center gap-3.5 px-3 pb-8">
-        <img src="{{ asset('logo.png') }}" alt="Liberty LPG Center" class="w-[42px] h-[42px] rounded-[10px] object-cover bg-white shrink-0 shadow-sm p-0.5">
+        <img src="{{ asset('logo.png') }}" alt="Liberty LPG Center" class="block h-10 w-auto object-contain">
         <div>
             <div class="font-sans font-bold text-[15px] leading-tight text-white">Liberty LPG Center</div>
             <div class="text-[11.5px] text-[#7E96B8] mt-[2px] font-medium tracking-wide">Sales &amp; Inventory</div>
