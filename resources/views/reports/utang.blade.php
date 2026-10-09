@@ -33,15 +33,15 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 mb-8 print:hidden">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
+        <div x-data="liveSearch('customer_search')" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 mb-8 print:hidden">
+            <form x-ref="form" method="GET" action="{{ route('reports.utang') }}" @submit.prevent="performSearch" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2 relative">
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Search</label>
-                    <input type="text" name="customer_search" value="{{ $customerSearch }}" placeholder="Name or business..." class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <input type="text" name="customer_search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Name or business..." class="w-full border-[#E5E9EF] rounded-lg text-[13px]" autocomplete="off">
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Classification</label>
-                    <select name="customer_type" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <select name="customer_type" @change="performSearch" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="all" {{ $customerType == 'all' ? 'selected' : '' }}>All Classifications</option>
                         <option value="Tertiary" {{ $customerType == 'Tertiary' ? 'selected' : '' }}>Tertiary</option>
                         <option value="Household" {{ $customerType == 'Household' ? 'selected' : '' }}>Household</option>
@@ -54,7 +54,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Account Status</label>
-                    <select name="status" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <select name="status" @change="performSearch" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                         <option value="all" {{ $status == 'all' ? 'selected' : '' }}>All</option>
                         <option value="active" {{ $status == 'active' ? 'selected' : '' }}>Active</option>
                         <option value="inactive" {{ $status == 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -68,6 +68,7 @@
             </form>
         </div>
 
+        <div id="table-container">
         <!-- KPIs -->
         <div class="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 gap-6 print:gap-3 mb-8 print:mb-4">
             <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg print:border print:border-gray-800">
@@ -142,6 +143,8 @@
             </div>
         </div>
     </div>
+    </div> <!-- Close table-container -->
+    </div> <!-- Close liveSearch -->
 
     <style>
         @media print {

@@ -4,7 +4,7 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">{{ $customer->name }}</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('customers.update', $customer) }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <form method="POST" action="{{ route('customers.update', $customer) }}" x-data="{ discountType: '{{ old('default_discount_type', $customer->default_discount_type) }}' }" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
         @method('PUT')
 
@@ -68,6 +68,38 @@
                 <label for="address" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Delivery Address / Location</label>
                 <input type="text" name="address" id="address" value="{{ old('address', $customer->address) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 @error('address') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="col-span-2 text-[14px] font-bold text-[#1C2430] border-b border-[#E5E9EF] pb-2 mt-2">Discount Settings</div>
+
+            <div class="col-span-2 md:col-span-1">
+                <label for="default_discount_type" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Default Discount Type</label>
+                <select name="default_discount_type" id="default_discount_type" x-model="discountType" class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <option value="">None</option>
+                    <option value="senior">Senior (20%)</option>
+                    <option value="pwd">PWD (20%)</option>
+                    <option value="regular">regular</option>
+                    <option value="custom">Custom Amount</option>
+                </select>
+                @error('default_discount_type') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="col-span-2 md:col-span-1">
+                <label for="default_discount_percentage" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Default Discount Percentage (%)</label>
+                <input type="number" step="0.01" min="0" max="100" name="default_discount_percentage" id="default_discount_percentage" value="{{ old('default_discount_percentage', $customer->default_discount_percentage) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                @error('default_discount_percentage') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" style="display: none;">
+                <label for="default_discount_ref_name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reference Name (e.g. Senior/PWD Name)</label>
+                <input type="text" name="default_discount_ref_name" id="default_discount_ref_name" value="{{ old('default_discount_ref_name', $customer->default_discount_ref_name) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                @error('default_discount_ref_name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" style="display: none;">
+                <label for="default_discount_ref_id" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reference ID Number</label>
+                <input type="text" name="default_discount_ref_id" id="default_discount_ref_id" value="{{ old('default_discount_ref_id', $customer->default_discount_ref_id) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                @error('default_discount_ref_id') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>
 

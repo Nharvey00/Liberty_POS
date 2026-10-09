@@ -10,19 +10,19 @@
         </div>
     @endif
 
-    <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <form method="GET" action="{{ route('credit-accounts.index') }}" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
+    <div x-data="liveSearch()" class="flex flex-col gap-4">
+    <div class="flex items-center justify-between mb-1 gap-3 flex-wrap">
+        <form x-ref="form" method="GET" action="{{ route('credit-accounts.index') }}" @submit.prevent="performSearch" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-            @if(!empty($search))
-                <a href="{{ route('credit-accounts.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
-            @endif
+            <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+            <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
         </form>
         <div class="flex gap-2.5 flex-wrap items-center">
             <a href="{{ route('credit-accounts.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit Account</a>
         </div>
     </div>
 
+    <div id="table-container">
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse">
@@ -78,5 +78,7 @@
         <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
             {{ $accounts->links() }}
         </div>
+    </div>
+    </div>
     </div>
 </x-app-layout>

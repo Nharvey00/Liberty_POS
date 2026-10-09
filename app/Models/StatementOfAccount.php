@@ -24,6 +24,7 @@ class StatementOfAccount extends Model
         'billing_period_start' => 'date',
         'billing_period_end'   => 'date',
         'total_due'            => 'decimal:2',
+        'is_paid'              => 'boolean',
     ];
 
     public function setIsPaidAttribute($value): void

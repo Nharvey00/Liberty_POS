@@ -12,11 +12,12 @@
     @endif
 
     <!-- Inventory Sub-Tabs & Action Toolbar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-5 gap-3">
+    <div x-data="liveSearch()" class="flex flex-col gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-3">
         @if(Auth::user()->isManagerOrOwner())
             <!-- Sub-Tabs -->
             <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
-                <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold bg-white text-[#0B3B70] shadow-xs transition-colors">
+                <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold {{ request('status') !== 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
                     Products Catalog
                 </a>
                 <a href="{{ route('stock-ins.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
@@ -25,19 +26,26 @@
                 <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Stock Out History
                 </a>
+                <a href="{{ route('products.index', ['status' => 'deleted']) }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold {{ request('status') === 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
+                    Deleted Products
+                </a>
             </div>
         @else
             <div></div>
         @endif
 
         <div class="flex items-center gap-2.5 flex-wrap">
-            <form method="GET" action="{{ route('products.index') }}" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search product name..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-                @if(!empty($search))
-                    <a href="{{ route('products.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
-                @endif
+            <form x-ref="form" method="GET" action="{{ route('products.index') }}" @submit.prevent="performSearch" class="relative flex items-center gap-2 min-w-[240px]">
+                <div class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 w-full">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search product name..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]" autocomplete="off">
+                    <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
+                    @if(request('status'))
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                    @endif
+                </div>
             </form>
+
             @if(Auth::user()->isManagerOrOwner())
                 <a href="{{ route('stock-outs.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">↓ Stock Out</a>
                 <a href="{{ route('stock-ins.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#0B3B70] hover:bg-[#F4F6F9]">↑ Stock In</a>
@@ -47,6 +55,7 @@
     </div>
 
     <!-- Data Table Card -->
+    <div id="table-container">
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse">
@@ -70,7 +79,9 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold">{{ number_format($product->stock_quantity) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                @if($product->stock_quantity <= 10)
+                                @if($product->trashed())
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Deleted</span>
+                                @elseif($product->stock_quantity <= 10)
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FBF0DD] text-[#B4700A]">Low Stock</span>
                                 @else
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Healthy</span>
@@ -80,10 +91,19 @@
                                 <div class="flex items-center justify-end gap-3">
                                     <a href="{{ route('products.show', $product) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View</a>
                                     @if(Auth::user()->isManagerOrOwner())
-                                        <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
-                                        <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
-                                            Delete
-                                        </button>
+                                        @if(!$product->trashed())
+                                            <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                            <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
+                                                Delete
+                                            </button>
+                                        @else
+                                            <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
+                                                @csrf
+                                                <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
+                                                    Restore
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -100,6 +120,8 @@
             {{ $products->links() }}
         </div>
     </div>
+    </div> <!-- Close table container -->
+    </div> <!-- Close liveSearch -->
 
     <!-- Delete Confirmation Modal -->
     <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

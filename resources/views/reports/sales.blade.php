@@ -37,19 +37,19 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 mb-8 print:hidden">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div x-data="liveSearch('customer_search')" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 mb-8 print:hidden">
+            <form x-ref="form" method="GET" action="{{ route('reports.sales') }}" @submit.prevent="performSearch" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">From Date</label>
-                    <input type="date" name="from_date" value="{{ $fromDate }}" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <input type="date" name="from_date" value="{{ $fromDate }}" class="w-full border-[#E5E9EF] rounded-lg text-[13px]" @change="performSearch">
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">To Date</label>
-                    <input type="date" name="to_date" value="{{ $toDate }}" class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <input type="date" name="to_date" value="{{ $toDate }}" class="w-full border-[#E5E9EF] rounded-lg text-[13px]" @change="performSearch">
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Payment Method</label>
-                    <select name="payment_method" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <select name="payment_method" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" @change="performSearch">
                         <option value="all" {{ $paymentMethod == 'all' ? 'selected' : '' }}>All</option>
                         <option value="cash" {{ $paymentMethod == 'cash' ? 'selected' : '' }}>Cash</option>
                         <option value="credit" {{ $paymentMethod == 'credit' ? 'selected' : '' }}>Credit</option>
@@ -57,7 +57,7 @@
                 </div>
                 <div>
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Cashier</label>
-                    <select name="cashier_id" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <select name="cashier_id" class="w-full pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" @change="performSearch">
                         <option value="">All Cashiers</option>
                         @foreach($cashiers as $c)
                             <option value="{{ $c->id }}" {{ $cashierId == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -66,7 +66,7 @@
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold mb-2">Customer Search</label>
-                    <input type="text" name="customer_search" value="{{ $customerSearch }}" placeholder="Name or business..." class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
+                    <input type="text" name="customer_search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Name or business..." class="w-full border-[#E5E9EF] rounded-lg text-[13px]">
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full border border-[#E5E9EF] bg-white text-[#0B3B70] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 h-[42px]">
@@ -76,6 +76,7 @@
             </form>
         </div>
 
+        <div id="table-container">
         <!-- KPIs -->
         <div class="grid grid-cols-1 md:grid-cols-4 print:grid-cols-4 gap-6 print:gap-3 mb-8 print:mb-4">
             <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 print:p-2.5 print:rounded-lg print:border print:border-gray-800">
@@ -132,7 +133,7 @@
                                 </td>
                                 <td class="px-6 py-4 print:px-2 print:py-1.5 print:border-b print:border-gray-400 text-[13px] text-gray-900">{{ $order->user ? $order->user->name : '-' }}</td>
                                 <td class="px-6 py-4 print:px-2 print:py-1.5 print:border-b print:border-gray-400 text-[13px]">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $order->payment_method == 'cash' ? 'bg-[#E5F5EC] text-[#1E8E5A]' : 'bg-[#FBF0DD] text-[#B4700A]' }}">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ strtolower($order->payment_method) === 'cash' ? 'bg-[#E5F5EC] text-[#1E8E5A]' : 'bg-[#FBF0DD] text-[#B4700A]' }}">
                                         {{ ucfirst($order->payment_method) }}
                                     </span>
                                 </td>
@@ -154,6 +155,8 @@
             </div>
         </div>
     </div>
+    </div> <!-- Close table-container -->
+    </div> <!-- Close liveSearch -->
 
     <style>
         @media print {

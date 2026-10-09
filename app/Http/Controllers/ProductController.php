@@ -9,6 +9,26 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    public function searchApi(\Illuminate\Http\Request $request)
+    {
+        $search = $request->query('query');
+        
+        if (!$search || strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $products = Product::select('id', 'name')
+            ->where('name', $like, "%{$search}%")
+            ->take(10)
+            ->get()
+            ->map(function ($p) {
+                return ['id' => $p->id, 'name' => $p->name];
+            });
+            
+        return response()->json($products);
+    }
+
     public function index(\Illuminate\Http\Request $request)
     {
         $search = $request->query('search');
@@ -17,6 +37,12 @@ class ProductController extends Controller
         if ($search) {
             $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
             $query->where('name', $like, "%{$search}%");
+        }
+
+        if (auth()->check() && auth()->user()->isManagerOrOwner()) {
+            if ($request->query('status') === 'deleted') {
+                $query->onlyTrashed();
+            }
         }
 
         $products = $query->paginate(15)->withQueryString();
@@ -79,5 +105,17 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+    }
+
+    public function restore($id)
+    {
+        if (!auth()->user()->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return redirect()->route('products.index', ['status' => 'deleted'])->with('success', 'Product restored successfully.');
     }
 }

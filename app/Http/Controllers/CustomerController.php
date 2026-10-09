@@ -22,13 +22,7 @@ class CustomerController extends Controller
             ->orderBy('last_name');
 
         if ($search) {
-            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
-            $query->where(function ($q) use ($search, $like) {
-                $q->where('first_name', $like, "%{$search}%")
-                  ->orWhere('last_name', $like, "%{$search}%")
-                  ->orWhere('business_name', $like, "%{$search}%")
-                  ->orWhere('phone', $like, "%{$search}%");
-            });
+            $query->search($search);
         }
 
         $customers = $query->paginate(15)->withQueryString();
@@ -122,5 +116,31 @@ class CustomerController extends Controller
         return redirect()
             ->route('customers.index')
             ->with('success', 'Customer record deleted successfully.');
+    }
+
+    /**
+     * API Endpoint for customer autocomplete/search.
+     */
+    public function searchApi(Request $request)
+    {
+        $search = $request->query('query');
+        
+        if (!$search || strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $customers = Customer::select('id', 'first_name', 'last_name', 'business_name')
+            ->search($search)
+            ->take(10)
+            ->get()
+            ->map(function ($c) {
+                $name = trim($c->first_name . ' ' . $c->last_name);
+                if ($c->business_name) {
+                    $name .= " ({$c->business_name})";
+                }
+                return ['id' => $c->id, 'name' => $name, 'value' => $name];
+            });
+
+        return response()->json($customers);
     }
 }

@@ -22,7 +22,7 @@ class StatementController extends Controller
 
         if ($request->filled('customer')) {
             $query->whereHas('creditAccount.customer', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->customer . '%');
+                $q->search($request->customer);
             });
         }
 

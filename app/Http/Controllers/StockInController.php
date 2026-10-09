@@ -18,8 +18,7 @@ class StockInController extends Controller
         if ($search) {
             $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
             $query->where(function ($q) use ($search, $like) {
-                $q->where('reference_no', $like, "%{$search}%")
-                  ->orWhere('remarks', $like, "%{$search}%")
+                $q->where('remarks', $like, "%{$search}%")
                   ->orWhereHas('product', function ($pq) use ($search, $like) {
                       $pq->where('name', $like, "%{$search}%");
                   });

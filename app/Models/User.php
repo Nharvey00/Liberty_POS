@@ -162,4 +162,25 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class, 'voided_by');
     }
+
+    public function scopeSearch($query, $search)
+    {
+        if (!$search) {
+            return $query;
+        }
+
+        $like = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+        $fullName = ($driver === 'sqlite' || $driver === 'pgsql') 
+            ? "first_name || ' ' || last_name" 
+            : "CONCAT(first_name, ' ', last_name)";
+
+        return $query->where(function ($q) use ($search, $like, $fullName) {
+            $q->where('first_name', $like, "%{$search}%")
+              ->orWhere('last_name', $like, "%{$search}%")
+              ->orWhere('email', $like, "%{$search}%")
+              ->orWhereRaw("{$fullName} {$like} ?", ["%{$search}%"]);
+        });
+    }
 }

@@ -203,59 +203,80 @@
 
                 <!-- Fixed Footer / Discount & Checkout (Anchored at the bottom) -->
                 <div class="p-3.5 border-t border-[#E2E8F0] bg-white shrink-0 shadow-lg space-y-2.5">
-                    <!-- Original Discount Logic Workflow -->
-                    <div class="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
-                        <!-- Discount Type dropdown FIRST. Defaults to "None" -->
-                        <div class="flex items-center gap-2">
-                            <label class="block text-[10.5px] font-bold text-[#334155] uppercase tracking-wider shrink-0">
-                                Discount Type
-                            </label>
-                            <select name="discount_type" 
-                                    x-model="discountType" 
-                                    @change="onDiscountTypeChange()" 
-                                    class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-medium bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                                <option value="none">None</option>
-                                <option value="regular">Regular</option>
-                                <option value="senior">Senior</option>
-                                <option value="pwd">PWD</option>
-                                <option value="promo">Promo</option>
-                            </select>
-                        </div>
-
-                        <!-- Dynamic UI logic: Discount Amount number input ONLY appears if user selects type other than "None" -->
-                        <div x-show="discountType !== 'none'" 
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             class="pt-1.5 border-t border-[#E2E8F0] space-y-2">
-                            <div class="flex items-center gap-2">
-                                <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount:</label>
-                                <div class="relative flex-1">
-                                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">₱</div>
-                                    <input type="number" 
-                                           name="discount_amount"
-                                           x-model.number="discountValue" 
-                                           :min="0" 
-                                           :max="calculateSubtotal()" 
-                                           step="0.01" 
-                                           placeholder="0.00" 
-                                           class="w-full pl-7 pr-2 py-1 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                                </div>
+                    <!-- Discount Logic Workflow -->
+                    <template x-if="hasDefaultDiscount">
+                        <div class="p-2.5 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="block text-[10.5px] font-bold text-[#4338CA] uppercase tracking-wider">Applied Discount</span>
+                                <span class="text-[12px] font-semibold text-[#312E81]" x-text="discountType.charAt(0).toUpperCase() + discountType.slice(1) + ' Discount'"></span>
                             </div>
-                            
+                            <div class="text-right">
+                                <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefName"></div>
+                                <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefId"></div>
+                            </div>
+                            <!-- Hidden inputs for backend -->
+                            <input type="hidden" name="discount_type" :value="discountType">
+                            <input type="hidden" name="discount_amount" :value="calculateDiscountAmount()">
                             <input type="hidden" name="discount_reference_name" :value="discountRefName">
                             <input type="hidden" name="discount_reference_id" :value="discountRefId">
-                            
-                            <template x-if="['senior', 'pwd'].includes(discountType)">
-                                <div class="pt-1.5 border-t border-dashed border-[#E2E8F0]">
-                                    <button type="button" @click="showDiscountModal = true" class="w-full py-2 flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0] rounded-lg transition-colors">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                        <span x-text="discountRefName ? 'Edit Details (' + discountRefName + ')' : 'Add ' + (discountType === 'senior' ? 'Senior' : 'PWD') + ' Details'"></span>
-                                    </button>
-                                </div>
-                            </template>
                         </div>
-                    </div>
+                    </template>
+
+                    <template x-if="!hasDefaultDiscount">
+                        <div class="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
+                            <!-- Discount Type dropdown FIRST. Defaults to "None" -->
+                            <div class="flex items-center gap-2">
+                                <label class="block text-[10.5px] font-bold text-[#334155] uppercase tracking-wider shrink-0">
+                                    Discount Type
+                                </label>
+                                <select name="discount_type" 
+                                        x-model="discountType" 
+                                        @change="onDiscountTypeChange()" 
+                                        class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-medium bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                                    <option value="none">None</option>
+                                    <option value="regular">Regular</option>
+                                    <option value="senior">Senior</option>
+                                    <option value="pwd">PWD</option>
+                                    <option value="promo">Promo</option>
+                                </select>
+                            </div>
+
+                            <!-- Dynamic UI logic: Discount Amount number input ONLY appears if user selects type other than "None" -->
+                            <div x-show="discountType !== 'none'" 
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 class="pt-1.5 border-t border-[#E2E8F0] space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount:</label>
+                                    <div class="relative flex-1">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">â‚±</div>
+                                        <input type="number" 
+                                               name="discount_amount"
+                                               x-model.number="discountValue" 
+                                               @input="isDiscountManuallyOverridden = true"
+                                               :min="0" 
+                                               :max="calculateSubtotal()" 
+                                               step="0.01" 
+                                               placeholder="0.00" 
+                                               class="w-full pl-7 pr-2 py-1 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                                    </div>
+                                </div>
+                                
+                                <input type="hidden" name="discount_reference_name" :value="discountRefName">
+                                <input type="hidden" name="discount_reference_id" :value="discountRefId">
+                                
+                                <template x-if="['senior', 'pwd'].includes(discountType)">
+                                    <div class="pt-1.5 border-t border-dashed border-[#E2E8F0]">
+                                        <button type="button" @click="showDiscountModal = true" class="w-full py-2 flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0] rounded-lg transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                            <span x-text="discountRefName ? 'Edit Details (' + discountRefName + ')' : 'Add ' + (discountType === 'senior' ? 'Senior' : 'PWD') + ' Details'"></span>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
 
                     <!-- Payment Method -->
                     <div class="flex items-center gap-2">
@@ -423,6 +444,25 @@
                 showConfirmModal: false,
                 showDiscountModal: false,
                 isSubmitting: false,
+                isDiscountManuallyOverridden: false,
+
+                init() {
+                    this.$watch('cart', () => {
+                        if (!this.isDiscountManuallyOverridden && this.discountType !== 'none') {
+                            const customer = this.customers.find(c => c.id == this.selectedCustomerId);
+                            if (customer && customer.default_discount_percentage) {
+                                const subtotal = this.calculateSubtotal();
+                                const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
+                                this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                            }
+                        }
+                    }, { deep: true });
+                },
+
+                get hasDefaultDiscount() {
+                    const customer = this.customers.find(c => c.id == this.selectedCustomerId);
+                    return customer && customer.default_discount_type && customer.default_discount_type !== 'none';
+                },
 
                 openCheckoutModal() {
                     if (this.cart.length === 0 || this.isSubmitting) return;
@@ -446,6 +486,37 @@
                 checkCustomerType() {
                     const customer = this.customers.find(c => c.id == this.selectedCustomerId);
                     this.isCompany = customer ? (customer.customer_type === 'Coke (Residual)' || customer.customer_type === 'Company') : false;
+
+                    this.isDiscountManuallyOverridden = false; // Reset override on customer change
+
+                    if (customer) {
+                        if (customer.default_discount_type) {
+                            this.discountType = customer.default_discount_type;
+                            if (customer.default_discount_percentage) {
+                                const subtotal = this.calculateSubtotal();
+                                const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
+                                this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                            } else {
+                                this.discountValue = 0;
+                            }
+                            if (customer.default_discount_ref_name) {
+                                this.discountRefName = customer.default_discount_ref_name;
+                            }
+                            if (customer.default_discount_ref_id) {
+                                this.discountRefId = customer.default_discount_ref_id;
+                            }
+                        } else {
+                            this.discountType = 'none';
+                            this.discountValue = 0;
+                            this.discountRefName = '';
+                            this.discountRefId = '';
+                        }
+                    } else {
+                        this.discountType = 'none';
+                        this.discountValue = 0;
+                        this.discountRefName = '';
+                        this.discountRefId = '';
+                    }
                 },
 
                 addToCart(product) {
@@ -521,8 +592,18 @@
                 },
 
                 onDiscountTypeChange() {
+                    this.isDiscountManuallyOverridden = false;
                     if (this.discountType === 'none') {
                         this.discountValue = 0;
+                    } else {
+                        const customer = this.customers.find(c => c.id == this.selectedCustomerId);
+                        if (customer && customer.default_discount_percentage && customer.default_discount_type === this.discountType) {
+                            const subtotal = this.calculateSubtotal();
+                            const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
+                            this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                        } else {
+                            this.discountValue = 0;
+                        }
                     }
                     if (!['senior', 'pwd'].includes(this.discountType)) {
                         this.discountRefName = '';
