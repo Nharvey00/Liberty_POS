@@ -41,6 +41,17 @@ class StoreOrderRequest extends FormRequest
             $customerId = $this->input('customer_id');
             $customer = $customerId ? Customer::find($customerId) : null;
             $isCokeResidual = $customer && in_array($customer->customer_type, ['Coke (Residual)', 'Company', 'Corporate']);
+
+            // Block new Credit (Utang) transactions for missing or inactive credit accounts
+            if ($this->input('payment_method') === 'Credit' && $customer) {
+                $creditAccount = $customer->creditAccount;
+                if (!$creditAccount) {
+                    $validator->errors()->add('customer_id', 'This customer does not have an approved credit account.');
+                } elseif (!$creditAccount->is_active) {
+                    $validator->errors()->add('customer_id', "This customer's credit account is inactive. Credit (Utang) transactions are not allowed.");
+                }
+            }
+
             $items = $this->input('items', []);
 
             if (!is_array($items)) {

@@ -14,9 +14,12 @@ class CreditAccount extends Model
     /**
      * Improvement #1: Cast types prevent comparison bugs in forms and templates.
      * is_active MUST be boolean — the edit form's == 0 / == 1 check depends on it.
+     * NOTE: is_active is intentionally NOT cast here. Its mutator stores 'true'/'false'
+     * strings (required for pgsql + emulated prepares), and a 'boolean' cast makes
+     * Eloquent's dirty check evaluate (bool) 'false' === true, silently dropping
+     * active -> inactive updates. getIsActiveAttribute() already returns a real bool.
      */
     protected $casts = [
-        'is_active'              => 'boolean',
         'agreed_monthly_payment' => 'decimal:2',
     ];
 
