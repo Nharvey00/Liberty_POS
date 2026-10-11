@@ -250,7 +250,7 @@
                                 <div class="flex items-center gap-2">
                                     <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount:</label>
                                     <div class="relative flex-1">
-                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">â‚±</div>
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">₱</div>
                                         <input type="number" 
                                                name="discount_amount"
                                                x-model.number="discountValue" 
