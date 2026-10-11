@@ -11,10 +11,22 @@
     @endif
 
     <div class="mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <form method="GET" action="{{ route('statements.index') }}" class="flex-1 flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[200px]">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" name="customer" value="{{ request('customer') }}" placeholder="Search customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+        <form method="GET" action="{{ route('statements.index') }}" x-data="customerAutocomplete()" class="flex-1 flex flex-wrap items-center gap-3">
+            <div class="relative min-w-[200px]">
+                <div class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" name="customer" x-model="query" @input.debounce.300ms="fetchSuggestions" @keydown.down.prevent="highlightNext()" @keydown.up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @focus="open = true" @click.away="open = false" placeholder="Search customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]" autocomplete="off">
+                    @if(request('customer'))
+                        <a href="{{ route('statements.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
+                    @endif
+                </div>
+                <div x-show="open && suggestions.length > 0" class="absolute top-full left-0 z-10 w-full bg-white mt-1 border border-[#E5E9EF] rounded-lg shadow-lg max-h-60 overflow-y-auto" style="display: none;">
+                    <template x-for="(suggestion, index) in suggestions" :key="suggestion.id">
+                        <div @click="selectSuggestion(suggestion)" @mouseenter="highlightedIndex = index" :class="{'bg-[#F4F6F9]': highlightedIndex === index}" class="px-3 py-2 cursor-pointer text-[13px] text-[#1C2430] border-b border-[#E5E9EF] last:border-b-0">
+                            <span x-text="suggestion.name"></span>
+                        </div>
+                    </template>
+                </div>
             </div>
             
             <select name="status" class="pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
@@ -38,6 +50,53 @@
             <button type="submit" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">Filter</button>
             <a href="{{ route('statements.index') }}" class="text-[13px] text-[#0B3B70] hover:underline">Clear</a>
         </form>
+
+        <script>
+            function customerAutocomplete() {
+                return {
+                    query: '{{ request('customer') ?? '' }}',
+                    suggestions: [],
+                    open: false,
+                    highlightedIndex: -1,
+                    
+                    async fetchSuggestions() {
+                        if (this.query.length < 2) {
+                            this.suggestions = [];
+                            this.open = false;
+                            return;
+                        }
+                        try {
+                            const response = await fetch(`/api/customers/search?query=${encodeURIComponent(this.query)}`);
+                            this.suggestions = await response.json();
+                            this.open = this.suggestions.length > 0;
+                            this.highlightedIndex = -1;
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    },
+                    highlightNext() {
+                        if (this.highlightedIndex < this.suggestions.length - 1) this.highlightedIndex++;
+                    },
+                    highlightPrev() {
+                        if (this.highlightedIndex > 0) this.highlightedIndex--;
+                    },
+                    selectHighlighted() {
+                        if (this.highlightedIndex >= 0 && this.highlightedIndex < this.suggestions.length) {
+                            this.selectSuggestion(this.suggestions[this.highlightedIndex]);
+                        } else {
+                            this.$el.closest('form').submit();
+                        }
+                    },
+                    selectSuggestion(suggestion) {
+                        this.query = suggestion.name;
+                        this.open = false;
+                        this.$nextTick(() => {
+                            this.$el.closest('form').submit();
+                        });
+                    }
+                }
+            }
+        </script>
         
         <div class="flex gap-2.5 flex-wrap items-center">
             <a href="{{ route('statements.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] whitespace-nowrap">+ Generate SOA</a>

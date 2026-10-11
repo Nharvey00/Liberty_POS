@@ -21,22 +21,22 @@
         </div>
     @endif
 
-    <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <form method="GET" action="{{ route('users.index') }}" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search staff member..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-            @if(!empty($search))
-                <a href="{{ route('users.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
-            @endif
-        </form>
-        <div class="flex gap-2.5 flex-wrap items-center">
-            <a href="{{ route('users.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Add Staff Account</a>
+    <div x-data="liveSearch()" class="flex flex-col gap-4">
+        <div class="flex items-center justify-between mb-1 gap-3 flex-wrap">
+            <form x-ref="form" method="GET" action="{{ route('users.index') }}" @submit.prevent="performSearch" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search staff member..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+                <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
+            </form>
+            <div class="flex gap-2.5 flex-wrap items-center">
+                <a href="{{ route('users.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Add Staff Account</a>
+            </div>
         </div>
-    </div>
 
-    <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
-        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-            <table class="w-full border-collapse">
+        <div id="table-container">
+            <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
+                <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                    <table class="w-full border-collapse">
                 <thead>
                     <tr>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Name</th>
@@ -82,6 +82,8 @@
             {{ $users->links() }}
         </div>
     </div>
+    </div> <!-- Close table-container -->
+    </div> <!-- Close liveSearch -->
 
     <!-- Delete Confirmation Modal -->
     <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

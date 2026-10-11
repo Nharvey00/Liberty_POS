@@ -21,12 +21,7 @@ class UserController extends Controller
             ->orderBy('last_name');
 
         if ($search) {
-            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
-            $query->where(function ($q) use ($search, $like) {
-                $q->where('first_name', $like, "%{$search}%")
-                  ->orWhere('last_name', $like, "%{$search}%")
-                  ->orWhere('email', $like, "%{$search}%");
-            });
+            $query->search($search);
         }
 
         $users = $query->paginate(15)->withQueryString();

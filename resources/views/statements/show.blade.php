@@ -33,6 +33,11 @@
         <div class="text-center mb-6 pb-4 border-b-2 border-[#0B3B70]">
             <h2 class="font-sans text-[22px] font-bold text-[#0B3B70] m-0">LIBERTY LPG</h2>
             <div class="text-[12px] text-[#5B6472] mt-1">LPG Distributor — Davao City</div>
+            <div class="text-[11px] text-[#5B6472] mt-1 leading-tight">
+                Owned by: Jose Maria Tionko<br>
+                Lot C Blk, 11 Doña Socorro, Vicenta Village, Davao City, 8000 Davao del Sur<br>
+                TIN Number: 
+            </div>
             <div class="text-[15px] font-bold text-[#1C2430] mt-3 uppercase tracking-wider">Statement of Account</div>
         </div>
 

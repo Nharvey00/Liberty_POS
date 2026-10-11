@@ -16,7 +16,8 @@
     @endif
 
     <!-- Status Tabs & Action Toolbar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-5 gap-3">
+    <div x-data="liveSearch()" class="flex flex-col gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-3">
         <!-- Status Tabs -->
         <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
             <a href="{{ route('orders.index', array_filter(['search' => $search])) }}" 
@@ -37,21 +38,20 @@
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
-            <form method="GET" action="{{ route('orders.index') }}" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
+            <form x-ref="form" method="GET" action="{{ route('orders.index') }}" @submit.prevent="performSearch" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
                 @if($status)
                     <input type="hidden" name="status" value="{{ $status }}">
                 @endif
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Search receipt or customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-                @if($search)
-                    <a href="{{ route('orders.index', array_filter(['status' => $status])) }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
-                @endif
+                <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search receipt or customer..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+                <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
             </form>
             <a href="{{ route('pos.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] whitespace-nowrap">+ New Sale</a>
         </div>
     </div>
 
     <!-- Data Table Card -->
+    <div id="table-container">
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
         <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
             <table class="w-full border-collapse">
@@ -130,5 +130,7 @@
         <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
             {{ $orders->links() }}
         </div>
+    </div>
+    </div>
     </div>
 </x-app-layout>

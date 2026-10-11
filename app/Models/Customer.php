@@ -20,7 +20,11 @@ class Customer extends Model
         'tin_number',
         'customer_type',
         'phone',
-        'address'
+        'address',
+        'default_discount_type',
+        'default_discount_percentage',
+        'default_discount_ref_name',
+        'default_discount_ref_id'
     ];
 
     /**
@@ -91,6 +95,29 @@ class Customer extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        if (!$search) {
+            return $query;
+        }
+
+        $like = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        
+        // Handle cross-database concatenation for full names
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+        $fullName = ($driver === 'sqlite' || $driver === 'pgsql') 
+            ? "first_name || ' ' || last_name" 
+            : "CONCAT(first_name, ' ', last_name)";
+
+        return $query->where(function ($q) use ($search, $like, $fullName) {
+            $q->where(\Illuminate\Support\Facades\DB::raw($fullName), $like, "%{$search}%")
+              ->orWhere('first_name', $like, "%{$search}%")
+              ->orWhere('last_name', $like, "%{$search}%")
+              ->orWhere('business_name', $like, "%{$search}%")
+              ->orWhere('phone', $like, "%{$search}%");
+        });
     }
 
     public function creditAccount()

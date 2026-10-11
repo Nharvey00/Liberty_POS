@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
 
         // Owner / Admin
         User::firstOrCreate(
-            ['email' => 'admin@libertylpg.com'],
+            ['email' => 'admin@gmail.com'],
             [
                 'first_name' => 'Admin',
                 'last_name'  => 'Owner',

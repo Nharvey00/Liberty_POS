@@ -41,9 +41,7 @@ class ReportController extends Controller
 
         if ($customerSearch) {
             $query->whereHas('customer', function($q) use ($customerSearch) {
-                $q->where('first_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('last_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('business_name', 'like', "%{$customerSearch}%");
+                $q->search($customerSearch);
             });
         }
 
@@ -118,9 +116,7 @@ class ReportController extends Controller
 
         if ($customerSearch) {
             $query->whereHas('customer', function($q) use ($customerSearch) {
-                $q->where('first_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('last_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('business_name', 'like', "%{$customerSearch}%");
+                $q->search($customerSearch);
             });
         }
 
@@ -386,9 +382,7 @@ class ReportController extends Controller
 
         if ($customerSearch) {
             $query->whereHas('customer', function($q) use ($customerSearch) {
-                $q->where('first_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('last_name', 'like', "%{$customerSearch}%")
-                  ->orWhere('business_name', 'like', "%{$customerSearch}%");
+                $q->search($customerSearch);
             });
         }
 

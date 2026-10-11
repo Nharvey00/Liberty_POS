@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CashierSalesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
@@ -24,6 +25,11 @@ Route::get('/', function () {
 // Authenticated Routes (Requires login)
 Route::middleware(['auth'])->group(function () {
     
+    // API endpoint for customer search autocomplete
+    Route::get('/api/customers/search', [CustomerController::class, 'searchApi'])->name('api.customers.search');
+    Route::get('/api/products/search', [ProductController::class, 'searchApi'])->name('api.products.search');
+    Route::get('/api/orders/search', [OrderController::class, 'searchApi'])->name('api.orders.search');
+    
     // Profile Routes (Required by Breeze's navigation bar to prevent crashes)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -33,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:1,2,3'])->group(function () {
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Cashier Sales History
+        Route::get('/my-sales', [CashierSalesController::class, 'index'])->name('cashier.sales');
 
         // POS Checkout Routes
         Route::get('/pos', [PosController::class, 'create'])->name('pos.create');
@@ -45,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Cashier View-Only Inventory Access (Feature 2)
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show')->whereNumber('product');
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show')->whereNumber('product')->withTrashed();
     });
 
     // Level 2, 3: Operational Controls (Manager & Owner)
@@ -64,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Products (Create, Edit, Delete only - Read is in Level 1 block)
         Route::resource('products', ProductController::class)->except(['index', 'show']);
+        Route::post('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
 
         Route::resource('stock-ins', StockInController::class)->only(['index', 'create', 'store']);
         Route::resource('stock-outs', StockOutController::class)->only(['index', 'create', 'store']);

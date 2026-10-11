@@ -19,7 +19,6 @@ class StockOutController extends Controller
             $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
             $query->where(function ($q) use ($search, $like) {
                 $q->where('reason', $like, "%{$search}%")
-                  ->orWhere('remarks', $like, "%{$search}%")
                   ->orWhereHas('product', function ($pq) use ($search, $like) {
                       $pq->where('name', $like, "%{$search}%");
                   });

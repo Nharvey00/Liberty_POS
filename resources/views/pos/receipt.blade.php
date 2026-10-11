@@ -7,6 +7,11 @@
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 w-full max-w-[400px] text-[12.5px] text-[#1C2430] print:w-[80mm] print:mx-auto print:p-2 print:text-black print:shadow-none print:border-none print:bg-white print:max-w-none print:m-0">
             <div class="print:px-2">
                 <div class="text-center font-sans font-bold text-[18px] text-gray-900 mb-1 print:text-base print:font-black print:text-black">LIBERTY LPG CENTER</div>
+                <div class="text-center text-[11px] text-[#5B6472] mb-2 leading-tight print:text-[10px] print:font-medium print:text-black">
+                    Owned by: Jose Maria Tionko<br>
+                    Lot C Blk, 11 Doña Socorro, Vicenta Village, Davao City, 8000 Davao del Sur<br>
+                    TIN Number: 
+                </div>
                 <div class="text-center text-[#5B6472] mb-6 print:text-xs print:font-bold print:text-black print:mb-3">Official Receipt</div>
                 
                 <div class="flex justify-between py-1 border-b border-dashed border-[#E5E9EF] mb-1 print:border-black print:border-dashed print:text-xs print:font-medium print:text-black">
@@ -24,8 +29,8 @@
                     <span class="font-bold print:text-black">OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
                 </div>
                 <div class="flex justify-between py-1 border-b border-dashed border-[#E5E9EF] mb-1 print:border-black print:border-dashed print:text-xs print:font-medium print:text-black">
-                    <span class="font-semibold text-[#5B6472] print:text-black print:font-bold">Cashier</span>
-                    <span class="font-bold print:text-black">{{ $order->user->name }}</span>
+                    <span class="font-semibold text-[#5B6472] print:text-black print:font-bold">Cashier Name</span>
+                    <span class="font-bold print:text-black">{{ trim($order->user->first_name . ' ' . $order->user->last_name) }}</span>
                 </div>
                 <div class="flex justify-between py-1 mb-4 print:mb-2 print:text-xs print:font-medium print:text-black">
                     <span class="font-semibold text-[#5B6472] print:text-black print:font-bold">Customer</span>

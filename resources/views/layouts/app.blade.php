@@ -75,5 +75,46 @@
         </main>
     </div>
 
+    <script>
+        function liveSearch(paramName = 'search') {
+            return {
+                query: '',
+                paramName: paramName,
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.query = urlParams.get(this.paramName) || '';
+                },
+                async performSearch() {
+                    const form = this.$refs.form;
+                    if (!form) return;
+                    
+                    const url = new URL(form.action);
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.forEach((val, key) => url.searchParams.set(key, val));
+                    url.searchParams.set(this.paramName, this.query);
+                    url.searchParams.delete('page'); // Reset to page 1 on new search
+
+                    try {
+                        const res = await fetch(url.toString(), {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const html = await res.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        const newContainer = doc.getElementById('table-container');
+                        if (newContainer) {
+                            document.getElementById('table-container').innerHTML = newContainer.innerHTML;
+                        }
+
+                        // Update URL silently
+                        window.history.pushState({}, '', url.toString());
+                    } catch (e) {
+                        console.error('Live search failed:', e);
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
