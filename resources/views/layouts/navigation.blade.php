@@ -78,12 +78,12 @@
                     </a>
                 @else
                     <!-- Manager/Owner Inventory Hub with Dropdown -->
-                    <div x-data="{ invOpen: {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*') ? 'true' : 'false' }} }">
+                    <div x-data="{ invOpen: {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*', 'inventory-movements.*') ? 'true' : 'false' }} }">
                         <button @click="invOpen = !invOpen" 
                                 type="button" 
-                                class="w-full flex items-center justify-between px-4 py-2.5 rounded-[12px] text-[14px] font-semibold transition-colors {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*') ? 'bg-[#2E66AD] text-white shadow-sm' : 'text-[#88A6D3] hover:bg-[#152441] hover:text-white' }}">
+                                class="w-full flex items-center justify-between px-4 py-2.5 rounded-[12px] text-[14px] font-semibold transition-colors {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*', 'inventory-movements.*') ? 'bg-[#2E66AD] text-white shadow-sm' : 'text-[#88A6D3] hover:bg-[#152441] hover:text-white' }}">
                             <div class="flex items-center gap-3.5">
-                                <svg class="w-5 h-5 {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                <svg class="w-5 h-5 {{ request()->routeIs('products.*', 'stock-ins.*', 'stock-outs.*', 'inventory-movements.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                                 <span>Inventory Hub</span>
                             </div>
                             <svg class="w-4 h-4 transition-transform duration-200 text-[#88A6D3]" :class="invOpen ? 'rotate-180 text-white' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -107,6 +107,11 @@
                                class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors {{ request()->routeIs('stock-outs.*') ? 'bg-[#1D4E89] text-white font-bold' : 'text-[#88A6D3] hover:text-white hover:bg-[#152441]' }}">
                                 <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('stock-outs.*') ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
                                 <span>Stock Out History</span>
+                            </a>
+                            <a href="{{ route('inventory-movements.index') }}" 
+                               class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors {{ request()->routeIs('inventory-movements.*') ? 'bg-[#1D4E89] text-white font-bold' : 'text-[#88A6D3] hover:text-white hover:bg-[#152441]' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('inventory-movements.*') ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
+                                <span>Inventory Ledger</span>
                             </a>
                         </div>
                     </div>
@@ -133,7 +138,7 @@
                 </div>
             </div>
 
-            <!-- SECTION: Reports Module -->
+            <!-- SECTION: Reports & Compliance -->
             <div>
                 <div class="text-[11px] uppercase tracking-widest text-[#546E9C] mx-3 mb-2 font-bold mt-2">Reports &amp; Analytics</div>
                 <div class="space-y-1">
@@ -179,6 +184,12 @@
                             </a>
                         </div>
                     </div>
+
+                    <a href="{{ route('audit-logs.index') }}" 
+                       class="flex items-center gap-3.5 px-4 py-2.5 rounded-[12px] text-[14px] font-semibold transition-colors {{ request()->routeIs('audit-logs.*') ? 'bg-[#2E66AD] text-white shadow-sm' : 'text-[#88A6D3] hover:bg-[#152441] hover:text-white' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('audit-logs.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span>Audit Trail</span>
+                    </a>
                 </div>
             </div>
         @endif

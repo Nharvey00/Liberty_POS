@@ -23,10 +23,8 @@ class CashierSalesController extends Controller
                     $q->where('id', (int)$cleanSearch);
                 }
                 $q->orWhere('invoice_number', $like, "%{$search}%")
-                  ->orWhereHas('customer', function ($cq) use ($search, $like) {
-                      $cq->where('first_name', $like, "%{$search}%")
-                         ->orWhere('last_name', $like, "%{$search}%")
-                         ->orWhere('business_name', $like, "%{$search}%");
+                  ->orWhereHas('customer', function ($cq) use ($search) {
+                      $cq->withTrashed()->search($search);
                   });
             });
         }

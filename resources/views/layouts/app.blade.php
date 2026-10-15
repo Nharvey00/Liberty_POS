@@ -91,7 +91,21 @@
                     const url = new URL(form.action);
                     const currentParams = new URLSearchParams(window.location.search);
                     currentParams.forEach((val, key) => url.searchParams.set(key, val));
-                    url.searchParams.set(this.paramName, this.query);
+
+                    // Apply every filter currently in the form (dates, dropdowns, etc.)
+                    new FormData(form).forEach((val, key) => {
+                        if (val !== '' && val !== null) {
+                            url.searchParams.set(key, val);
+                        } else {
+                            url.searchParams.delete(key);
+                        }
+                    });
+
+                    if (this.query !== '') {
+                        url.searchParams.set(this.paramName, this.query);
+                    } else {
+                        url.searchParams.delete(this.paramName);
+                    }
                     url.searchParams.delete('page'); // Reset to page 1 on new search
 
                     try {
@@ -115,6 +129,46 @@
                 }
             }
         }
+
+        // Prevent duplicate submissions on forms marked with data-submit-once
+        // (e.g. double-clicking "Confirm Payment" must never record two payments).
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-submit-once') || event.defaultPrevented) {
+                return;
+            }
+            if (form.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
+            form.dataset.submitting = 'true';
+            form.setAttribute('aria-busy', 'true');
+            // Disable on the next tick so the clicked button's name/value is still included in the submission
+            setTimeout(function () {
+                form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-60', 'cursor-not-allowed');
+                    if (btn.dataset.loadingText) {
+                        btn.dataset.originalText = btn.textContent;
+                        btn.textContent = btn.dataset.loadingText;
+                    }
+                });
+            }, 0);
+        });
+
+        // Re-enable forms when the page is restored from the browser's back/forward cache
+        window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) return;
+            document.querySelectorAll('form[data-submit-once]').forEach(function (form) {
+                delete form.dataset.submitting;
+                form.removeAttribute('aria-busy');
+                form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60', 'cursor-not-allowed');
+                    if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+                });
+            });
+        });
     </script>
 </body>
 </html>

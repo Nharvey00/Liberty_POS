@@ -28,11 +28,14 @@ class StoreStockInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required|exists:products,id',
-            'quantity_received' => 'required|integer|min:1',
+            'product_id'         => 'required|exists:products,id',
+            'quantity_received'  => 'required|integer|min:1',
             'empty_returned_qty' => 'nullable|integer|min:0',
-            'empty_quantity' => 'nullable|integer|min:0',
-            'remarks' => 'nullable|string|max:255',
+            'empty_quantity'     => 'nullable|integer|min:0',
+            'reference_no'       => 'nullable|string|max:100',
+            'supplier_name'      => 'nullable|string|max:150',
+            'unit_cost'          => 'nullable|numeric|min:0',
+            'remarks'            => 'nullable|string|max:255',
         ];
     }
 

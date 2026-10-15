@@ -12,10 +12,10 @@
 
     {{-- Action Buttons --}}
     <div class="flex gap-2.5 mb-5 print:hidden items-center">
-        <button onclick="window.print()" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print Statement</button>
+        <button type="button" onclick="window.print()" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print Statement</button>
         
         {{-- Manual toggle for paid status --}}
-        <form method="POST" action="{{ route('statements.update', $statement) }}" class="inline print:hidden">
+        <form method="POST" action="{{ route('statements.update', $statement) }}" data-submit-once class="inline print:hidden">
             @csrf
             @method('PATCH')
             <input type="hidden" name="is_paid" value="{{ $statement->is_paid ? 'false' : 'true' }}">
@@ -133,7 +133,7 @@
                                         @endif
                                     @endif
                                 @elseif($entry->payment_id)
-                                    Payment #{{ $entry->payment_id }}
+                                    Payment {{ $entry->payment->reference_no ?? '' }}
                                 @else
                                     —
                                 @endif

@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $lowStockProducts = Product::where('stock_quantity', '<=', 10)->get();
         
         $totalCustomers = Customer::count();
-        $activeCreditAccounts = CreditAccount::where('is_active', DB::raw('true'))->count();
+        $activeCreditAccounts = CreditAccount::active()->count();
 
         // --- CHART DATA GENERATION ---
 
@@ -57,10 +57,7 @@ class DashboardController extends Controller
         $monthlyBest = empty(array_filter($monthlyData)) ? 0 : max($monthlyData);
         $monthlyBestDay = 'N/A';
         if ($monthlyBest > 0) {
-            $monthlyBestDay = $weeklyLabels[array_search($monthlyBest, $monthlyData)] ?? 'N/A';
-            if ($monthlyBest > 0 && isset($monthlyLabels[array_search($monthlyBest, $monthlyData)])) {
-                $monthlyBestDay = $monthlyLabels[array_search($monthlyBest, $monthlyData)];
-            }
+            $monthlyBestDay = $monthlyLabels[array_search($monthlyBest, $monthlyData)] ?? 'N/A';
         }
 
         // Quarterly (Last 4 Quarters)

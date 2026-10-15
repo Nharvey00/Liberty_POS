@@ -35,7 +35,9 @@
                     @foreach($products as $product)
                         <button type="button" 
                             @click="addToCart({{ $product }})"
-                            class="p-3.5 border border-[#E5E9EF] rounded-xl text-left bg-white hover:border-[#0B3B70] hover:bg-[#E7EEF7] transition-all focus:outline-none flex flex-col justify-between h-full group cursor-pointer shadow-2xs hover:shadow-xs">
+                            :disabled="productQtyInCart({{ $product->id }}) >= {{ (int) $product->stock_quantity }}"
+                            :aria-label="productQtyInCart({{ $product->id }}) >= {{ (int) $product->stock_quantity }} ? @js($product->name . ' — all available stock is already in the cart') : @js('Add ' . $product->name . ' to cart')"
+                            class="p-3.5 border border-[#E5E9EF] rounded-xl text-left bg-white hover:border-[#0B3B70] hover:bg-[#E7EEF7] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B3B70] flex flex-col justify-between h-full group cursor-pointer shadow-2xs hover:shadow-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-[#E5E9EF]">
                             <div>
                                 <h4 class="font-bold text-[13px] text-[#1C2430] group-hover:text-[#0B3B70] mb-1 leading-snug line-clamp-2">{{ $product->name }}</h4>
                                 <p class="text-[12.5px] font-semibold text-[#5B6472]">₱{{ number_format($product->price, 2) }}</p>
@@ -65,7 +67,7 @@
                 <div class="flex items-center gap-2">
                     <span x-show="cart.length > 0" 
                           class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#0B3B70] text-white" 
-                          x-text="cart.reduce((sum, item) => sum + item.quantity, 0) + ' item(s)'"></span>
+                          x-text="cartItemCount() + ' item(s)'"></span>
                     <button type="button" 
                             x-show="cart.length > 0" 
                             @click="cart = []" 
@@ -135,19 +137,24 @@
                                         <div class="inline-flex items-center bg-[#F8FAFC] border border-[#CBD5E1] rounded shadow-2xs overflow-hidden">
                                             <button type="button" 
                                                     @click="decrementQty(item)" 
-                                                    :disabled="item.quantity <= 1 || (isCompany && item.standard_capacity_kg !== null && item.is_swap)"
+                                                    :disabled="qty(item) <= 1 || isResidualLine(item)"
+                                                    :aria-label="'Decrease quantity of ' + item.name"
                                                     class="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold border-r border-[#CBD5E1]">
                                                 –
                                             </button>
                                             <input type="number" 
                                                    x-model.number="item.quantity" 
-                                                   :max="(isCompany && item.standard_capacity_kg !== null && item.is_swap) ? 1 : null" 
-                                                   :readonly="isCompany && item.standard_capacity_kg !== null && item.is_swap" 
+                                                   @change="clampQty(item)"
+                                                   :max="maxQtyFor(item)" 
+                                                   :readonly="isResidualLine(item)" 
+                                                   :aria-label="'Quantity of ' + item.name"
                                                    class="w-10 h-8 text-center font-bold text-[12px] border-0 p-0 focus:ring-0 text-gray-900 bg-transparent" 
                                                    min="1" required>
                                             <button type="button" 
                                                     @click="incrementQty(item)" 
-                                                    :disabled="isCompany && item.standard_capacity_kg !== null && item.is_swap"
+                                                    :disabled="isResidualLine(item) || productQtyInCart(item.id) >= item.stock_quantity"
+                                                    :aria-label="'Increase quantity of ' + item.name"
+                                                    :title="productQtyInCart(item.id) >= item.stock_quantity ? 'No more stock available' : ''"
                                                     class="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold border-l border-[#CBD5E1]">
                                                 +
                                             </button>
@@ -175,7 +182,7 @@
                                 <template x-if="item.is_cylinder && item.standard_capacity_kg !== null">
                                     <div class="mt-1 pt-1 border-t border-dashed border-[#E2E8F0] flex items-center justify-between text-[10px]">
                                         <label class="inline-flex items-center gap-1 font-medium text-[#334155] cursor-pointer">
-                                            <input type="checkbox" x-model="item.is_swap" class="rounded border-[#CBD5E1] text-[#0B3B70] focus:ring-[#0B3B70] w-3 h-3">
+                                            <input type="checkbox" x-model="item.is_swap" @change="normalizeResidualLines()" class="rounded border-[#CBD5E1] text-[#0B3B70] focus:ring-[#0B3B70] w-3 h-3">
                                             <span>Tank Swap (Empty returned)</span>
                                         </label>
                                         <span class="px-1.5 py-0.2 rounded font-bold" 
@@ -205,15 +212,23 @@
                 <div class="p-3.5 border-t border-[#E2E8F0] bg-white shrink-0 shadow-lg space-y-2.5">
                     <!-- Discount Logic Workflow -->
                     <template x-if="hasDefaultDiscount">
-                        <div class="p-2.5 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl flex items-center justify-between">
-                            <div>
-                                <span class="block text-[10.5px] font-bold text-[#4338CA] uppercase tracking-wider">Applied Discount</span>
-                                <span class="text-[12px] font-semibold text-[#312E81]" x-text="discountType.charAt(0).toUpperCase() + discountType.slice(1) + ' Discount'"></span>
+                        <div class="p-2.5 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="block text-[10.5px] font-bold text-[#4338CA] uppercase tracking-wider">Applied Discount</span>
+                                    <span class="text-[12px] font-semibold text-[#312E81]" x-text="discountType.charAt(0).toUpperCase() + discountType.slice(1) + ' Discount'"></span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[13px] font-bold text-[#312E81]" x-text="'-₱' + calculateDiscountAmount().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></div>
+                                    <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefName"></div>
+                                    <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefId"></div>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefName"></div>
-                                <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefId"></div>
-                            </div>
+                            <template x-if="needsDiscountDetails">
+                                <button type="button" @click="openDiscountModal()" class="w-full py-1.5 text-[11px] font-bold text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FEF3C7] rounded-lg transition-colors">
+                                    ID details missing — add Senior/PWD ID details
+                                </button>
+                            </template>
                             <!-- Hidden inputs for backend -->
                             <input type="hidden" name="discount_type" :value="discountType">
                             <input type="hidden" name="discount_amount" :value="calculateDiscountAmount()">
@@ -250,7 +265,7 @@
                                 <div class="flex items-center gap-2">
                                     <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount:</label>
                                     <div class="relative flex-1">
-                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">â‚±</div>
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">₱</div>
                                         <input type="number" 
                                                name="discount_amount"
                                                x-model.number="discountValue" 
@@ -268,7 +283,7 @@
                                 
                                 <template x-if="['senior', 'pwd'].includes(discountType)">
                                     <div class="pt-1.5 border-t border-dashed border-[#E2E8F0]">
-                                        <button type="button" @click="showDiscountModal = true" class="w-full py-2 flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0] rounded-lg transition-colors">
+                                        <button type="button" @click="openDiscountModal()" class="w-full py-2 flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0] rounded-lg transition-colors">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                             <span x-text="discountRefName ? 'Edit Details (' + discountRefName + ')' : 'Add ' + (discountType === 'senior' ? 'Senior' : 'PWD') + ' Details'"></span>
                                         </button>
@@ -279,14 +294,17 @@
                     </template>
 
                     <!-- Payment Method -->
-                    <div class="flex items-center gap-2">
-                        <label class="block text-[10.5px] font-bold text-[#475569] uppercase tracking-wider shrink-0">
-                            Payment Method <span class="text-[#B5504B]">*</span>
-                        </label>
-                        <select name="payment_method" required class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-[#F8FAFC] focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                            <option value="Cash">Cash (Paid Now)</option>
-                            <option value="Credit">Credit (Add to Utang Ledger)</option>
-                        </select>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <label for="payment_method" class="block text-[10.5px] font-bold text-[#475569] uppercase tracking-wider shrink-0">
+                                Payment Method <span class="text-[#B5504B]">*</span>
+                            </label>
+                            <select name="payment_method" id="payment_method" x-model="paymentMethod" required class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-[#F8FAFC] focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                                <option value="Cash">Cash (Paid Now)</option>
+                                <option value="Credit" :disabled="!selectedCustomerId">Credit (Add to Utang Ledger)</option>
+                            </select>
+                        </div>
+                        <p x-show="!selectedCustomerId" class="text-[10.5px] text-[#64748B] mt-1">Select a registered customer to charge this sale to credit (utang).</p>
                     </div>
 
                     <!-- Financial Summary & Total Due -->
@@ -374,7 +392,15 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-[#64748B] font-semibold">Items in Cart:</span>
-                            <span class="font-sans font-bold text-gray-800" x-text="cart.reduce((sum, item) => sum + item.quantity, 0) + ' item(s)'"></span>
+                            <span class="font-sans font-bold text-gray-800" x-text="cartItemCount() + ' item(s)'"></span>
+                        </div>
+                        <div class="flex justify-between items-center gap-3">
+                            <span class="text-[#64748B] font-semibold shrink-0">Customer:</span>
+                            <span class="font-bold text-gray-800 text-right truncate" x-text="selectedCustomer ? selectedCustomer.name : 'Walk-in Customer'"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[#64748B] font-semibold">Payment:</span>
+                            <span class="font-bold" :class="paymentMethod === 'Credit' ? 'text-[#B45309]' : 'text-gray-800'" x-text="paymentMethod === 'Credit' ? 'Credit (Utang)' : 'Cash'"></span>
                         </div>
                     </div>
                 </div>
@@ -406,20 +432,24 @@
         </div>
 
         <!-- Discount Details Modal -->
-        <div x-show="showDiscountModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div @click.away="cancelDiscountDetails()" x-show="showDiscountModal" x-transition.opacity class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
-                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-[#E7EEF7] rounded-full mb-4">
+        <div x-show="showDiscountModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+             @keydown.escape.window="cancelDiscountDetails()">
+            <div @click.away="cancelDiscountDetails()" x-show="showDiscountModal" x-transition.opacity
+                 role="dialog" aria-modal="true" aria-labelledby="discount-details-title"
+                 class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-[#E7EEF7] rounded-full mb-4" aria-hidden="true">
                     <svg class="w-6 h-6 text-[#0B3B70]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
                 </div>
-                <h3 class="text-[17px] font-bold text-center text-gray-900 mb-6" x-text="discountType === 'senior' ? 'Senior Citizen Details' : 'PWD Details'"></h3>
+                <h3 id="discount-details-title" class="text-[17px] font-bold text-center text-gray-900 mb-6" x-text="discountType === 'senior' ? 'Senior Citizen Details' : 'PWD Details'"></h3>
+                <div x-show="discountDetailsError" role="alert" class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-3 py-2 rounded-lg text-[12px] font-semibold" x-text="discountDetailsError"></div>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">Customer Name *</label>
-                        <input type="text" x-model="discountRefName" class="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-[13px] font-semibold bg-[#F8FAFC] focus:bg-white focus:ring-1 focus:ring-[#0B3B70]" placeholder="Enter Name">
+                        <label for="discount_ref_name_input" class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">Customer Name *</label>
+                        <input type="text" id="discount_ref_name_input" x-model="discountRefName" @keydown.enter.prevent="applyDiscountDetails()" class="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-[13px] font-semibold bg-[#F8FAFC] focus:bg-white focus:ring-1 focus:ring-[#0B3B70]" placeholder="Enter Name">
                     </div>
                     <div>
-                        <label class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">ID Number *</label>
-                        <input type="text" x-model="discountRefId" class="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-[13px] font-semibold bg-[#F8FAFC] focus:bg-white focus:ring-1 focus:ring-[#0B3B70]" placeholder="Enter ID Number">
+                        <label for="discount_ref_id_input" class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">ID Number *</label>
+                        <input type="text" id="discount_ref_id_input" x-model="discountRefId" @keydown.enter.prevent="applyDiscountDetails()" class="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-[13px] font-semibold bg-[#F8FAFC] focus:bg-white focus:ring-1 focus:ring-[#0B3B70]" placeholder="Enter ID Number">
                     </div>
                 </div>
                 <div class="flex gap-3 mt-7">
@@ -432,15 +462,21 @@
 
     <script>
         function posEngine() {
+            // Customer types priced per kg of gas actually consumed (must match StoreOrderRequest/PosController)
+            const RESIDUAL_CUSTOMER_TYPES = ['Coke (Residual)', 'Company', 'Corporate'];
+
             return {
                 customers: @json($customers),
                 selectedCustomerId: '',
                 isCompany: false,
                 cart: [],
+                paymentMethod: 'Cash',
                 discountType: 'none',
                 discountValue: 0,
                 discountRefName: '',
                 discountRefId: '',
+                discountDetailsSnapshot: { name: '', id: '' },
+                discountDetailsError: '',
                 showConfirmModal: false,
                 showDiscountModal: false,
                 isSubmitting: false,
@@ -448,24 +484,125 @@
 
                 init() {
                     this.$watch('cart', () => {
-                        if (!this.isDiscountManuallyOverridden && this.discountType !== 'none') {
-                            const customer = this.customers.find(c => c.id == this.selectedCustomerId);
-                            if (customer && customer.default_discount_percentage) {
-                                const subtotal = this.calculateSubtotal();
-                                const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
-                                this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                        if (this.discountType === 'none') return;
+                        if (!this.isDiscountManuallyOverridden) {
+                            const customer = this.selectedCustomer;
+                            if (customer && this.defaultDiscountTypeFor(customer) === this.discountType) {
+                                this.applyDefaultDiscount(customer);
+                            }
+                        } else {
+                            // A manual discount can never exceed the (possibly reduced) subtotal
+                            const subtotal = this.calculateSubtotal();
+                            if (parseFloat(this.discountValue) > subtotal) {
+                                this.discountValue = subtotal;
                             }
                         }
                     }, { deep: true });
                 },
 
-                get hasDefaultDiscount() {
-                    const customer = this.customers.find(c => c.id == this.selectedCustomerId);
-                    return customer && customer.default_discount_type && customer.default_discount_type !== 'none';
+                /* ---------- Customer helpers ---------- */
+
+                get selectedCustomer() {
+                    return this.customers.find(c => c.id == this.selectedCustomerId) || null;
                 },
+
+                isResidualCustomer(customer) {
+                    return !!customer && RESIDUAL_CUSTOMER_TYPES.includes(customer.customer_type);
+                },
+
+                // Legacy profiles saved as "custom" are treated as "promo" (the only manual type checkout accepts)
+                defaultDiscountTypeFor(customer) {
+                    const type = customer ? customer.default_discount_type : null;
+                    if (!type || type === 'none') return null;
+                    return type === 'custom' ? 'promo' : type;
+                },
+
+                // Senior/PWD fall back to the statutory 20% when the profile has no percentage saved
+                defaultDiscountPercentFor(customer) {
+                    const pct = parseFloat(customer ? customer.default_discount_percentage : NaN);
+                    if (!isNaN(pct) && pct > 0) return pct;
+                    return ['senior', 'pwd'].includes(this.defaultDiscountTypeFor(customer)) ? 20 : 0;
+                },
+
+                applyDefaultDiscount(customer) {
+                    const calculated = this.calculateSubtotal() * (this.defaultDiscountPercentFor(customer) / 100);
+                    this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                },
+
+                get hasDefaultDiscount() {
+                    return this.defaultDiscountTypeFor(this.selectedCustomer) !== null;
+                },
+
+                get needsDiscountDetails() {
+                    return ['senior', 'pwd'].includes(this.discountType)
+                        && (!(this.discountRefName || '').trim() || !(this.discountRefId || '').trim());
+                },
+
+                /* ---------- Quantity & stock helpers ---------- */
+
+                qty(item) {
+                    return Math.max(0, parseInt(item.quantity, 10) || 0);
+                },
+
+                cartItemCount() {
+                    return this.cart.reduce((sum, item) => sum + this.qty(item), 0);
+                },
+
+                productQtyInCart(productId, excludeItem = null) {
+                    return this.cart
+                        .filter(item => item.id === productId && item !== excludeItem)
+                        .reduce((sum, item) => sum + this.qty(item), 0);
+                },
+
+                // Residual-account swaps are recorded one tank per line (each has its own residual weight)
+                isResidualLine(item) {
+                    return this.isCompany && item.standard_capacity_kg !== null && item.is_swap;
+                },
+
+                maxQtyFor(item) {
+                    if (this.isResidualLine(item)) return 1;
+                    return Math.max(1, item.stock_quantity - this.productQtyInCart(item.id, item));
+                },
+
+                clampQty(item) {
+                    item.quantity = Math.min(this.maxQtyFor(item), Math.max(1, parseInt(item.quantity, 10) || 1));
+                },
+
+                // Split multi-quantity swap lines into single-tank lines when residual pricing applies
+                normalizeResidualLines() {
+                    if (!this.isCompany) return;
+                    const expanded = [];
+                    this.cart.forEach(item => {
+                        const quantity = this.qty(item);
+                        if (item.is_cylinder && item.standard_capacity_kg !== null && item.is_swap && quantity > 1) {
+                            for (let k = 0; k < quantity; k++) {
+                                expanded.push(Object.assign({}, item, { quantity: 1 }));
+                            }
+                        } else {
+                            expanded.push(item);
+                        }
+                    });
+                    this.cart = expanded;
+                },
+
+                /* ---------- Checkout flow ---------- */
 
                 openCheckoutModal() {
                     if (this.cart.length === 0 || this.isSubmitting) return;
+
+                    this.cart.forEach(item => this.clampQty(item));
+
+                    if (this.paymentMethod === 'Credit' && !this.selectedCustomerId) {
+                        this.paymentMethod = 'Cash';
+                    }
+
+                    // Catch missing Senior/PWD ID details here instead of losing the cart to a server error
+                    if (this.needsDiscountDetails) {
+                        this.openDiscountModal();
+                        this.discountDetailsError = 'Senior/PWD discounts require the name on the ID and the ID number.';
+                        return;
+                    }
+
                     const form = document.getElementById('checkout-form');
                     if (form && !form.checkValidity()) {
                         form.reportValidity();
@@ -484,33 +621,23 @@
                 },
 
                 checkCustomerType() {
-                    const customer = this.customers.find(c => c.id == this.selectedCustomerId);
-                    this.isCompany = customer ? (customer.customer_type === 'Coke (Residual)' || customer.customer_type === 'Company') : false;
+                    const customer = this.selectedCustomer;
+                    this.isCompany = this.isResidualCustomer(customer);
+                    this.normalizeResidualLines();
 
                     this.isDiscountManuallyOverridden = false; // Reset override on customer change
 
-                    if (customer) {
-                        if (customer.default_discount_type) {
-                            this.discountType = customer.default_discount_type;
-                            if (customer.default_discount_percentage) {
-                                const subtotal = this.calculateSubtotal();
-                                const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
-                                this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
-                            } else {
-                                this.discountValue = 0;
-                            }
-                            if (customer.default_discount_ref_name) {
-                                this.discountRefName = customer.default_discount_ref_name;
-                            }
-                            if (customer.default_discount_ref_id) {
-                                this.discountRefId = customer.default_discount_ref_id;
-                            }
-                        } else {
-                            this.discountType = 'none';
-                            this.discountValue = 0;
-                            this.discountRefName = '';
-                            this.discountRefId = '';
-                        }
+                    // Credit (Utang) always requires a registered customer
+                    if (!customer && this.paymentMethod === 'Credit') {
+                        this.paymentMethod = 'Cash';
+                    }
+
+                    const defaultType = this.defaultDiscountTypeFor(customer);
+                    if (customer && defaultType) {
+                        this.discountType = defaultType;
+                        this.applyDefaultDiscount(customer);
+                        this.discountRefName = customer.default_discount_ref_name || '';
+                        this.discountRefId = customer.default_discount_ref_id || '';
                     } else {
                         this.discountType = 'none';
                         this.discountValue = 0;
@@ -520,6 +647,10 @@
                 },
 
                 addToCart(product) {
+                    const stock = parseInt(product.stock_quantity, 10) || 0;
+                    // Never allow more units in the cart than are on hand
+                    if (this.productQtyInCart(product.id) >= stock) return;
+
                     const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null;
                     const isCylinder = !isAccessory;
                     // Coke (Residual) account LPG cylinders: add each cylinder as an independent line item with qty=1
@@ -527,7 +658,7 @@
                     const existingItem = isCokeCylinder ? null : this.cart.find(item => item.id === product.id);
                     
                     if (existingItem) {
-                        existingItem.quantity++;
+                        existingItem.quantity = this.qty(existingItem) + 1;
                     } else {
                         this.cart.push({
                             id: product.id,
@@ -535,6 +666,7 @@
                             price: parseFloat(product.price),
                             new_cylinder_price: product.new_cylinder_price !== null ? parseFloat(product.new_cylinder_price) : null,
                             standard_capacity_kg: product.standard_capacity_kg !== null ? parseFloat(product.standard_capacity_kg) : null,
+                            stock_quantity: stock,
                             is_accessory: isAccessory,
                             is_cylinder: isCylinder,
                             quantity: 1,
@@ -549,14 +681,15 @@
                 },
 
                 incrementQty(item) {
-                    if (this.isCompany && item.standard_capacity_kg !== null && item.is_swap) return;
-                    item.quantity++;
+                    if (this.isResidualLine(item)) return;
+                    if (this.productQtyInCart(item.id) >= item.stock_quantity) return;
+                    item.quantity = this.qty(item) + 1;
                 },
 
                 decrementQty(item) {
-                    if (this.isCompany && item.standard_capacity_kg !== null && item.is_swap) return;
-                    if (item.quantity > 1) {
-                        item.quantity--;
+                    if (this.isResidualLine(item)) return;
+                    if (this.qty(item) > 1) {
+                        item.quantity = this.qty(item) - 1;
                     }
                 },
 
@@ -571,16 +704,18 @@
                 },
 
                 getItemSubtotal(item) {
+                    const quantity = this.qty(item);
                     if (item.is_swap) {
                         if (this.isCompany && item.standard_capacity_kg !== null && item.residual_kg !== null && item.residual_kg !== '') {
-                            const actualConsumed = Math.max(0, item.standard_capacity_kg - parseFloat(item.residual_kg || 0));
+                            const residual = Math.min(item.standard_capacity_kg, Math.max(0, parseFloat(item.residual_kg) || 0));
+                            const actualConsumed = Math.max(0, item.standard_capacity_kg - residual);
                             const pricePerKg = item.price / item.standard_capacity_kg;
-                            return Math.round(actualConsumed * pricePerKg * item.quantity * 100) / 100;
+                            return Math.round(actualConsumed * pricePerKg * quantity * 100) / 100;
                         }
-                        return Math.round(item.price * item.quantity * 100) / 100;
+                        return Math.round(item.price * quantity * 100) / 100;
                     }
                     const unitPrice = (item.new_cylinder_price !== null) ? item.new_cylinder_price : item.price;
-                    return Math.round(unitPrice * item.quantity * 100) / 100;
+                    return Math.round(unitPrice * quantity * 100) / 100;
                 },
 
                 calculateSubtotal() {
@@ -591,16 +726,16 @@
                     return Math.round(total * 100) / 100;
                 },
 
+                /* ---------- Discounts ---------- */
+
                 onDiscountTypeChange() {
                     this.isDiscountManuallyOverridden = false;
                     if (this.discountType === 'none') {
                         this.discountValue = 0;
                     } else {
-                        const customer = this.customers.find(c => c.id == this.selectedCustomerId);
-                        if (customer && customer.default_discount_percentage && customer.default_discount_type === this.discountType) {
-                            const subtotal = this.calculateSubtotal();
-                            const calculated = subtotal * (parseFloat(customer.default_discount_percentage) / 100);
-                            this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                        const customer = this.selectedCustomer;
+                        if (customer && this.defaultDiscountTypeFor(customer) === this.discountType) {
+                            this.applyDefaultDiscount(customer);
                         } else {
                             this.discountValue = 0;
                         }
@@ -610,20 +745,43 @@
                         this.discountRefId = '';
                     } else {
                         // Automatically pop up the modal when Senior/PWD is selected
-                        this.showDiscountModal = true;
+                        this.openDiscountModal();
                     }
                 },
 
+                openDiscountModal() {
+                    // Remember the current details so "Cancel" restores them instead of wiping the discount
+                    this.discountDetailsSnapshot = { name: this.discountRefName || '', id: this.discountRefId || '' };
+                    this.discountDetailsError = '';
+                    this.showDiscountModal = true;
+                },
+
                 applyDiscountDetails() {
+                    this.discountRefName = (this.discountRefName || '').trim();
+                    this.discountRefId = (this.discountRefId || '').trim();
+                    if (!this.discountRefName || !this.discountRefId) {
+                        this.discountDetailsError = 'Please enter both the name on the ID and the ID number.';
+                        return;
+                    }
+                    this.discountDetailsError = '';
                     this.showDiscountModal = false;
                 },
 
                 cancelDiscountDetails() {
-                    this.discountType = 'none';
-                    this.discountValue = 0;
-                    this.discountRefName = '';
-                    this.discountRefId = '';
+                    if (!this.showDiscountModal) return;
+                    const snapshot = this.discountDetailsSnapshot || { name: '', id: '' };
+                    this.discountRefName = snapshot.name;
+                    this.discountRefId = snapshot.id;
+                    this.discountDetailsError = '';
                     this.showDiscountModal = false;
+
+                    // A manually chosen Senior/PWD discount without saved details cannot be applied
+                    if (!this.hasDefaultDiscount && (!snapshot.name || !snapshot.id)) {
+                        this.discountType = 'none';
+                        this.discountValue = 0;
+                        this.discountRefName = '';
+                        this.discountRefId = '';
+                    }
                 },
 
                 calculateDiscountAmount() {
@@ -631,7 +789,8 @@
                         return 0;
                     }
                     const amount = parseFloat(this.discountValue);
-                    return isNaN(amount) || amount < 0 ? 0 : amount;
+                    if (isNaN(amount) || amount < 0) return 0;
+                    return Math.min(amount, this.calculateSubtotal());
                 },
 
                 calculateTotal() {

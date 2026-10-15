@@ -28,12 +28,14 @@ class StoreStockOutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required|exists:products,id',
-            'quantity_removed' => 'required|integer|min:0',
+            'product_id'             => 'required|exists:products,id',
+            'quantity_removed'       => 'required|integer|min:0',
             'empty_quantity_removed' => 'nullable|integer|min:0',
-            'empty_quantity' => 'nullable|integer|min:0',
-            'reason' => 'required|string|max:255',
-            'remarks' => 'nullable|string|max:255',
+            'empty_quantity'         => 'nullable|integer|min:0',
+            'reference_no'           => 'nullable|string|max:100',
+            'movement_category'      => 'nullable|string|max:60',
+            'reason'                 => 'required|string|max:255',
+            'remarks'                => 'nullable|string|max:255',
         ];
     }
 

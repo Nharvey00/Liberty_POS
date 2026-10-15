@@ -54,9 +54,9 @@
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($account->is_active)
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Active</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Active</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F4F6F9] text-[#5B6472]">Inactive</span>
+                                    <span class="text-[12.5px] font-semibold text-[#5B6472]">Inactive</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">

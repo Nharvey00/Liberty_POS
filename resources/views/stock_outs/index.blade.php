@@ -44,26 +44,36 @@
                 <thead>
                     <tr>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Date Logged</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reference</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reason</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Product</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Qty Removed</th>
-                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Remarks</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Stock (Before → After)</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Recorded By</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($stockOuts as $stockOut)
                         <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430]">{{ $stockOut->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430] whitespace-nowrap">{{ $stockOut->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-semibold text-[#0B3B70]">{{ $stockOut->reference_no ?? 'ADJ-' . str_pad($stockOut->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">{{ $stockOut->reason }}</span>
+                                <span class="text-[12.5px] font-medium text-[#B5504B]">{{ $stockOut->reason }}</span>
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium">{{ $stockOut->product->name ?? 'N/A' }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#B5504B]">-{{ number_format($stockOut->quantity_removed) }}</td>
-                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">{{ $stockOut->remarks ?? '—' }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
+                                @if(!is_null($stockOut->filled_qty_before) && !is_null($stockOut->filled_qty_after))
+                                    <span class="font-medium text-[#1C2430]">{{ number_format($stockOut->filled_qty_before) }} → {{ number_format($stockOut->filled_qty_after) }}</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">{{ $stockOut->user->name ?? 'System' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
+                            <td colspan="7" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
                         </tr>
                     @endforelse
                 </tbody>

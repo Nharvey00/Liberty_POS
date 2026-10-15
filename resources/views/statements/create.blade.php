@@ -4,7 +4,11 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Select a credit account and billing period to generate an SOA</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('statements.store') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <div class="max-w-4xl">
+        <x-flash-messages />
+    </div>
+
+    <form method="POST" action="{{ route('statements.store') }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
 
         <div class="grid grid-cols-2 gap-4 mb-5">
@@ -52,7 +56,7 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Generate SOAs for all active credit accounts in one go</div>
     </div>
 
-    <form method="POST" action="{{ route('statements.batch') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <form method="POST" action="{{ route('statements.batch') }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
 
         <div class="grid grid-cols-2 gap-4 mb-5">

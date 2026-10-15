@@ -48,6 +48,7 @@ class StoreOrderRequest extends FormRequest
             }
 
             $orderSubtotal = 0;
+            $cumulativeQtyByProduct = [];
 
             foreach ($items as $index => $item) {
                 if (!isset($item['product_id'])) {
@@ -60,12 +61,20 @@ class StoreOrderRequest extends FormRequest
                 }
 
                 $qty = (int)($item['quantity'] ?? 1);
+                $cumulativeQtyByProduct[$product->id] = ($cumulativeQtyByProduct[$product->id] ?? 0) + $qty;
+                if ($cumulativeQtyByProduct[$product->id] > $product->stock_quantity) {
+                    $validator->errors()->add(
+                        "items.{$index}.quantity",
+                        "Insufficient stock for {$product->name}. Available: {$product->stock_quantity}."
+                    );
+                }
+
                 $isSwap = filter_var($item['is_swap'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $residual = $item['residual_kg'] ?? null;
                 $itemSubtotal = 0;
 
                 // Coke (Residual) cylinder validation rules
-                if ($isCokeResidual && !is_null($product->standard_capacity_kg)) {
+                if ($isCokeResidual && !$product->isAccessory()) {
                     if ($isSwap) {
                         // Enforce quantity = 1 per swapped tank for individual residual tracking
                         if ($qty > 1) {

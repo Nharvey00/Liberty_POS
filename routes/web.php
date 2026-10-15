@@ -16,6 +16,7 @@ use App\Http\Controllers\StockInController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\OrderVoidController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AuditLogController;
 
 // Public redirect
 Route::get('/', function () {
@@ -90,6 +91,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/utang', [ReportController::class, 'utang'])->name('reports.utang');
         Route::get('/reports/discounts', [ReportController::class, 'discounts'])->name('reports.discounts');
         Route::get('/reports/discounts/export', [ReportController::class, 'exportDiscounts'])->name('reports.discounts.export');
+
+        // Audit Trail & Inventory Movement Ledger (Manager & Owner)
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('audit-logs.export');
+        Route::get('/audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+        Route::get('/inventory-movements', [AuditLogController::class, 'inventoryMovements'])->name('inventory-movements.index');
     });
 
     // Level 3: Owner Administration

@@ -4,7 +4,7 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Register a new item to the inventory catalog</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('products.store') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <form method="POST" action="{{ route('products.store') }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
 
         <!-- UI Helper: Product Type Toggle -->
@@ -12,14 +12,14 @@
             <label class="block text-[12px] font-bold text-[#1C2430] mb-3">Product Category</label>
             <div class="flex gap-4">
                 <label class="flex-1 cursor-pointer">
-                    <input type="radio" name="ui_product_type" value="lpg" class="peer hidden" checked onchange="toggleFields()">
+                    <input type="radio" name="ui_product_type" value="lpg" class="peer hidden" @checked(old('ui_product_type', 'lpg') === 'lpg') onchange="toggleFields()">
                     <div class="border border-[#E5E9EF] rounded-lg p-4 text-center peer-checked:border-[#0B3B70] peer-checked:bg-[#E7EEF7] peer-checked:text-[#0B3B70] transition-colors">
                         <div class="font-bold text-[13.5px]">LPG Cylinder Tank</div>
                         <div class="text-[11.5px] text-[#5B6472] mt-1 peer-checked:text-[#0B3B70]">Tracks filled stock and empty shell inventory.</div>
                     </div>
                 </label>
                 <label class="flex-1 cursor-pointer">
-                    <input type="radio" name="ui_product_type" value="accessory" class="peer hidden" onchange="toggleFields()">
+                    <input type="radio" name="ui_product_type" value="accessory" class="peer hidden" @checked(old('ui_product_type') === 'accessory') onchange="toggleFields()">
                     <div class="border border-[#E5E9EF] rounded-lg p-4 text-center peer-checked:border-[#0B3B70] peer-checked:bg-[#E7EEF7] peer-checked:text-[#0B3B70] transition-colors">
                         <div class="font-bold text-[13.5px]">Accessory or Part</div>
                         <div class="text-[11.5px] text-[#5B6472] mt-1 peer-checked:text-[#0B3B70]">For items like regulators, hoses, and clamps.</div>

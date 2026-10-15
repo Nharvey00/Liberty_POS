@@ -4,10 +4,12 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Manually deduct inventory due to damages, leaks, or corrections</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('stock-outs.store') }}" 
+    <form method="POST" action="{{ route('stock-outs.store') }}" data-submit-once
           x-data="{
               products: {{ Js::from($products) }},
               selectedProductId: '{{ old('product_id', '') }}',
+              quantityRemoved: {{ (int) old('quantity_removed', 0) }},
+              emptyQuantityRemoved: {{ (int) old('empty_quantity_removed', 0) }},
               get selectedProduct() {
                   return this.products.find(p => p.id == this.selectedProductId) || null;
               },
@@ -48,16 +50,23 @@
                     <span x-text="isAccessory ? 'Units Deducted' : 'Filled Tanks Deducted'">Filled Tanks Deducted</span>
                     <span class="text-[#B5504B]">*</span>
                 </label>
-                <input type="number" name="quantity_removed" id="quantity_removed" value="{{ old('quantity_removed', 0) }}" min="0" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" placeholder="0">
+                <input type="number" name="quantity_removed" id="quantity_removed" x-model.number="quantityRemoved" min="0" :max="selectedProduct ? selectedProduct.stock_quantity : null" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" placeholder="0">
+                <p x-show="selectedProduct" class="text-[11px] text-[#5B6472] mt-1">
+                    Available: <span x-text="selectedProduct ? selectedProduct.stock_quantity : 0"></span>
+                </p>
                 @error('quantity_removed') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div x-show="!isAccessory" x-cloak class="col-span-1">
                 <label for="empty_quantity_removed" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Empty Shells Deducted <span class="text-[#B5504B]">*</span></label>
                 <input type="number" name="empty_quantity_removed" id="empty_quantity_removed" 
+                       x-model.number="emptyQuantityRemoved"
                        :disabled="isAccessory" 
-                       :value="isAccessory ? 0 : '{{ old('empty_quantity_removed', 0) }}'" 
+                       :max="selectedProduct ? selectedProduct.empty_quantity : null"
                        min="0" :required="!isAccessory" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" placeholder="0">
+                <p x-show="selectedProduct && !isAccessory" class="text-[11px] text-[#5B6472] mt-1">
+                    Empty shells on hand: <span x-text="selectedProduct ? selectedProduct.empty_quantity : 0"></span>
+                </p>
                 @error('empty_quantity_removed') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 

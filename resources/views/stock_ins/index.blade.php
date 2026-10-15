@@ -47,23 +47,38 @@
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reference / PO</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Product</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Qty Received</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Stock (Before → After)</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Unit Cost</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Recorded By</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($stockIns as $stockIn)
                         <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430]">{{ $stockIn->created_at->format('M d, Y - h:i A') }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#0B3B70]">{{ $stockIn->reference_no ?? 'PO-DELIVERY' }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430] whitespace-nowrap">{{ $stockIn->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#0B3B70]">
+                                {{ $stockIn->reference_no ?? 'PO-DELIVERY' }}
+                                @if($stockIn->supplier_name)
+                                    <div class="text-[11px] font-normal text-[#5B6472]">{{ $stockIn->supplier_name }}</div>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium">{{ $stockIn->product->name ?? 'N/A' }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#1E8E5A]">+{{ number_format($stockIn->quantity_received) }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
+                                @if(!is_null($stockIn->filled_qty_before) && !is_null($stockIn->filled_qty_after))
+                                    <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->filled_qty_before) }} → {{ number_format($stockIn->filled_qty_after) }}</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($stockIn->unit_cost ?? 0, 2) }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">{{ $stockIn->user->name ?? 'System' }}</td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">{{ $stockIn->remarks ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-in records found. Use the record button above to log a delivery.</td>
+                            <td colspan="8" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-in records found. Use the record button above to log a delivery.</td>
                         </tr>
                     @endforelse
                 </tbody>

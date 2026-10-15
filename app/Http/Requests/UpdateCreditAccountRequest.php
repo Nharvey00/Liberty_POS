@@ -20,8 +20,11 @@ class UpdateCreditAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'credit_limit'           => ['nullable', 'numeric', 'min:0'],
             'agreed_monthly_payment' => ['nullable', 'numeric', 'min:0'],
             'is_active'              => ['required', 'boolean'],
+            'status'                 => ['nullable', 'string', 'in:pending,approved,rejected,suspended,closed'],
+            'approval_remarks'       => ['nullable', 'string', 'max:500'],
         ];
     }
 }

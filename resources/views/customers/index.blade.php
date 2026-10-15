@@ -54,9 +54,9 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $customer->name }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if(in_array($customer->customer_type, ['Coke (Residual)', 'Company']))
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E7EEF7] text-[#0B3B70]">Coke (Residual)</span>
+                                    <span class="text-[12.5px] font-semibold text-[#0B3B70]">Coke (Residual)</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F4F6F9] text-[#5B6472]">{{ $customer->customer_type }}</span>
+                                    <span class="text-[12.5px] text-[#5B6472] font-medium">{{ $customer->customer_type }}</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">{{ $customer->phone ?? '—' }}</td>

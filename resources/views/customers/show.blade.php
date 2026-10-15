@@ -63,7 +63,7 @@
                 <h3 class="font-sans text-[14.5px] font-bold text-gray-900">Monthly Purchase Volume Matrix</h3>
                 <div class="text-[11.5px] text-[#5B6472]">Digitized daily tracking grid for {{ \Carbon\Carbon::parse($currentMonth)->format('F Y') }}</div>
             </div>
-            <div class="text-[12px] font-semibold text-[#0B3B70] bg-[#E7EEF7] px-3 py-1 rounded-full border border-[#D6E2F0]">
+            <div class="text-[12.5px] font-semibold text-[#0B3B70]">
                 Total Volume: {{ array_sum($dailyVolumes) }} tanks
             </div>
         </div>
@@ -124,9 +124,9 @@
                             <td class="py-3 px-4 text-[13px] font-bold border-b border-[#E5E9EF]">₱{{ number_format($order->total_amount, 2) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if(method_exists($order, 'isVoided') && $order->isVoided())
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Voided</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Voided</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Completed</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Completed</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right">

@@ -80,11 +80,11 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($product->trashed())
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Deleted</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
                                 @elseif($product->stock_quantity <= 10)
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FBF0DD] text-[#B4700A]">Low Stock</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Healthy</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">

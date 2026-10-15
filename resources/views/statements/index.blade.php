@@ -35,10 +35,11 @@
                 <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
             </select>
             
-            <select name="customer_type" class="pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            <select name="customer_type" aria-label="Filter by customer type" class="pl-3 pr-10 py-2 bg-white border border-[#E5E9EF] rounded-lg text-[13px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 <option value="">All Types</option>
-                <option value="Individual" {{ request('customer_type') === 'Individual' ? 'selected' : '' }}>Individual</option>
-                <option value="Business" {{ request('customer_type') === 'Business' ? 'selected' : '' }}>Business</option>
+                @foreach(['Tertiary', 'Household', 'MRO', 'Service Station', 'Commercial', 'Main Store', 'Coke (Residual)'] as $type)
+                    <option value="{{ $type }}" {{ request('customer_type') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                @endforeach
             </select>
             
             <div class="flex items-center gap-2">
@@ -54,7 +55,7 @@
         <script>
             function customerAutocomplete() {
                 return {
-                    query: '{{ request('customer') ?? '' }}',
+                    query: @json(request('customer', '')),
                     suggestions: [],
                     open: false,
                     highlightedIndex: -1,
@@ -129,9 +130,9 @@
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($soa->is_paid)
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Paid</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Paid</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FDECEA] text-[#B5504B]">Unpaid</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Unpaid</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">

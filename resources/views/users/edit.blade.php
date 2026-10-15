@@ -4,7 +4,7 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">{{ $user->name }}</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('users.update', $user) }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <form method="POST" action="{{ route('users.update', $user) }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
         @method('PUT')
         

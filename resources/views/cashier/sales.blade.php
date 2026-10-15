@@ -37,12 +37,12 @@
                     @forelse($orders as $order)
                         <tr class="hover:bg-[#F4F6F9] transition-colors group">
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-[13px]">
-                                <div class="font-bold text-[#0B3B70]">OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
+                                <a href="{{ route('pos.show', $order->id) }}" class="font-bold text-[#0B3B70] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B3B70] rounded" aria-label="View receipt OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}">OR-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</a>
                                 @if($order->invoice_number)
                                     <div class="text-[11px] text-[#5B6472] mt-0.5">INV: {{ $order->invoice_number }}</div>
                                 @endif
                                 @if($order->isVoided())
-                                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#F7E9E8] text-[#B5504B]">VOIDED</span>
+                                    <div class="mt-0.5 text-[11px] font-bold text-[#B5504B]">VOIDED</div>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-[13px] whitespace-nowrap">
@@ -70,7 +70,7 @@
                                 ₱{{ number_format($order->total_amount, 2) }}
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-[13px]">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold {{ strtolower($order->payment_method) === 'cash' ? 'bg-[#E5F5EC] text-[#1E8E5A]' : 'bg-[#FBF0DD] text-[#B4700A]' }}">
+                                <span class="text-[12.5px] font-semibold {{ strtolower($order->payment_method) === 'cash' ? 'text-[#1E8E5A]' : 'text-[#B4700A]' }}">
                                     {{ ucfirst($order->payment_method) }}
                                 </span>
                             </td>

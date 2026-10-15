@@ -4,7 +4,11 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Update terms for {{ $credit_account->customer->name }}</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('credit-accounts.update', $credit_account) }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <div class="max-w-4xl">
+        <x-flash-messages />
+    </div>
+
+    <form method="POST" action="{{ route('credit-accounts.update', $credit_account) }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
         @method('PUT')
 
@@ -15,6 +19,16 @@
                 <div class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-[#F4F6F9] text-[#5B6472]">
                     {{ $credit_account->customer->name }}
                 </div>
+            </div>
+
+            {{-- Credit Limit --}}
+            <div class="col-span-2 md:col-span-1">
+                <label for="credit_limit" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Approved Credit Limit</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#5B6472] text-[14px]">₱</span>
+                    <input type="number" step="0.01" min="0" name="credit_limit" id="credit_limit" value="{{ old('credit_limit', $credit_account->credit_limit) }}" placeholder="No fixed limit" class="w-full pl-7 pr-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                </div>
+                @error('credit_limit') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             {{-- Agreed Monthly Payment --}}
@@ -35,6 +49,13 @@
                     <option value="0" {{ old('is_active', $credit_account->is_active) == 0 ? 'selected' : '' }}>Inactive — Credit suspended</option>
                 </select>
                 @error('is_active') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Reason / Remarks --}}
+            <div class="col-span-2">
+                <label for="approval_remarks" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reason for Modification / Approval Remarks</label>
+                <textarea name="approval_remarks" id="approval_remarks" rows="2" placeholder="Provide reason for credit limit or status adjustment..." class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">{{ old('approval_remarks', $credit_account->approval_remarks) }}</textarea>
+                @error('approval_remarks') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>
 

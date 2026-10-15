@@ -12,10 +12,16 @@
 
     {{-- Account Summary Card --}}
     <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5 mb-5 max-w-4xl">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
                 <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Customer</div>
                 <div class="text-[14px] font-bold text-[#1C2430]">{{ $credit_account->customer->name }}</div>
+            </div>
+            <div>
+                <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Credit Limit</div>
+                <div class="text-[14px] font-semibold text-[#1C2430]">
+                    {{ $credit_account->credit_limit ? '₱' . number_format($credit_account->credit_limit, 2) : 'Unlimited' }}
+                </div>
             </div>
             <div>
                 <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Monthly Payment</div>
@@ -24,12 +30,15 @@
                 </div>
             </div>
             <div>
-                <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Status</div>
+                <div class="text-[11px] uppercase tracking-[0.04em] text-[#5B6472] font-semibold mb-1">Status &amp; Approver</div>
                 <div>
                     @if($credit_account->is_active)
-                        <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Active</span>
+                        <span class="text-[13px] font-bold text-[#1E8E5A]">Active</span>
                     @else
-                        <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FDECEA] text-[#B5504B]">Suspended</span>
+                        <span class="text-[13px] font-bold text-[#B5504B]">Suspended</span>
+                    @endif
+                    @if($credit_account->approver)
+                        <div class="text-[11px] text-[#5B6472] mt-0.5">By {{ $credit_account->approver->name }}</div>
                     @endif
                 </div>
             </div>
@@ -58,6 +67,7 @@
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Date</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Type</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Reference</th>
+                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Recorded By</th>
                         <th class="whitespace-nowrap text-right text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Amount</th>
                         <th class="whitespace-nowrap text-right text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Running Balance</th>
                     </tr>
@@ -65,14 +75,14 @@
                 <tbody>
                     @forelse($credit_account->ledgers as $entry)
                         <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472] whitespace-nowrap">
                                 {{ $entry->created_at->format('M d, Y — h:i A') }}
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($entry->transaction_type === 'Charge')
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FDECEA] text-[#B5504B]">Charge</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Charge</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Payment</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Payment</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">
@@ -86,10 +96,13 @@
                                         @endif
                                     @endif
                                 @elseif($entry->payment_id)
-                                    Payment #{{ $entry->payment_id }}
+                                    {{ $entry->payment->reference_no ?? ('Payment #' . $entry->payment_id) }}
                                 @else
                                     —
                                 @endif
+                            </td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">
+                                {{ $entry->user->name ?? ($entry->order->user->name ?? ($entry->payment->user->name ?? 'System')) }}
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-right font-semibold {{ $entry->transaction_type === 'Charge' ? 'text-[#B5504B]' : 'text-[#1E8E5A]' }}">
                                 {{ $entry->transaction_type === 'Charge' ? '+' : '−' }}₱{{ number_format($entry->amount, 2) }}
@@ -100,14 +113,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-[13px] text-[#5B6472]">No transactions recorded yet.</td>
+                            <td colspan="6" class="py-8 text-center text-[13px] text-[#5B6472]">No transactions recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>
                 @if($credit_account->ledgers->isNotEmpty())
                     <tfoot>
                         <tr class="bg-[#F4F6F9]">
-                            <td colspan="3" class="py-3 px-4 text-[13px] font-bold text-[#1C2430]">Current Outstanding Balance</td>
+                            <td colspan="4" class="py-3 px-4 text-[13px] font-bold text-[#1C2430]">Current Outstanding Balance</td>
                             <td class="py-3 px-4"></td>
                             <td class="py-3 px-4 text-right text-[16px] font-extrabold {{ $remainingBalance > 0 ? 'text-[#B5504B]' : 'text-[#1E8E5A]' }}">
                                 ₱{{ number_format($remainingBalance, 2) }}
@@ -115,6 +128,46 @@
                         </tr>
                     </tfoot>
                 @endif
+            </table>
+        </div>
+    </div>
+
+    {{-- Credit Account Approval & Limit Change Audit History --}}
+    <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden max-w-4xl mt-6">
+        <div class="px-5 py-4 border-b border-[#E5E9EF]">
+            <h3 class="font-sans text-[14.5px] font-bold text-gray-900 m-0">Credit Account Terms &amp; Approval Audit History</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Date &amp; Time</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Action</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Actor &amp; Role</th>
+                        <th class="whitespace-nowrap text-left text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Remarks / Justification</th>
+                        <th class="whitespace-nowrap text-right text-[11px] uppercase text-[#5B6472] font-semibold py-2.5 px-4 border-b border-[#E5E9EF]">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($creditAuditLogs ?? [] as $log)
+                        <tr>
+                            <td class="py-2.5 px-4 text-[12.5px] text-[#5B6472] border-b border-[#E5E9EF] whitespace-nowrap">{{ $log->created_at?->format('M d, Y h:i A') }}</td>
+                            <td class="py-2.5 px-4 text-[13px] font-semibold text-[#1C2430] border-b border-[#E5E9EF] whitespace-nowrap">{{ $log->action_label }}</td>
+                            <td class="py-2.5 px-4 text-[12.5px] text-[#1C2430] border-b border-[#E5E9EF] whitespace-nowrap">
+                                <span class="font-bold">{{ $log->actor_name_snapshot ?? 'System' }}</span>
+                                <span class="text-[#5B6472]">({{ $log->actor_role_snapshot ?? '—' }})</span>
+                            </td>
+                            <td class="py-2.5 px-4 text-[12px] text-[#5B6472] border-b border-[#E5E9EF]">{{ $log->reason ?? '—' }}</td>
+                            <td class="py-2.5 px-4 text-right border-b border-[#E5E9EF] whitespace-nowrap">
+                                <a href="{{ route('audit-logs.show', $log) }}" class="text-[12.5px] font-semibold text-[#0B3B70] hover:underline">View details</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-4 text-center text-[12px] text-[#5B6472]">No credit account audit history recorded yet.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
             </table>
         </div>
     </div>

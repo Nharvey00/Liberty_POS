@@ -36,11 +36,13 @@
                 </ul>
             </div>
 
-            <form action="{{ url('orders/' . $order->id . '/void') }}" method="POST">
+            <x-flash-messages />
+
+            <form action="{{ url('orders/' . $order->id . '/void') }}" method="POST" data-submit-once>
                 @csrf
                 <div class="mb-5">
                     <label for="void_reason" class="block text-[13px] font-semibold text-[#5B6472] mb-1">Reason for Voiding <span class="text-[#B5504B]">*</span></label>
-                    <textarea name="void_reason" id="void_reason" rows="3" required minlength="5" class="w-full border border-[#E5E9EF] rounded-lg text-[13px] focus:border-[#0B3B70] focus:ring focus:ring-[#0B3B70] focus:ring-opacity-50 px-3 py-2" placeholder="Please provide a detailed reason..."></textarea>
+                    <textarea name="void_reason" id="void_reason" rows="3" required minlength="5" class="w-full border border-[#E5E9EF] rounded-lg text-[13px] focus:border-[#0B3B70] focus:ring focus:ring-[#0B3B70] focus:ring-opacity-50 px-3 py-2" placeholder="Please provide a detailed reason...">{{ old('void_reason') }}</textarea>
                     @error('void_reason')
                         <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span>
                     @enderror
@@ -50,7 +52,7 @@
                     <a href="{{ route('orders.show', $order->id) }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9] transition-colors">
                         Cancel
                     </a>
-                    <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#B5504B] bg-[#B5504B] text-white hover:bg-[#9a423e] transition-colors">
+                    <button type="submit" data-loading-text="Voiding…" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#B5504B] bg-[#B5504B] text-white hover:bg-[#9a423e] transition-colors">
                         Confirm Void
                     </button>
                 </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
+use App\Services\AuditTrailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -43,7 +44,25 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        Customer::create($request->validated());
+        $customer = Customer::create($request->validated());
+
+        AuditTrailService::record([
+            'module'                => 'customers',
+            'action'                => 'customer.created',
+            'entity_type'           => 'Customer',
+            'entity_id'             => $customer->id,
+            'transaction_reference' => 'CUS-' . str_pad((string) $customer->id, 5, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'after_values'          => [
+                'name'                        => $customer->name,
+                'business_name'               => $customer->business_name,
+                'customer_type'               => $customer->customer_type,
+                'phone'                       => $customer->phone,
+                'default_discount_type'       => $customer->default_discount_type,
+                'default_discount_percentage' => $customer->default_discount_percentage,
+            ],
+            'reason'                => 'New customer profile created',
+        ]);
 
         return redirect()
             ->route('customers.index')
@@ -94,7 +113,36 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
+        $beforeValues = [
+            'name'                        => $customer->name,
+            'business_name'               => $customer->business_name,
+            'customer_type'               => $customer->customer_type,
+            'phone'                       => $customer->phone,
+            'default_discount_type'       => $customer->default_discount_type,
+            'default_discount_percentage' => $customer->default_discount_percentage,
+        ];
+
         $customer->update($request->validated());
+        $customer->refresh();
+
+        AuditTrailService::record([
+            'module'                => 'customers',
+            'action'                => 'customer.updated',
+            'entity_type'           => 'Customer',
+            'entity_id'             => $customer->id,
+            'transaction_reference' => 'CUS-' . str_pad((string) $customer->id, 5, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => $beforeValues,
+            'after_values'          => [
+                'name'                        => $customer->name,
+                'business_name'               => $customer->business_name,
+                'customer_type'               => $customer->customer_type,
+                'phone'                       => $customer->phone,
+                'default_discount_type'       => $customer->default_discount_type,
+                'default_discount_percentage' => $customer->default_discount_percentage,
+            ],
+            'reason'                => 'Customer profile details updated',
+        ]);
 
         return redirect()
             ->route('customers.index')
@@ -111,7 +159,20 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $customerName = $customer->name;
         $customer->delete();
+
+        AuditTrailService::record([
+            'module'                => 'customers',
+            'action'                => 'customer.archived',
+            'entity_type'           => 'Customer',
+            'entity_id'             => $customer->id,
+            'transaction_reference' => 'CUS-' . str_pad((string) $customer->id, 5, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => ['name' => $customerName, 'status' => 'active'],
+            'after_values'          => ['name' => $customerName, 'status' => 'archived'],
+            'reason'                => 'Customer profile archived (soft-deleted)',
+        ]);
 
         return redirect()
             ->route('customers.index')
