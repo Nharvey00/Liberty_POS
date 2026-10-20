@@ -235,5 +235,24 @@ class AccessoryInventoryTransactionTest extends TestCase
         $this->assertEquals(0, $this->accessory->empty_quantity);
         $this->assertEquals(2, StockOut::count());
     }
+
+    public function test_product_inventory_separates_tanks_and_accessories_tables(): void
+    {
+        $response = $this->actingAs($this->manager)->get(route('products.index'));
+
+        $response->assertOk();
+        $response->assertSee('LPG Tank Inventory');
+        $response->assertSee('Items & Accessories Inventory');
+        $response->assertSee('Selling Price');
+
+        $tankProducts = $response->viewData('tankProducts');
+        $accessoryProducts = $response->viewData('accessoryProducts');
+
+        $this->assertTrue($tankProducts->pluck('id')->contains($this->cylinder->id));
+        $this->assertFalse($tankProducts->pluck('id')->contains($this->accessory->id));
+
+        $this->assertTrue($accessoryProducts->pluck('id')->contains($this->accessory->id));
+        $this->assertFalse($accessoryProducts->pluck('id')->contains($this->cylinder->id));
+    }
 }
 

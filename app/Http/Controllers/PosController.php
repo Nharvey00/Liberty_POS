@@ -20,6 +20,23 @@ class PosController extends Controller
 {
     public function create()
     {
+        // Auto-correct any obvious accessory items (e.g., Regulator, Hose, Burner, Clamp, Stove)
+        // that were accidentally created with a tank capacity when testing Add Product.
+        Product::whereNotNull('standard_capacity_kg')
+            ->get()
+            ->each(function (Product $p) {
+                if (
+                    preg_match('/\b(regulator|hose|burner|clamp|stove|igniter|valve)\b/i', $p->name) &&
+                    !preg_match('/\b(cylinder|tank|lpg\s*\d|kg)\b/i', $p->name)
+                ) {
+                    $p->update([
+                        'standard_capacity_kg' => null,
+                        'new_cylinder_price'   => null,
+                        'empty_quantity'       => 0,
+                    ]);
+                }
+            });
+
         $products = Product::where('stock_quantity', '>', 0)->orderBy('name')->get();
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
         return view('pos.create', compact('products', 'customers'));
@@ -90,13 +107,17 @@ class PosController extends Controller
 
                     $filledBefore = (int) $product->stock_quantity;
                     $emptyBefore  = (int) $product->empty_quantity;
-                    $isSwap       = filter_var($item['is_swap'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                    $isSwap       = !$product->isAccessory() && filter_var($item['is_swap'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
                     $subtotal = 0;
                     $actualConsumedKg = null;
                     $effectiveUnitPrice = (float) $product->price;
 
-                    if ($isSwap) {
+                    if ($product->isAccessory()) {
+                        $effectiveUnitPrice = (float) $product->price;
+                        $subtotal = round($effectiveUnitPrice * $qty, 2);
+                        $product->decrement('stock_quantity', $qty);
+                    } elseif ($isSwap) {
                         // Refill sale: customer surrendered an empty cylinder
                         if ($customer && in_array($customer->customer_type, ['Coke (Residual)', 'Company', 'Corporate']) && !$product->isAccessory()) {
                             $residual = isset($item['residual_kg']) && is_numeric($item['residual_kg']) ? (float)$item['residual_kg'] : 0;

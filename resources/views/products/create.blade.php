@@ -81,7 +81,7 @@
 
                 <!-- Standard Capacity -->
                 <div>
-                    <label for="standard_capacity_kg" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Standard Capacity (kg)</label>
+                    <label for="standard_capacity_kg" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Standard Capacity (kg) <span class="text-[#B5504B]">*</span></label>
                     <input type="number" step="0.01" name="standard_capacity_kg" id="standard_capacity_kg" value="{{ old('standard_capacity_kg') }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" placeholder="e.g. 11, 22, 50">
                     <div class="text-[11px] text-[#5B6472] mt-1">The designated net weight of the gas.</div>
                     @error('standard_capacity_kg') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
@@ -124,6 +124,7 @@
                 filledStockWrapper.className = 'col-span-2 md:col-span-1';
                 stockQuantityLabel.textContent = 'Starting Filled Tank Quantity';
                 stockQuantityHint.textContent = 'Number of gas-filled tanks currently on hand.';
+                capacityInput.required = true;
             } else {
                 lpgContainer.style.display = 'none';
                 emptyStockWrapper.style.display = 'none';
@@ -133,6 +134,7 @@
                 stockQuantityHint.textContent = 'Number of accessory units currently on hand.';
                 newCylinderInput.value = '';
                 capacityInput.value = '';
+                capacityInput.required = false;
                 emptyQuantityInput.value = 0;
             }
             updateTotalTanks();

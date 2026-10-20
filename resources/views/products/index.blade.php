@@ -54,74 +54,155 @@
         </div>
     </div>
 
-    <!-- Data Table Card -->
-    <div id="table-container">
-    <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
-        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Product Name</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Refill Price</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Capacity (kg)</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Filled Stock</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Empty Shells</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Total Tanks</th>
-                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Status</th>
-                        <th class="border-b border-[#E5E9EF]"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($products as $product)
-                        <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $product->name }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($product->price, 2) }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $product->standard_capacity_kg ? $product->standard_capacity_kg . ' kg' : '—' }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold">{{ number_format($product->stock_quantity) }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity + $product->empty_quantity) }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                @if($product->trashed())
-                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
-                                @elseif($product->stock_quantity <= 10)
-                                    <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
-                                @else
-                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
-                                @endif
-                            </td>
-                            <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('products.show', $product) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View</a>
-                                    @if(Auth::user()->isManagerOrOwner())
-                                        @if(!$product->trashed())
-                                            <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
-                                            <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
-                                                Delete
-                                            </button>
-                                        @else
-                                            <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
-                                                @csrf
-                                                <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
-                                                    Restore
-                                                </button>
-                                            </form>
-                                        @endif
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
+    <!-- Data Tables Container -->
+    <div id="table-container" class="flex flex-col gap-6">
+        <!-- Table 1: LPG Tank Inventory -->
+        <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
+            <div class="px-5 py-4 border-b border-[#E5E9EF] bg-[#F8FAFC] flex items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-sans text-[15px] font-bold text-[#0B3B70] m-0">LPG Tank Inventory</h2>
+                    <p class="text-[12px] text-[#5B6472] mt-0.5 m-0">Gas cylinders, refill pricing, filled stock, and empty shell counts</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-[#E7EEF7] text-[#0B3B70]">
+                    {{ $tankProducts->total() }} {{ Str::plural('Tank Type', $tankProducts->total()) }}
+                </span>
+            </div>
+            <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                <table class="w-full border-collapse">
+                    <thead>
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-[13px] text-[#5B6472]">No products found. Add your first item to get started.</td>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Product Name</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Refill Price</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Capacity (kg)</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Filled Stock</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Empty Shells</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Total Tanks</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Status</th>
+                            <th class="border-b border-[#E5E9EF]"></th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($tankProducts as $product)
+                            <tr class="hover:bg-[#F4F6F9] transition-colors">
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $product->name }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($product->price, 2) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format((float) $product->standard_capacity_kg, 2) }} kg</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold">{{ number_format($product->stock_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity + $product->empty_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                    @if($product->trashed())
+                                        <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
+                                    @elseif($product->stock_quantity <= 10)
+                                        <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
+                                    @else
+                                        <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('products.show', $product) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View</a>
+                                        @if(Auth::user()->isManagerOrOwner())
+                                            @if(!$product->trashed())
+                                                <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                                <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
+                                                    Delete
+                                                </button>
+                                            @else
+                                                <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
+                                                    @csrf
+                                                    <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
+                                                        Restore
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="py-8 text-center text-[13px] text-[#5B6472]">No LPG tank products found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
+                {{ $tankProducts->links() }}
+            </div>
         </div>
-        <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
-            {{ $products->links() }}
+
+        <!-- Table 2: Items & Accessories Inventory -->
+        <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
+            <div class="px-5 py-4 border-b border-[#E5E9EF] bg-[#F8FAFC] flex items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-sans text-[15px] font-bold text-[#1C2430] m-0">Items &amp; Accessories Inventory</h2>
+                    <p class="text-[12px] text-[#5B6472] mt-0.5 m-0">Standard retail items, regulators, hoses, burners, and parts</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-[#F4F6F9] text-[#5B6472] border border-[#E5E9EF]">
+                    {{ $accessoryProducts->total() }} {{ Str::plural('Item', $accessoryProducts->total()) }}
+                </span>
+            </div>
+            <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Product Name</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Selling Price</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Stock</th>
+                            <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Status</th>
+                            <th class="border-b border-[#E5E9EF]"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($accessoryProducts as $product)
+                            <tr class="hover:bg-[#F4F6F9] transition-colors">
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $product->name }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($product->price, 2) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                    @if($product->trashed())
+                                        <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
+                                    @elseif($product->stock_quantity <= 10)
+                                        <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
+                                    @else
+                                        <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('products.show', $product) }}" class="text-[#0B3B70] font-bold text-[12px] hover:underline">View</a>
+                                        @if(Auth::user()->isManagerOrOwner())
+                                            @if(!$product->trashed())
+                                                <a href="{{ route('products.edit', $product) }}" class="text-[#5D89B0] font-bold text-[12px] hover:underline">Edit</a>
+                                                <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
+                                                    Delete
+                                                </button>
+                                            @else
+                                                <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
+                                                    @csrf
+                                                    <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
+                                                        Restore
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-[13px] text-[#5B6472]">No items or accessories found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6 print:hidden overflow-x-auto">
+                {{ $accessoryProducts->links() }}
+            </div>
         </div>
-    </div>
     </div> <!-- Close table container -->
     </div> <!-- Close liveSearch -->
 

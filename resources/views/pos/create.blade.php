@@ -179,7 +179,7 @@
                                 </div>
 
                                 <!-- Tank Swap Toggle (Cylinders Only) -->
-                                <template x-if="item.is_cylinder && item.standard_capacity_kg !== null">
+                                <template x-if="item.is_cylinder && !item.is_accessory && item.standard_capacity_kg > 0">
                                     <div class="mt-1 pt-1 border-t border-dashed border-[#E2E8F0] flex items-center justify-between text-[10px]">
                                         <label class="inline-flex items-center gap-1 font-medium text-[#334155] cursor-pointer">
                                             <input type="checkbox" x-model="item.is_swap" @change="normalizeResidualLines()" class="rounded border-[#CBD5E1] text-[#0B3B70] focus:ring-[#0B3B70] w-3 h-3">
@@ -651,7 +651,7 @@
                     // Never allow more units in the cart than are on hand
                     if (this.productQtyInCart(product.id) >= stock) return;
 
-                    const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null;
+                    const isAccessory = product.is_accessory === true || product.standard_capacity_kg === null || parseFloat(product.standard_capacity_kg) <= 0;
                     const isCylinder = !isAccessory;
                     // Coke (Residual) account LPG cylinders: add each cylinder as an independent line item with qty=1
                     const isCokeCylinder = this.isCompany && isCylinder;
@@ -664,8 +664,8 @@
                             id: product.id,
                             name: product.name,
                             price: parseFloat(product.price),
-                            new_cylinder_price: product.new_cylinder_price !== null ? parseFloat(product.new_cylinder_price) : null,
-                            standard_capacity_kg: product.standard_capacity_kg !== null ? parseFloat(product.standard_capacity_kg) : null,
+                            new_cylinder_price: isCylinder && product.new_cylinder_price !== null ? parseFloat(product.new_cylinder_price) : null,
+                            standard_capacity_kg: isCylinder && product.standard_capacity_kg !== null ? parseFloat(product.standard_capacity_kg) : null,
                             stock_quantity: stock,
                             is_accessory: isAccessory,
                             is_cylinder: isCylinder,
@@ -694,7 +694,7 @@
                 },
 
                 getItemUnitPrice(item) {
-                    if (item.is_cylinder) {
+                    if (item.is_cylinder && !item.is_accessory) {
                         if (item.is_swap) {
                             return item.price;
                         }
@@ -705,6 +705,9 @@
 
                 getItemSubtotal(item) {
                     const quantity = this.qty(item);
+                    if (!item.is_cylinder || item.is_accessory) {
+                        return Math.round(item.price * quantity * 100) / 100;
+                    }
                     if (item.is_swap) {
                         if (this.isCompany && item.standard_capacity_kg !== null && item.residual_kg !== null && item.residual_kg !== '') {
                             const residual = Math.min(item.standard_capacity_kg, Math.max(0, parseFloat(item.residual_kg) || 0));

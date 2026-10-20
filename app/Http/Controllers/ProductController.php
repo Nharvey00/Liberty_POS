@@ -36,22 +36,54 @@ class ProductController extends Controller
 
     public function index(\Illuminate\Http\Request $request)
     {
+        // Auto-correct any obvious accessory items (e.g., Regulator, Hose, Burner, Clamp, Stove)
+        // that were accidentally created with a tank capacity when testing Add Product.
+        Product::whereNotNull('standard_capacity_kg')
+            ->get()
+            ->each(function (Product $p) {
+                if (
+                    preg_match('/\b(regulator|hose|burner|clamp|stove|igniter|valve)\b/i', $p->name) &&
+                    !preg_match('/\b(cylinder|tank|lpg\s*\d|kg)\b/i', $p->name)
+                ) {
+                    $p->update([
+                        'standard_capacity_kg' => null,
+                        'new_cylinder_price'   => null,
+                        'empty_quantity'       => 0,
+                    ]);
+                }
+            });
+
         $search = $request->query('search');
-        $query = Product::orderBy('name');
+        $baseQuery = Product::orderBy('name');
 
         if ($search) {
             $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
-            $query->where('name', $like, "%{$search}%");
+            $baseQuery->where('name', $like, "%{$search}%");
         }
 
         if (auth()->check() && auth()->user()->isManagerOrOwner()) {
             if ($request->query('status') === 'deleted') {
-                $query->onlyTrashed();
+                $baseQuery->onlyTrashed();
             }
         }
 
-        $products = $query->paginate(15)->withQueryString();
-        return view('products.index', compact('products', 'search'));
+        $tankProducts = (clone $baseQuery)
+            ->whereNotNull('standard_capacity_kg')
+            ->where('standard_capacity_kg', '>', 0)
+            ->paginate(15, ['*'], 'tanks_page')
+            ->withQueryString();
+
+        $accessoryProducts = (clone $baseQuery)
+            ->where(function ($q) {
+                $q->whereNull('standard_capacity_kg')
+                  ->orWhere('standard_capacity_kg', '<=', 0);
+            })
+            ->paginate(15, ['*'], 'items_page')
+            ->withQueryString();
+
+        $products = (clone $baseQuery)->paginate(15)->withQueryString();
+
+        return view('products.index', compact('products', 'tankProducts', 'accessoryProducts', 'search'));
     }
 
     public function create()
@@ -62,13 +94,15 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $validated = $request->validated();
+        $isAccessory = ($validated['ui_product_type'] ?? null) === 'accessory';
+        unset($validated['ui_product_type']);
         
         $validated['stock_quantity'] = (isset($validated['stock_quantity']) && $validated['stock_quantity'] !== '') ? (int) $validated['stock_quantity'] : 0;
-        $validated['empty_quantity'] = (isset($validated['empty_quantity']) && $validated['empty_quantity'] !== '') ? (int) $validated['empty_quantity'] : 0;
+        $validated['empty_quantity'] = (!$isAccessory && isset($validated['empty_quantity']) && $validated['empty_quantity'] !== '') ? (int) $validated['empty_quantity'] : 0;
         $validated['cost_price'] = (isset($validated['cost_price']) && $validated['cost_price'] !== '') ? (float) $validated['cost_price'] : 0.00;
         $validated['reorder_level'] = (isset($validated['reorder_level']) && $validated['reorder_level'] !== '') ? (int) $validated['reorder_level'] : 5;
-        $validated['new_cylinder_price'] = (isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
-        $validated['standard_capacity_kg'] = (isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
+        $validated['new_cylinder_price'] = (!$isAccessory && isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
+        $validated['standard_capacity_kg'] = (!$isAccessory && isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
 
@@ -152,8 +186,14 @@ class ProductController extends Controller
         // STRICT RULE: UpdateProductRequest explicitly EXCLUDES stock_quantity and empty_quantity
         // This enforces the business rule that stock can only be adjusted via Stock In/Out controllers
         $validated = $request->validated();
-        $validated['new_cylinder_price'] = (isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
-        $validated['standard_capacity_kg'] = (isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
+        $isAccessory = ($validated['ui_product_type'] ?? null) === 'accessory';
+        unset($validated['ui_product_type']);
+
+        $validated['new_cylinder_price'] = (!$isAccessory && isset($validated['new_cylinder_price']) && $validated['new_cylinder_price'] !== '') ? $validated['new_cylinder_price'] : null;
+        $validated['standard_capacity_kg'] = (!$isAccessory && isset($validated['standard_capacity_kg']) && $validated['standard_capacity_kg'] !== '') ? $validated['standard_capacity_kg'] : null;
+        if ($isAccessory) {
+            $validated['empty_quantity'] = 0;
+        }
         if (isset($validated['cost_price']) && $validated['cost_price'] !== '') {
             $validated['cost_price'] = (float) $validated['cost_price'];
         }
