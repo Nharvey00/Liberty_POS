@@ -169,4 +169,71 @@ class AccessoryInventoryTransactionTest extends TestCase
         $this->assertEquals(30, $this->accessory->stock_quantity); // Restored from 28 to 30
         $this->assertEquals(0, $this->accessory->empty_quantity);  // Remained 0 (never decremented into negatives)
     }
+
+    public function test_multi_item_stock_in_processes_batch_atomically(): void
+    {
+        $response = $this->actingAs($this->manager)->post(route('stock-ins.store'), [
+            'supplier_name' => 'Multi-Item Supplier',
+            'remarks' => 'Batch delivery',
+            'items' => [
+                [
+                    'product_id' => $this->cylinder->id,
+                    'quantity_received' => 10,
+                    'empty_received_qty' => 2,
+                    'empty_returned_qty' => 5,
+                    'unit_cost' => 800,
+                ],
+                [
+                    'product_id' => $this->accessory->id,
+                    'quantity_received' => 8,
+                    'empty_received_qty' => 0,
+                    'empty_returned_qty' => 0,
+                    'unit_cost' => 300,
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('stock-ins.index'));
+
+        $this->cylinder->refresh();
+        $this->accessory->refresh();
+
+        $this->assertEquals(30, $this->cylinder->stock_quantity); // 20 + 10
+        $this->assertEquals(7, $this->cylinder->empty_quantity);  // 10 + 2 - 5
+        $this->assertEquals(38, $this->accessory->stock_quantity); // 30 + 8
+        $this->assertEquals(0, $this->accessory->empty_quantity);
+        $this->assertEquals(2, StockIn::count());
+    }
+
+    public function test_multi_item_stock_out_processes_batch_atomically(): void
+    {
+        $response = $this->actingAs($this->manager)->post(route('stock-outs.store'), [
+            'reason' => 'Inventory count correction',
+            'remarks' => 'Batch physical audit adjustment',
+            'items' => [
+                [
+                    'product_id' => $this->cylinder->id,
+                    'quantity_removed' => 3,
+                    'empty_quantity_removed' => 2,
+                ],
+                [
+                    'product_id' => $this->accessory->id,
+                    'quantity_removed' => 4,
+                    'empty_quantity_removed' => 0,
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('stock-outs.index'));
+
+        $this->cylinder->refresh();
+        $this->accessory->refresh();
+
+        $this->assertEquals(17, $this->cylinder->stock_quantity); // 20 - 3
+        $this->assertEquals(8, $this->cylinder->empty_quantity);  // 10 - 2
+        $this->assertEquals(26, $this->accessory->stock_quantity); // 30 - 4
+        $this->assertEquals(0, $this->accessory->empty_quantity);
+        $this->assertEquals(2, StockOut::count());
+    }
 }
+

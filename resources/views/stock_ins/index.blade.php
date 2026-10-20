@@ -64,10 +64,23 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium">{{ $stockIn->product->name ?? 'N/A' }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#1E8E5A]">+{{ number_format($stockIn->quantity_received) }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                @if(($stockIn->quantity_received ?? 0) > 0 || (($stockIn->empty_received_qty ?? 0) == 0 && ($stockIn->empty_returned_qty ?? 0) == 0))
+                                    <div class="font-bold text-[#1E8E5A]">+{{ number_format($stockIn->quantity_received) }} Filled</div>
+                                @endif
+                                @if(($stockIn->empty_received_qty ?? 0) > 0)
+                                    <div class="font-bold text-[#0B3B70] text-[12px]">+{{ number_format($stockIn->empty_received_qty) }} Empty</div>
+                                @endif
+                                @if(($stockIn->empty_returned_qty ?? 0) > 0)
+                                    <div class="font-semibold text-[#B4700A] text-[11.5px]">-{{ number_format($stockIn->empty_returned_qty) }} Empty Returned</div>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
                                 @if(!is_null($stockIn->filled_qty_before) && !is_null($stockIn->filled_qty_after))
-                                    <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->filled_qty_before) }} → {{ number_format($stockIn->filled_qty_after) }}</span>
+                                    <div>Filled: <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->filled_qty_before) }} → {{ number_format($stockIn->filled_qty_after) }}</span></div>
+                                    @if(!is_null($stockIn->empty_qty_before) && !is_null($stockIn->empty_qty_after) && ($stockIn->empty_qty_before != $stockIn->empty_qty_after || ($stockIn->empty_received_qty ?? 0) > 0))
+                                        <div class="text-[11.5px]">Empty: <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->empty_qty_before) }} → {{ number_format($stockIn->empty_qty_after) }}</span></div>
+                                    @endif
                                 @else
                                     —
                                 @endif

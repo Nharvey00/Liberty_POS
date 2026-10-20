@@ -13,6 +13,7 @@ class StockIn extends Model
         'reference_no',
         'supplier_name',
         'quantity_received',
+        'empty_received_qty',
         'empty_returned_qty',
         'unit_cost',
         'filled_qty_before',
@@ -24,6 +25,7 @@ class StockIn extends Model
 
     protected $casts = [
         'quantity_received'  => 'integer',
+        'empty_received_qty' => 'integer',
         'empty_returned_qty' => 'integer',
         'unit_cost'          => 'decimal:2',
         'filled_qty_before'  => 'integer',

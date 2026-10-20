@@ -30,7 +30,7 @@
 
         <div class="grid grid-cols-2 gap-4 mb-5">
             <!-- Product Name -->
-            <div class="col-span-2">
+            <div class="col-span-2 md:col-span-1">
                 <label for="name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Product Name <span class="text-[#B5504B]">*</span></label>
                 <input type="text" name="name" id="name" value="{{ old('name') }}" required class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]" placeholder="e.g. 11kg LPG Cylinder">
                 @error('name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
@@ -44,11 +44,26 @@
                 @error('price') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Starting Filled Quantity -->
-            <div class="col-span-2 md:col-span-1">
-                <label for="stock_quantity" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Starting Stock Quantity</label>
-                <input type="number" name="stock_quantity" id="stock_quantity" value="{{ old('stock_quantity', 0) }}" min="0" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            <!-- Starting Filled Tank Quantity -->
+            <div id="filled-stock-wrapper" class="col-span-2 md:col-span-1">
+                <label for="stock_quantity" id="stock_quantity_label" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Starting Filled Tank Quantity</label>
+                <input type="number" name="stock_quantity" id="stock_quantity" value="{{ old('stock_quantity', 0) }}" min="0" oninput="updateTotalTanks()" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <div id="stock_quantity_hint" class="text-[11px] text-[#5B6472] mt-1">Number of gas-filled tanks currently on hand.</div>
                 @error('stock_quantity') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <!-- Starting Empty Shells (Side-by-side with Filled Tank Quantity) -->
+            <div id="empty-stock-wrapper" class="col-span-2 md:col-span-1">
+                <label for="empty_quantity" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Starting Empty Shells</label>
+                <input type="number" name="empty_quantity" id="empty_quantity" value="{{ old('empty_quantity', 0) }}" min="0" oninput="updateTotalTanks()" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <div class="text-[11px] text-[#5B6472] mt-1">Number of empty metal shells currently on hand.</div>
+                @error('empty_quantity') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <!-- Live Total Metal Tanks Tally -->
+            <div id="total-tanks-banner" class="col-span-2 bg-[#EBF4FF] border border-[#C6DDF7] rounded-lg px-4 py-2.5 flex items-center justify-between text-[12.5px] text-[#0B3B70]">
+                <span class="font-medium">Total Physical Metal Tanks in Store (Filled + Empty):</span>
+                <span id="total-tanks-count" class="font-bold text-[14px]">0</span>
             </div>
         </div>
 
@@ -71,13 +86,6 @@
                     <div class="text-[11px] text-[#5B6472] mt-1">The designated net weight of the gas.</div>
                     @error('standard_capacity_kg') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
                 </div>
-
-                <!-- Initial Empties -->
-                <div class="col-span-2">
-                    <label for="empty_quantity" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Starting Empty Shells</label>
-                    <input type="number" name="empty_quantity" id="empty_quantity" value="{{ old('empty_quantity', 0) }}" min="0" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                    @error('empty_quantity') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
-                </div>
             </div>
         </div>
 
@@ -88,21 +96,46 @@
     </form>
 
     <script>
+        function updateTotalTanks() {
+            const filled = parseInt(document.getElementById('stock_quantity').value || '0', 10) || 0;
+            const empty = parseInt(document.getElementById('empty_quantity').value || '0', 10) || 0;
+            const totalEl = document.getElementById('total-tanks-count');
+            if (totalEl) {
+                totalEl.textContent = (filled + empty).toLocaleString();
+            }
+        }
+
         function toggleFields() {
             const isLpg = document.querySelector('input[name="ui_product_type"][value="lpg"]').checked;
             const lpgContainer = document.getElementById('lpg-specific-fields');
             const newCylinderInput = document.getElementById('new_cylinder_price');
             const capacityInput = document.getElementById('standard_capacity_kg');
             const emptyQuantityInput = document.getElementById('empty_quantity');
+            const emptyStockWrapper = document.getElementById('empty-stock-wrapper');
+            const filledStockWrapper = document.getElementById('filled-stock-wrapper');
+            const stockQuantityLabel = document.getElementById('stock_quantity_label');
+            const stockQuantityHint = document.getElementById('stock_quantity_hint');
+            const totalTanksBanner = document.getElementById('total-tanks-banner');
 
             if (isLpg) {
                 lpgContainer.style.display = 'block';
+                emptyStockWrapper.style.display = 'block';
+                totalTanksBanner.style.display = 'flex';
+                filledStockWrapper.className = 'col-span-2 md:col-span-1';
+                stockQuantityLabel.textContent = 'Starting Filled Tank Quantity';
+                stockQuantityHint.textContent = 'Number of gas-filled tanks currently on hand.';
             } else {
                 lpgContainer.style.display = 'none';
+                emptyStockWrapper.style.display = 'none';
+                totalTanksBanner.style.display = 'none';
+                filledStockWrapper.className = 'col-span-2';
+                stockQuantityLabel.textContent = 'Starting Stock Quantity';
+                stockQuantityHint.textContent = 'Number of accessory units currently on hand.';
                 newCylinderInput.value = '';
                 capacityInput.value = '';
                 emptyQuantityInput.value = 0;
             }
+            updateTotalTanks();
         }
         document.addEventListener('DOMContentLoaded', toggleFields);
     </script>

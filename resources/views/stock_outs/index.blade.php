@@ -47,7 +47,8 @@
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reference</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reason</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Product</th>
-                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Qty Removed</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Filled Removed</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Empty Removed</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Stock (Before → After)</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Recorded By</th>
                     </tr>
@@ -61,7 +62,12 @@
                                 <span class="text-[12.5px] font-medium text-[#B5504B]">{{ $stockOut->reason }}</span>
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium">{{ $stockOut->product->name ?? 'N/A' }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#B5504B]">-{{ number_format($stockOut->quantity_removed) }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#B5504B]">
+                                {{ $stockOut->quantity_removed > 0 ? '-' . number_format($stockOut->quantity_removed) : '0' }}
+                            </td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#5B6472]">
+                                {{ ($stockOut->empty_quantity_removed ?? 0) > 0 ? '-' . number_format($stockOut->empty_quantity_removed) : '0' }}
+                            </td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
                                 @if(!is_null($stockOut->filled_qty_before) && !is_null($stockOut->filled_qty_after))
                                     <span class="font-medium text-[#1C2430]">{{ number_format($stockOut->filled_qty_before) }} → {{ number_format($stockOut->filled_qty_after) }}</span>
@@ -73,7 +79,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
+                            <td colspan="8" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
                         </tr>
                     @endforelse
                 </tbody>

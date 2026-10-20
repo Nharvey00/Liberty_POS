@@ -66,6 +66,7 @@
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Capacity (kg)</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Filled Stock</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Empty Shells</th>
+                        <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Total Tanks</th>
                         <th class="whitespace-nowrap text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF]">Status</th>
                         <th class="border-b border-[#E5E9EF]"></th>
                     </tr>
@@ -78,6 +79,7 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $product->standard_capacity_kg ? $product->standard_capacity_kg . ' kg' : '—' }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold">{{ number_format($product->stock_quantity) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity + $product->empty_quantity) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($product->trashed())
                                     <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
@@ -110,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-[13px] text-[#5B6472]">No products found. Add your first item to get started.</td>
+                            <td colspan="8" class="py-8 text-center text-[13px] text-[#5B6472]">No products found. Add your first item to get started.</td>
                         </tr>
                     @endforelse
                 </tbody>

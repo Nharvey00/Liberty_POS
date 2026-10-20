@@ -169,6 +169,13 @@
                 });
             });
         });
+
+        // Prevent mouse wheel from accidentally changing <input type="number"> values (e.g. 2000 -> 1999.98) when scrolling down a form
+        document.addEventListener('wheel', function () {
+            if (document.activeElement && document.activeElement.type === 'number') {
+                document.activeElement.blur();
+            }
+        }, { passive: true });
     </script>
 </body>
 </html>

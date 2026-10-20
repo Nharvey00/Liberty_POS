@@ -23,6 +23,9 @@
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Empty Shells</div>
             <div class="font-sans text-[24px] font-bold text-gray-900">{{ number_format($product->empty_quantity) }}</div>
+            @if(!$product->isAccessory())
+                <div class="text-[11px] font-semibold text-[#0B3B70] mt-1">Total Tanks: {{ number_format($product->stock_quantity + $product->empty_quantity) }}</div>
+            @endif
         </div>
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
             <div class="text-[12px] text-[#5B6472] font-semibold mb-1">Refill Price</div>
@@ -53,7 +56,14 @@
                         @forelse($product->stockIns as $in)
                             <tr>
                                 <td class="py-2.5 px-4 text-[13px] border-b border-[#E5E9EF]">{{ $in->created_at->format('M d, Y') }}</td>
-                                <td class="py-2.5 px-4 text-[13px] font-bold text-[#1E8E5A] border-b border-[#E5E9EF]">+{{ $in->quantity_received }}</td>
+                                <td class="py-2.5 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                    @if(($in->quantity_received ?? 0) > 0 || ($in->empty_received_qty ?? 0) == 0)
+                                        <span class="font-bold text-[#1E8E5A]">+{{ $in->quantity_received }} Filled</span>
+                                    @endif
+                                    @if(($in->empty_received_qty ?? 0) > 0)
+                                        <span class="font-bold text-[#0B3B70] ml-1">+{{ $in->empty_received_qty }} Empty</span>
+                                    @endif
+                                </td>
                                 <td class="py-2.5 px-4 text-[12px] text-[#5B6472] border-b border-[#E5E9EF]">{{ $in->remarks ?? '—' }}</td>
                             </tr>
                         @empty
