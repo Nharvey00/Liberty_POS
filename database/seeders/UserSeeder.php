@@ -16,20 +16,15 @@ class UserSeeder extends Seeder
         $cashier = Role::where('role_name', 'Level 1')->first();
 
         // Owner / Admin
-        $admin = User::where('email', 'admin@gmail.com')->first();
-        if ($admin && (int) $admin->id !== 1 && !User::where('id', 1)->exists()) {
-            \Illuminate\Support\Facades\DB::table('users')->where('id', $admin->id)->update(['id' => 1, 'role_id' => $owner->id]);
-        } else {
-            User::updateOrCreate(
-                ['email' => 'admin@gmail.com'],
-                [
-                    'first_name' => 'Admin',
-                    'last_name'  => 'Owner',
-                    'password'   => Hash::make('password'),
-                    'role_id'    => $owner->id,
-                ]
-            );
-        }
+        User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'first_name' => 'Admin',
+                'last_name'  => 'Owner',
+                'password'   => Hash::make('password'),
+                'role_id'    => $owner->id,
+            ]
+        );
 
         // Manager
         User::updateOrCreate(
