@@ -49,8 +49,13 @@ class CheckRole
                 break;
             }
 
-            // Mapped match (e.g. role:1 matches 'cashier' or 'Level 1')
-            if (isset($roleMap[$userRoleId]) && in_array($roleClean, $roleMap[$userRoleId])) {
+            // Mapped match (e.g. role:1 matches 'cashier' or 'Level 1' whether checked by role_id or role_name)
+            if (isset($roleMap[$userRoleId]) && in_array($roleClean, $roleMap[$userRoleId], true)) {
+                $allowed = true;
+                break;
+            }
+
+            if ($userRoleName && isset($roleMap[$roleClean]) && in_array($userRoleName, $roleMap[$roleClean], true)) {
                 $allowed = true;
                 break;
             }
