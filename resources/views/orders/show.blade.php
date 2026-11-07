@@ -16,6 +16,12 @@
         </div>
     </x-slot>
 
+    @if(session('success') || session('error') || $errors->any())
+        <div class="max-w-[400px] mx-auto mt-6 print:hidden">
+            <x-flash-messages />
+        </div>
+    @endif
+
     @if($order->isVoided())
         <div class="max-w-[400px] mx-auto mt-6 mb-2 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] p-4 rounded-[16px] print:hidden">
             <div class="font-bold text-[14px] flex items-center gap-2">
@@ -175,6 +181,68 @@
             </div>
         </div>
     </div>
+
+    {{-- Transaction Accountability & Audit History (Manager / Owner View, Hidden on Print) --}}
+    @if(auth()->check() && auth()->user()->isManagerOrOwner())
+        @php
+            $orderAuditLogs = $auditLogs ?? collect();
+            $orderMovements = $inventoryMovements ?? collect();
+        @endphp
+        <details class="max-w-[400px] md:max-w-2xl mx-auto mt-2 mb-8 bg-white border border-[#E5E9EF] rounded-[16px] print:hidden">
+            <summary class="cursor-pointer select-none px-5 py-4 flex items-center justify-between gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B3B70] rounded-[16px]">
+                <span class="text-[14px] font-semibold text-[#1C2430]">Activity History</span>
+                <span class="text-[12.5px] text-[#5B6472]">{{ $orderAuditLogs->count() }} {{ \Illuminate\Support\Str::plural('event', $orderAuditLogs->count()) }} &middot; {{ $orderMovements->count() }} stock {{ \Illuminate\Support\Str::plural('movement', $orderMovements->count()) }}</span>
+            </summary>
+
+            <div class="px-5 pb-5 space-y-5">
+                <p class="text-[13px] text-[#5B6472]">Processed by <strong class="text-[#1C2430] font-semibold">{{ $order->user->name ?? 'N/A' }}</strong> (original cashier)</p>
+
+                {{-- Audit Events --}}
+                <section aria-labelledby="order-activity-heading">
+                    <h3 id="order-activity-heading" class="text-[12px] font-semibold text-[#5B6472] mb-2">Audit Events</h3>
+                    <ul class="divide-y divide-[#EEF1F5] border border-[#EEF1F5] rounded-lg">
+                        @forelse($orderAuditLogs as $log)
+                            <li class="flex items-start justify-between gap-4 px-4 py-3">
+                                <div>
+                                    <div class="text-[13px] font-semibold text-[#1C2430]">{{ $log->action_label }}
+                                        <span class="font-semibold {{ $log->status_color_class }}"> &middot; {{ $log->status_label }}</span>
+                                    </div>
+                                    <div class="text-[12.5px] text-[#5B6472]">{{ $log->actor_name_snapshot ?? 'System' }} ({{ $log->actor_role_snapshot ?? '—' }}) &middot; {{ $log->created_at?->format('M d, Y h:i A') }}</div>
+                                    @if($log->reason)
+                                        <div class="text-[12.5px] text-[#5B6472] mt-0.5">{{ $log->reason }}</div>
+                                    @endif
+                                </div>
+                                <a href="{{ route('audit-logs.show', $log) }}" class="shrink-0 text-[12.5px] font-semibold text-[#0B3B70] hover:underline">View details</a>
+                            </li>
+                        @empty
+                            <li class="px-4 py-3 text-[13px] text-[#5B6472]">No audit events recorded for this order.</li>
+                        @endforelse
+                    </ul>
+                </section>
+
+                {{-- Stock Movements --}}
+                <section aria-labelledby="order-stock-heading">
+                    <h3 id="order-stock-heading" class="text-[12px] font-semibold text-[#5B6472] mb-2">Stock Movements</h3>
+                    <ul class="divide-y divide-[#EEF1F5] border border-[#EEF1F5] rounded-lg">
+                        @forelse($orderMovements as $mv)
+                            <li class="flex items-start justify-between gap-4 px-4 py-3">
+                                <div>
+                                    <div class="text-[13px] font-semibold text-[#1C2430]">{{ $mv->product?->name ?? 'Unknown product' }}</div>
+                                    <div class="text-[12.5px] text-[#5B6472]">{{ $mv->movement_type === 'void_restock' ? 'Void restock' : 'Sale deduction' }} &middot; {{ $mv->user?->name ?? 'System' }}</div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-[13px] font-semibold {{ $mv->filled_qty_change >= 0 ? 'text-[#1E8E5A]' : 'text-[#B5504B]' }}">{{ sprintf('%+d', $mv->filled_qty_change) }} filled</div>
+                                    <div class="text-[12px] text-[#5B6472]">Balance: {{ $mv->filled_qty_after }} filled &middot; {{ $mv->empty_qty_after }} empty</div>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="px-4 py-3 text-[13px] text-[#5B6472]">No stock movements recorded for this order.</li>
+                        @endforelse
+                    </ul>
+                </section>
+            </div>
+        </details>
+    @endif
 
     <style>
         @media print {

@@ -47,13 +47,13 @@ The application UI is strictly organized into five top-level navigation groups i
    * **`Sales History`**: Audit log of completed and voided sales transactions with staff attribution.
    * **`Customers`**: CRUD registry for household, senior citizen, tertiary business, and industrial clients, including `Borrowed: X Tank(s)` badges, Monthly Purchase & Discount Summary Breakdown, and Itemized Purchase Audit Log.
 3. **`INVENTORY`**
-   * **`Inventory Hub`** *(collapsible submenu)*: Tracks LPG items across two physical states (**Filled Tanks** and **Empty Shells**), displays low-stock reorder flags, records **Stock In** (restocking and Huram returns) and **Stock Out** (manual deduction and Huram loans) movements, and provides **Level 3 Admin Owner** non-destructive voiding (`stock-ins.void`, `stock-outs.void`).
+   * **`Inventory Hub`** *(collapsible submenu)*: Tracks LPG items across two physical states (**Filled Tanks** and **Empty Shells**) alongside retail accessories, displays low-stock reorder flags, records multi-item **Stock In** (restocking and Huram returns, with `empty_received_qty` and `empty_shells_received` synchronized to a single authoritative integer) and multi-item **Stock Out** (manual deduction and Huram loans) movements, provides a unified **`Inventory Ledger`** (`inventory_movements`), and provides **Level 3 Admin Owner** non-destructive voiding (`stock-ins.void`, `stock-outs.void`) with compensating ledger and audit entries.
 4. **`CREDIT & RECEIVABLES`**
-   * **`Credit Accounts (Utang)`**: Manages running unpaid customer balances and account eligibility status (`Active` vs. `Suspended`).
+   * **`Credit Accounts (Utang)`**: Manages running unpaid customer balances (`balance_before`/`balance_after` snapshots) and account eligibility status (`Active` vs. `Suspended`).
    * **`Statements of Account`**: Generates itemized billing statements for credit customers.
    * **`Loaned Tanks`**: Tracks customer-borrowed LPG tanks and empty shells (*Huram*, `₱0.00` charge) via `TankLoanController` (`tank_loans` and `tank_loan_returns` tables), supporting dual entry points (`Stock Out` and `+ New Loaned Tank`) and partial/full returns as either `Empty Shell` or `Filled Tank`.
 5. **`REPORTS & ANALYTICS`**
-   * Management reporting module providing filtered views and Excel exports for sales, inventory, credit, and discount logs.
+   * Management reporting module providing filtered views and Excel exports for sales, inventory, credit, and discount logs, plus the centralized **`Audit Trail`** (`audit_logs`) viewer and CSV export.
 
 ---
 

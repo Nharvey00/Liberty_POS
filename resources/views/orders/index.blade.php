@@ -82,21 +82,21 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold">
                                 {{ $order->customer->name ?? 'Walk-in Customer' }}
                                 @if($order->customer && in_array($order->customer->customer_type, ['Coke (Residual)', 'Company']))
-                                    <span class="ml-2 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#FBF0DD] text-[#B4700A] uppercase">Coke (Residual)</span>
+                                    <span class="ml-1.5 text-[11px] font-semibold text-[#B4700A] uppercase tracking-wider">Coke (Residual)</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($order->payment_method === 'Credit')
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FBF0DD] text-[#B4700A]">Credit Ledger</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B4700A]">Credit Ledger</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Cash Paid</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Cash Paid</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($order->isVoided())
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Voided</span>
+                                    <span class="text-[12.5px] font-semibold text-[#B5504B]">Voided</span>
                                 @else
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Completed</span>
+                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Completed</span>
                                 @endif
                             </td>
                             @if($status === 'voided')

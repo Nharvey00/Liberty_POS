@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         $cashier = Role::where('role_name', 'Level 1')->first();
 
         // Owner / Admin
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'first_name' => 'Admin',
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
         );
 
         // Manager
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'manager@libertylpg.com'],
             [
                 'first_name' => 'Mark',
@@ -38,7 +38,7 @@ class UserSeeder extends Seeder
         );
 
         // Cashier 1
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'cashier1@libertylpg.com'],
             [
                 'first_name' => 'Ana',
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
         );
 
         // Cashier 2
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'cashier2@libertylpg.com'],
             [
                 'first_name' => 'Rico',

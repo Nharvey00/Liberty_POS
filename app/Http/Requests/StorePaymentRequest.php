@@ -20,7 +20,10 @@ class StorePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount'         => ['required', 'numeric', 'gt:0'],
+            'payment_method' => ['nullable', 'string', 'max:50'],
+            'reference_no'   => ['nullable', 'string', 'max:100'],
+            'notes'          => ['nullable', 'string', 'max:500'],
         ];
     }
 

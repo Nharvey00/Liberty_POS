@@ -78,7 +78,8 @@ class ReportController extends Controller
         $query = Product::withTrashed();
 
         if ($productSearch) {
-            $query->where('name', 'like', "%{$productSearch}%");
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where('name', $like, "%{$productSearch}%");
         }
 
         $products = $query->get()->map(function($product) use ($fromDate, $toDate) {
@@ -89,8 +90,14 @@ class ReportController extends Controller
                 ->whereBetween('orders.created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('order_items.quantity');
                 
+            // Supplier deliveries only: voided Stock In records and automatic order-void restocks
+            // are excluded so supplier delivery totals remain accurate.
             $stockIns = StockIn::valid()
                 ->where('product_id', $product->id)
+                ->where(function ($q) {
+                    $q->whereNull('reference_no')
+                      ->orWhere('reference_no', 'not like', 'VOID-%');
+                })
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_received');
 
@@ -125,7 +132,7 @@ class ReportController extends Controller
         if ($customerType && $customerType !== 'all') {
             $query->whereHas('customer', function($q) use ($customerType) {
                 if ($customerType === 'Coke (Residual)') {
-                    $q->whereIn('customer_type', ['Coke (Residual)', 'Company']);
+                    $q->whereIn('customer_type', ['Coke (Residual)', 'Company', 'Corporate']);
                 } else {
                     $q->where('customer_type', $customerType);
                 }
@@ -133,12 +140,23 @@ class ReportController extends Controller
         }
 
         if ($status !== null && $status !== 'all') {
-            $query->where('is_active', $status == 'active' ? DB::raw('true') : DB::raw('false'));
+            $query->active($status == 'active');
         }
 
         $accounts = $query->get()->map(function($account) {
-            $totalCharged = $account->ledgers->filter(fn($l) => strcasecmp($l->transaction_type, 'Charge') === 0)->sum('amount');
-            $totalPaid = $account->ledgers->filter(fn($l) => strcasecmp($l->transaction_type, 'Payment') === 0)->sum('amount');
+            // A void reversal is a 'Payment' ledger row linked to an order (real payments link to a payment record).
+            // Net each voided sale against its reversal so neither inflates the charged/paid totals.
+            $voidedOrderIds = $account->ledgers
+                ->filter(fn($l) => strcasecmp($l->transaction_type, 'Payment') === 0 && !is_null($l->order_id))
+                ->pluck('order_id')
+                ->all();
+
+            $totalCharged = $account->ledgers
+                ->filter(fn($l) => strcasecmp($l->transaction_type, 'Charge') === 0 && !in_array($l->order_id, $voidedOrderIds))
+                ->sum('amount');
+            $totalPaid = $account->ledgers
+                ->filter(fn($l) => strcasecmp($l->transaction_type, 'Payment') === 0 && is_null($l->order_id))
+                ->sum('amount');
             $balance = $totalCharged - $totalPaid;
             
             $lastActivity = $account->ledgers->max('created_at');

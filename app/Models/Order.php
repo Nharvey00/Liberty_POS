@@ -85,4 +85,10 @@ class Order extends Model
     {
         return $this->hasOne(CreditLedger::class);
     }
+
+    public function inventoryMovements()
+    {
+        return $this->hasMany(InventoryMovement::class, 'source_id')
+            ->where('source_type', 'Order');
+    }
 }

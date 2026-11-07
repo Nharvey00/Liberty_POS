@@ -27,7 +27,10 @@ class StoreCreditAccountRequest extends FormRequest
                 Rule::exists('customers', 'id'),
                 Rule::unique('credit_accounts', 'customer_id'), // One credit account per customer
             ],
+            'credit_limit'           => ['nullable', 'numeric', 'min:0'],
             'agreed_monthly_payment' => ['nullable', 'numeric', 'min:0'],
+            'status'                 => ['nullable', 'string', 'in:pending,approved,rejected,suspended,closed'],
+            'approval_remarks'       => ['nullable', 'string', 'max:500'],
         ];
     }
 

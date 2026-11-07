@@ -4,7 +4,29 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">{{ $customer->name }}</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('customers.update', $customer) }}" x-data="{ discountType: '{{ old('default_discount_type', $customer->default_discount_type) }}' }" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    @php
+        // Legacy profiles saved as "custom" are not accepted at checkout; present them as "promo" so saving repairs them
+        $initialDiscountType = old('default_discount_type', $customer->default_discount_type) ?? '';
+        if ($initialDiscountType === 'custom') {
+            $initialDiscountType = 'promo';
+        }
+        $initialDiscountPct = (string) (old('default_discount_percentage', $customer->default_discount_percentage) ?? '');
+    @endphp
+
+    <form method="POST" action="{{ route('customers.update', $customer) }}" data-submit-once
+          x-data="{
+              discountType: @js($initialDiscountType),
+              discountPct: @js($initialDiscountPct),
+              onDiscountTypeChange() {
+                  // Senior/PWD discounts are a statutory 20%; pre-fill it so the POS never locks a 0% discount
+                  if (['senior', 'pwd'].includes(this.discountType) && (this.discountPct === '' || parseFloat(this.discountPct) === 0)) {
+                      this.discountPct = '20';
+                  } else if (this.discountType === '') {
+                      this.discountPct = '';
+                  }
+              }
+          }"
+          class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
         @method('PUT')
 
@@ -75,16 +97,14 @@
 
             <div class="col-span-2 md:col-span-1">
                 <label for="default_discount_type" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Default Discount Type</label>
-                <select name="default_discount_type" id="default_discount_type" x-model="discountType" class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                <select name="default_discount_type" id="default_discount_type" x-model="discountType" @change="onDiscountTypeChange()" class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="">None</option>
                     <option value="regular">Regular (Fixed ₱)</option>
                     <option value="tertiary">Tertiary (Fixed ₱)</option>
                     <option value="industrial">Industrial (Fixed ₱)</option>
+                    <option value="promo">Promo (Fixed ₱)</option>
                     <option value="senior">Senior Citizen (%)</option>
                     <option value="pwd">PWD (%)</option>
-                    @if(in_array($customer->default_discount_type, ['custom', 'promo']))
-                        <option value="{{ $customer->default_discount_type }}">{{ ucfirst($customer->default_discount_type) }} (Fixed ₱)</option>
-                    @endif
                 </select>
                 @error('default_discount_type') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
@@ -100,7 +120,7 @@
                            :placeholder="['senior', 'pwd'].includes(discountType) ? 'e.g. 20' : 'e.g. 50.00'"
                            :class="!['senior', 'pwd'].includes(discountType) ? 'pl-8 pr-3' : 'px-3'"
                            name="default_discount_percentage" id="default_discount_percentage"
-                           value="{{ old('default_discount_percentage', $customer->default_discount_percentage) }}"
+                           x-model="discountPct"
                            class="w-full py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <span x-show="['senior', 'pwd'].includes(discountType)" style="display: none;" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">%</span>
                 </div>

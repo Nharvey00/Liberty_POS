@@ -23,7 +23,7 @@ class UpdateCustomerRequest extends FormRequest
             'address' => 'nullable|string|max:255',
             'business_name' => 'nullable|string|max:255',
             'tin_number' => 'nullable|string|max:255',
-            'default_discount_type' => 'nullable|string|in:none,senior,pwd,regular,tertiary,industrial,promo,custom|max:50',
+            'default_discount_type' => 'nullable|string|in:none,senior,pwd,regular,tertiary,industrial,promo',
             'default_discount_percentage' => 'nullable|numeric|min:0',
             'default_discount_ref_name' => 'nullable|string|max:255',
             'default_discount_ref_id' => 'nullable|string|max:255',

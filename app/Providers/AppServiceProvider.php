@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Listeners\AuthAuditSubscriber;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL; // <-- Add this line
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS on Render
-        if (env('APP_ENV') !== 'local') {
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        Paginator::useTailwind();
+        Event::subscribe(AuthAuditSubscriber::class);
     }
 }

@@ -19,12 +19,16 @@ class StatementOfAccount extends Model
 
     /**
      * Improvement #2: Cast types for reliable date handling and boolean comparisons.
+     *
+     * Note: 'is_paid' is intentionally NOT cast to boolean. The explicit accessor/mutator
+     * below stores 'true'/'false' strings for PostgreSQL compatibility; combining that with a
+     * boolean cast makes Eloquent's dirty check compare (bool) 'false' === (bool) 'true'
+     * (both true), which silently skips the UPDATE when marking a statement as paid.
      */
     protected $casts = [
         'billing_period_start' => 'date',
         'billing_period_end'   => 'date',
         'total_due'            => 'decimal:2',
-        'is_paid'              => 'boolean',
     ];
 
     public function setIsPaidAttribute($value): void

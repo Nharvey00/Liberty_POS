@@ -52,12 +52,12 @@
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $user->name }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">{{ $user->email }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E7EEF7] text-[#0B3B70]">
+                                <span class="text-[12.5px] font-semibold text-[#0B3B70]">
                                     {{ $user->role->role_name ?? 'Staff · Level 1' }}
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Active</span>
+                                <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Active</span>
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-3">

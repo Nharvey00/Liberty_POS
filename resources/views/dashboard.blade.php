@@ -29,7 +29,7 @@
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Today's Sales</div>
             <div class="flex items-end justify-between mt-1">
                 <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">₱{{ number_format($todaySalesAmount, 2) }}</div>
-                <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full {{ $todaySalesAmount > 0 ? 'bg-[#E2F4EA] text-[#1A8A4F]' : 'bg-gray-100 text-[#5B6B88]' }} flex items-center gap-1">
+                <div class="text-[12px] font-semibold {{ $todaySalesAmount > 0 ? 'text-[#1A8A4F]' : 'text-[#5B6B88]' }}">
                     {{ $todayTransactions }} Transactions
                 </div>
             </div>
@@ -39,7 +39,7 @@
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Low Stock Alerts</div>
             <div class="flex items-end justify-between mt-1">
                 <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ $lowStockProducts->count() }}</div>
-                <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full {{ $lowStockProducts->count() > 0 ? 'bg-[#FBE5E2] text-[#C0392B]' : 'bg-[#E2F4EA] text-[#1A8A4F]' }} flex items-center gap-1">
+                <div class="text-[12px] font-semibold {{ $lowStockProducts->count() > 0 ? 'text-[#C0392B]' : 'text-[#1A8A4F]' }}">
                     {{ $lowStockProducts->count() > 0 ? 'Requires attention' : 'Inventory healthy' }}
                 </div>
             </div>
@@ -49,7 +49,7 @@
             <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Total Customers</div>
             <div class="flex items-end justify-between mt-1">
                 <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ number_format($totalCustomers) }}</div>
-                <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E2F4EA] text-[#1A8A4F] flex items-center gap-1">
+                <div class="text-[12px] font-semibold text-[#1A8A4F]">
                     Active Client Base
                 </div>
             </div>
@@ -60,7 +60,7 @@
                 <div class="text-[12.5px] text-[#5B6B88] font-medium mb-1">Active Credit Accounts</div>
                 <div class="flex items-end justify-between mt-1">
                     <div class="font-sans text-[26px] font-bold text-gray-900 leading-none">{{ number_format($activeCreditAccounts) }}</div>
-                    <div class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#FBF0DD] text-[#B4700A] flex items-center gap-1">
+                    <div class="text-[12px] font-semibold text-[#B4700A]">
                         Utang ledger active
                     </div>
                 </div>

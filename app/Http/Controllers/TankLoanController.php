@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\StockIn;
 use App\Models\StockOut;
 use App\Models\TankLoan;
 use App\Models\TankLoanReturn;
+use App\Services\AuditTrailService;
+use App\Services\InventoryLedgerService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +111,9 @@ class TankLoanController extends Controller
         ]);
 
         DB::transaction(function () use ($validated) {
+            AuditTrailService::resetCorrelationId();
+            $correlationId = AuditTrailService::correlationId();
+
             $product = Product::lockForUpdate()->findOrFail($validated['product_id']);
 
             if ($product->isAccessory()) {
@@ -134,31 +140,98 @@ class TankLoanController extends Controller
                 ]);
             }
 
+            $filledBefore = (int) $product->stock_quantity;
+            $emptyBefore  = (int) $product->empty_quantity;
+            $filledAfter  = $filledBefore - $quantityRemoved;
+            $emptyAfter   = $emptyBefore - $emptyQuantityRemoved;
+
             // 1. Create Stock Out audit entry
             $stockOut = StockOut::create([
-                'product_id' => $product->id,
-                'quantity_removed' => $quantityRemoved,
+                'product_id'             => $product->id,
+                'user_id'                => Auth::id(),
+                'approved_by'            => Auth::id(),
+                'movement_category'      => 'manual_adjustment',
+                'quantity_removed'       => $quantityRemoved,
                 'empty_quantity_removed' => $emptyQuantityRemoved,
-                'reason' => 'Loaned Tank (Huram)',
+                'filled_qty_before'      => $filledBefore,
+                'filled_qty_after'       => $filledAfter,
+                'empty_qty_before'       => $emptyBefore,
+                'empty_qty_after'        => $emptyAfter,
+                'reason'                 => 'Loaned Tank (Huram)',
             ]);
 
+            $referenceNo = 'SO-' . date('Ymd') . '-' . str_pad((string) $stockOut->id, 4, '0', STR_PAD_LEFT);
+            $stockOut->update(['reference_no' => $referenceNo]);
+
             // 2. Deduct from inventory
-            $product->stock_quantity -= $quantityRemoved;
-            $product->empty_quantity -= $emptyQuantityRemoved;
+            $product->stock_quantity = $filledAfter;
+            $product->empty_quantity = $emptyAfter;
+            $product->updated_by = Auth::id();
             $product->save();
 
             // 3. Create linked TankLoan record (₱0.00 monetary charge)
-            TankLoan::create([
-                'customer_id' => $validated['customer_id'],
-                'product_id' => $product->id,
-                'stock_out_id' => $stockOut->id,
+            $tankLoan = TankLoan::create([
+                'customer_id'        => $validated['customer_id'],
+                'product_id'         => $product->id,
+                'stock_out_id'       => $stockOut->id,
                 'tank_condition_out' => $conditionOut,
-                'quantity_borrowed' => $qty,
-                'quantity_returned' => 0,
-                'status' => 'borrowed',
-                'notes' => $validated['notes'] ?? null,
-                'created_by' => Auth::id(),
-                'borrowed_at' => now(),
+                'quantity_borrowed'  => $qty,
+                'quantity_returned'  => 0,
+                'status'             => 'borrowed',
+                'notes'              => $validated['notes'] ?? null,
+                'created_by'         => Auth::id(),
+                'borrowed_at'        => now(),
+            ]);
+
+            $ledgerReason = 'Loaned Tank (Huram)' . (!empty($validated['notes']) ? ' — ' . $validated['notes'] : '');
+
+            // 4. Record InventoryMovement ledger entry
+            InventoryLedgerService::recordMovement($product, [
+                'reference_no'      => $referenceNo,
+                'movement_type'     => InventoryMovement::TYPE_MANUAL_ADJUSTMENT,
+                'filled_qty_before' => $filledBefore,
+                'filled_qty_change' => -$quantityRemoved,
+                'filled_qty_after'  => $filledAfter,
+                'empty_qty_before'  => $emptyBefore,
+                'empty_qty_change'  => -$emptyQuantityRemoved,
+                'empty_qty_after'   => $emptyAfter,
+                'unit_cost'         => $product->cost_price,
+                'unit_price'        => $product->price,
+                'source_type'       => 'StockOut',
+                'source_id'         => $stockOut->id,
+                'user_id'           => Auth::id(),
+                'approved_by'       => Auth::id(),
+                'reason'            => $ledgerReason,
+            ]);
+
+            // 5. Record centralized AuditLog event
+            AuditTrailService::record([
+                'correlation_id'        => $correlationId,
+                'module'                => 'inventory',
+                'action'                => 'stock.out',
+                'entity_type'           => 'StockOut',
+                'entity_id'             => $stockOut->id,
+                'transaction_reference' => $referenceNo,
+                'status'                => 'completed',
+                'approval_status'       => 'approved',
+                'approver_user_id'      => Auth::id(),
+                'approved_at'           => now(),
+                'before_values'         => [
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'stock_quantity' => $filledBefore,
+                    'empty_quantity' => $emptyBefore,
+                ],
+                'after_values'          => [
+                    'product_id'             => $product->id,
+                    'product_name'           => $product->name,
+                    'stock_quantity'         => $filledAfter,
+                    'empty_quantity'         => $emptyAfter,
+                    'quantity_removed'       => $quantityRemoved,
+                    'empty_quantity_removed' => $emptyQuantityRemoved,
+                    'tank_loan_id'           => $tankLoan->id,
+                ],
+                'reason'                => $ledgerReason,
             ]);
         });
 
@@ -223,6 +296,9 @@ class TankLoanController extends Controller
         ]);
 
         DB::transaction(function () use ($tankLoan, $validated) {
+            AuditTrailService::resetCorrelationId();
+            $correlationId = AuditTrailService::correlationId();
+
             $lockedLoan = TankLoan::with('customer')->lockForUpdate()->findOrFail($tankLoan->id);
 
             if ($lockedLoan->status === 'voided') {
@@ -250,14 +326,20 @@ class TankLoanController extends Controller
             $returnedAs = $validated['returned_as'];
 
             $qtyReceivedFilled = $returnedAs === 'filled' ? $qtyToReturn : 0;
-            $emptyShellsReceived = $returnedAs === 'empty_shell' ? $qtyToReturn : 0;
+            $emptyReceived = $returnedAs === 'empty_shell' ? $qtyToReturn : 0;
+
+            $filledBefore = (int) $product->stock_quantity;
+            $emptyBefore  = (int) $product->empty_quantity;
+            $filledAfter  = $filledBefore + $qtyReceivedFilled;
+            $emptyAfter   = $emptyBefore + $emptyReceived;
 
             // 1. Increment inventory based on Returned As condition
-            $product->stock_quantity += $qtyReceivedFilled;
-            $product->empty_quantity += $emptyShellsReceived;
+            $product->stock_quantity = $filledAfter;
+            $product->empty_quantity = $emptyAfter;
+            $product->updated_by = Auth::id();
             $product->save();
 
-            // 2. Log Stock In entry for audit trail
+            // 2. Log Stock In entry for audit trail (synchronized empty_received_qty & empty_shells_received)
             $conditionLabel = $returnedAs === 'filled' ? 'Filled Tank' : 'Empty Shell';
             $customerName = $lockedLoan->customer->name ?? 'Customer';
             $remarks = "Huram Tank Return ({$conditionLabel}) - {$customerName}";
@@ -266,22 +348,34 @@ class TankLoanController extends Controller
             }
 
             $stockIn = StockIn::create([
-                'product_id' => $product->id,
-                'quantity_received' => $qtyReceivedFilled,
-                'empty_returned_qty' => 0,
-                'empty_shells_received' => $emptyShellsReceived,
-                'remarks' => $remarks,
+                'product_id'            => $product->id,
+                'user_id'               => Auth::id(),
+                'approved_by'           => Auth::id(),
+                'supplier_name'         => "Huram Return - {$customerName}",
+                'quantity_received'     => $qtyReceivedFilled,
+                'empty_received_qty'    => $emptyReceived,
+                'empty_shells_received' => $emptyReceived,
+                'empty_returned_qty'    => 0,
+                'unit_cost'             => $product->cost_price,
+                'filled_qty_before'     => $filledBefore,
+                'filled_qty_after'      => $filledAfter,
+                'empty_qty_before'      => $emptyBefore,
+                'empty_qty_after'       => $emptyAfter,
+                'remarks'               => $remarks,
             ]);
+
+            $referenceNo = 'SI-' . date('Ymd') . '-' . str_pad((string) $stockIn->id, 4, '0', STR_PAD_LEFT);
+            $stockIn->update(['reference_no' => $referenceNo]);
 
             // 3. Create TankLoanReturn audit record
             TankLoanReturn::create([
-                'tank_loan_id' => $lockedLoan->id,
-                'stock_in_id' => $stockIn->id,
-                'returned_as' => $returnedAs,
+                'tank_loan_id'      => $lockedLoan->id,
+                'stock_in_id'       => $stockIn->id,
+                'returned_as'       => $returnedAs,
                 'quantity_returned' => $qtyToReturn,
-                'notes' => $validated['notes'] ?? null,
-                'received_by' => Auth::id(),
-                'returned_at' => now(),
+                'notes'             => $validated['notes'] ?? null,
+                'received_by'       => Auth::id(),
+                'returned_at'       => now(),
             ]);
 
             // 4. Update parent TankLoan status and returned count
@@ -293,6 +387,55 @@ class TankLoanController extends Controller
                 $lockedLoan->status = 'partially_returned';
             }
             $lockedLoan->save();
+
+            // 5. Record InventoryMovement ledger entry
+            InventoryLedgerService::recordMovement($product, [
+                'reference_no'      => $referenceNo,
+                'movement_type'     => InventoryMovement::TYPE_STOCK_IN,
+                'filled_qty_before' => $filledBefore,
+                'filled_qty_change' => $qtyReceivedFilled,
+                'filled_qty_after'  => $filledAfter,
+                'empty_qty_before'  => $emptyBefore,
+                'empty_qty_change'  => $emptyReceived,
+                'empty_qty_after'   => $emptyAfter,
+                'unit_cost'         => $product->cost_price,
+                'unit_price'        => $product->price,
+                'source_type'       => 'StockIn',
+                'source_id'         => $stockIn->id,
+                'user_id'           => Auth::id(),
+                'approved_by'       => Auth::id(),
+                'reason'            => $remarks,
+            ]);
+
+            // 6. Record centralized AuditLog event
+            AuditTrailService::record([
+                'correlation_id'        => $correlationId,
+                'module'                => 'inventory',
+                'action'                => 'stock.in',
+                'entity_type'           => 'StockIn',
+                'entity_id'             => $stockIn->id,
+                'transaction_reference' => $referenceNo,
+                'status'                => 'completed',
+                'approval_status'       => 'approved',
+                'approver_user_id'      => Auth::id(),
+                'approved_at'           => now(),
+                'before_values'         => [
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'stock_quantity' => $filledBefore,
+                    'empty_quantity' => $emptyBefore,
+                ],
+                'after_values'          => [
+                    'product_id'         => $product->id,
+                    'product_name'       => $product->name,
+                    'stock_quantity'     => $filledAfter,
+                    'empty_quantity'     => $emptyAfter,
+                    'quantity_received'  => $qtyReceivedFilled,
+                    'empty_received_qty' => $emptyReceived,
+                    'tank_loan_id'       => $lockedLoan->id,
+                ],
+                'reason'                => $remarks,
+            ]);
         });
 
         return back()->with('success', 'Returned tank(s) recorded and inventory updated.');

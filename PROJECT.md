@@ -59,7 +59,8 @@ Customers do **not** log into the web system directly; store staff record transa
 1. **Sales Transaction:** A record of a completed or voided walk-in or delivery order, linked to a customer (or walk-in), payment type (cash or credit/*utang*), discount type and amount (percentage for `senior`/`pwd`; fixed Peso `₱` for `regular`/`tertiary`/`industrial`/`promo`/`custom`, capped at the order subtotal), line items, timestamp, and the specific staff user who created it.
 2. **Inventory Item (LPG Stock):** Represents physical store inventory, distinguishing between **Filled Tanks** (available for sale) and **Empty Shells** (returned cylinders), along with stock movement logs (**Stock In** / **Stock Out** with non-destructive Level 3 Admin Owner voiding) and low-stock alert thresholds.
 3. **Customer & Credit (*Utang*) Account:** Represents a registered client, their contact/category details, their configurable default discount (`default_discount_type` and `default_discount_percentage`, storing `%` for Senior/PWD and flat `₱` for Regular/Tertiary/Industrial), their monthly purchase & discount audit history, their running unpaid balance, their credit eligibility status (Active vs. Suspended), and their generated **Statements of Account (SOA)**.
-4. **Customer Loaned Tank (*Huram*):** Represents an LPG cylinder or empty shell borrowed by a customer at `₱0.00` monetary charge (`tank_loans` and `tank_loan_returns`), linked atomically to **Stock Out** (when borrowed) and **Stock In** (when returned as an `empty_shell` or `filled` tank).
+4. **Customer Loaned Tank (*Huram*):** Represents an LPG cylinder borrowed by a customer at `₱0.00` monetary charge (`tank_loans` and `tank_loan_returns`), linked atomically to **Stock Out** (when borrowed) and **Stock In** (when returned as an `empty_shell` or `filled` tank), and recorded in the unified `inventory_movements` ledger and `audit_logs`.
+5. **Centralized Audit Trail & Inventory Movement Ledger:** Every critical action across authentication, POS sales, voided orders, multi-item `StockIn`/`StockOut` deliveries/adjustments, Admin Owner `StockIn`/`StockOut` voids, Huram tank loans/returns, customer profiles, credit ledgers, and user management is recorded in `audit_logs` (`AuditTrailService`) and `inventory_movements` (`InventoryLedgerService`) with before/after stock and balance snapshots.
 
 ---
 
@@ -116,11 +117,11 @@ Customers do **not** log into the web system directly; store staff record transa
   * `Point of Sale` (Walk-in and delivery checkout with auto-populated, per-transaction editable Fixed ₱ or Senior % discount support).
   * `Sales History` (Transaction log including staff attribution and voided sales).
   * `Customers` (Customer registry, `Borrowed: X Tank(s)` indicator, Monthly Purchase & Discount Summary Breakdown, and Itemized Purchase Audit Log).
-  * `Inventory Hub` (Real-time stock monitoring, filled vs. empty shell tracking, low-stock flags, Stock In, Stock Out, and Level 3 Admin Owner voiding).
-  * `Credit Accounts (Utang)` (Customer credit ledger and account suspension enforcement).
+  * `Inventory Hub` (Real-time stock monitoring with separated LPG Cylinders vs. Retail Accessories tables, SKU/cost/reorder metadata, filled vs. empty shell tracking, low-stock flags, multi-item Stock In, multi-item Stock Out, Unified Inventory Movement Ledger, and Level 3 Admin Owner voiding).
+  * `Credit Accounts (Utang)` (Customer credit ledger with before/after balance snapshots and account suspension enforcement).
   * `Statements of Account` (SOA generation for credit customers).
   * `Loaned Tanks` (Customer borrowed/`Huram` tank tracking under `CREDIT & RECEIVABLES`, supporting dual entry points and partial/full returns as Empty Shell or Filled Tank).
-  * `Reports & Analytics` (Sales, inventory, credit, and discount reports with Excel export).
+  * `Reports & Analytics` (Sales, inventory, credit, and discount reports with Excel export, plus the centralized `Audit Trail` module).
 * **Usability Refinements (Current IT 14/L Focus):** Updating UI labels on the restocking/inventory pages to match actual store terminology used by Liberty LPG staff.
 
 ### DELIBERATELY OUT OF SCOPE (Do NOT Build or Assume Unless Explicitly Instructed)

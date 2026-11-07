@@ -3,6 +3,12 @@
         <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0 print:hidden">Transaction Receipt</h1>
     </x-slot>
 
+    @if(session('success') || session('error') || $errors->any())
+        <div class="max-w-[400px] mx-auto mt-6 print:hidden">
+            <x-flash-messages />
+        </div>
+    @endif
+
     <div class="flex justify-center py-6 print:py-0 print:m-0 print:block print:w-full">
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-8 w-full max-w-[400px] text-[12.5px] text-[#1C2430] print:w-[80mm] print:mx-auto print:p-2 print:text-black print:shadow-none print:border-none print:bg-white print:max-w-none print:m-0">
             <div class="print:px-2">
@@ -136,7 +142,7 @@
             
             <div class="mt-6 flex justify-between gap-3 print:hidden">
                 <a href="{{ route('pos.create') }}" class="flex-1 text-center rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9] print:hidden">Back to POS</a>
-                <button onclick="window.print()" class="flex-1 rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print</button>
+                <button type="button" onclick="window.print()" class="flex-1 rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print</button>
             </div>
         </div>
     </div>

@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
+use App\Models\InventoryMovement;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -28,12 +31,11 @@ class OrderController extends Controller
                     $q->where('id', (int)$cleanSearch);
                 }
                 $q->orWhere('invoice_number', $like, "%{$search}%")
-                  ->orWhereHas('customer', function ($cq) use ($search, $like) {
-                      $cq->where('first_name', $like, "%{$search}%")
-                         ->orWhere('last_name', $like, "%{$search}%")
-                         ->orWhere('business_name', $like, "%{$search}%");
+                  ->orWhereHas('customer', function ($cq) use ($search) {
+                      $cq->withTrashed()->search($search);
                   });
             })
+            ->when(!Auth::user()->isManagerOrOwner(), fn ($q) => $q->where('user_id', Auth::id()))
             ->take(10)
             ->get()
             ->map(function ($o) {
@@ -80,10 +82,8 @@ class OrderController extends Controller
                     $q->where('id', (int)$cleanSearch);
                 }
                 $q->orWhere('invoice_number', $like, "%{$search}%")
-                  ->orWhereHas('customer', function ($cq) use ($search, $like) {
-                      $cq->where('first_name', $like, "%{$search}%")
-                         ->orWhere('last_name', $like, "%{$search}%")
-                         ->orWhere('business_name', $like, "%{$search}%");
+                  ->orWhereHas('customer', function ($cq) use ($search) {
+                      $cq->withTrashed()->search($search);
                   });
             });
         }
@@ -98,7 +98,27 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['items.product', 'customer', 'user']);
-        return view('orders.show', compact('order'));
+        $order->load([
+            'items.product' => fn ($q) => $q->withTrashed(),
+            'customer'      => fn ($q) => $q->withTrashed(),
+            'user'          => fn ($q) => $q->withTrashed(),
+            'voidedByUser'  => fn ($q) => $q->withTrashed(),
+        ]);
+
+        $auditLogs = AuditLog::where('entity_type', 'Order')
+            ->where('entity_id', (string) $order->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $inventoryMovements = InventoryMovement::with([
+            'product' => fn ($q) => $q->withTrashed(),
+            'user'    => fn ($q) => $q->withTrashed(),
+        ])
+            ->where('source_type', 'Order')
+            ->where('source_id', $order->id)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('orders.show', compact('order', 'auditLogs', 'inventoryMovements'));
     }
 }

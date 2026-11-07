@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Order;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Services\AuditTrailService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,24 @@ class UserController extends Controller
         // Hash the password securely before saving
         $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+        $newUser = User::create($validated);
+        $newUser->load('role');
+
+        AuditTrailService::record([
+            'module'                => 'users',
+            'action'                => 'user.created',
+            'entity_type'           => 'User',
+            'entity_id'             => $newUser->id,
+            'transaction_reference' => 'USR-' . str_pad((string) $newUser->id, 4, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'after_values'          => [
+                'name'      => $newUser->name,
+                'email'     => $newUser->email,
+                'role_id'   => (int) $newUser->role_id,
+                'role_name' => $newUser->role?->role_name,
+            ],
+            'reason'                => 'New staff user account created',
+        ]);
 
         return redirect()->route('users.index')->with('success', 'Staff account created successfully.');
     }
@@ -68,14 +86,45 @@ class UserController extends Controller
             }
         }
 
+        $user->load('role');
+        $beforeValues = [
+            'name'      => $user->name,
+            'email'     => $user->email,
+            'role_id'   => (int) $user->role_id,
+            'role_name' => $user->role?->role_name,
+        ];
+
+        $roleChanged = isset($validated['role_id']) && (int) $validated['role_id'] !== (int) $user->role_id;
+        $passwordChanged = !empty($validated['password']);
+
         // Only hash and update the password if a new one was provided
-        if (!empty($validated['password'])) {
+        if ($passwordChanged) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
         }
 
         $user->update($validated);
+        $user->refresh();
+        $user->load('role');
+
+        AuditTrailService::record([
+            'module'                => 'users',
+            'action'                => $roleChanged ? 'user.role_changed' : 'user.updated',
+            'entity_type'           => 'User',
+            'entity_id'             => $user->id,
+            'transaction_reference' => 'USR-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => $beforeValues,
+            'after_values'          => [
+                'name'             => $user->name,
+                'email'            => $user->email,
+                'role_id'          => (int) $user->role_id,
+                'role_name'        => $user->role?->role_name,
+                'password_changed' => $passwordChanged,
+            ],
+            'reason'                => $roleChanged ? 'Staff user role modified' : 'Staff user profile updated',
+        ]);
 
         return redirect()->route('users.index')->with('success', 'Staff account updated successfully.');
     }
@@ -95,7 +144,28 @@ class UserController extends Controller
             return back()->withErrors('Cannot delete the sole remaining Owner account in the system.');
         }
 
+        $user->load('role');
+        $beforeSnapshot = [
+            'name'      => $user->name,
+            'email'     => $user->email,
+            'role_id'   => (int) $user->role_id,
+            'role_name' => $user->role?->role_name,
+            'status'    => 'active',
+        ];
+
         $user->delete();
+
+        AuditTrailService::record([
+            'module'                => 'users',
+            'action'                => 'user.archived',
+            'entity_type'           => 'User',
+            'entity_id'             => $user->id,
+            'transaction_reference' => 'USR-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => $beforeSnapshot,
+            'after_values'          => array_merge($beforeSnapshot, ['status' => 'archived']),
+            'reason'                => 'Staff user account archived (soft-deleted)',
+        ]);
 
         return redirect()->route('users.index')->with('success', 'Staff account deleted successfully.');
     }

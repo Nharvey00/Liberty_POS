@@ -372,6 +372,8 @@ class PhasesOneToFourAuditTest extends TestCase
         // Void the Return StockIn -> automatically reverses the return on TankLoan back to 3 unreturned!
         $returnRecord = TankLoanReturn::where('tank_loan_id', $loanA->id)->firstOrFail();
         $returnStockIn = StockIn::findOrFail($returnRecord->stock_in_id);
+        $this->assertEquals(2, $returnStockIn->empty_received_qty);
+        $this->assertEquals(2, $returnStockIn->empty_shells_received);
 
         $this->actingAs($this->owner)->post(route('stock-ins.void', $returnStockIn), [
             'void_reason' => 'Logged return under wrong customer',
@@ -395,5 +397,43 @@ class PhasesOneToFourAuditTest extends TestCase
         $this->assertEquals('voided', $loanA->status);
         $this->assertEquals(10, $product->stock_quantity);
         $this->assertEquals(0, $customer->fresh()->borrowed_tanks_count);
+
+        // Verify AuditTrailService and InventoryLedgerService recorded compensating entries with 0 discrepancy
+        $this->assertDatabaseHas('audit_logs', [
+            'module'      => 'inventory',
+            'action'      => 'stock.in.voided',
+            'entity_type' => 'StockIn',
+            'entity_id'   => (string) $returnStockIn->id,
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'module'      => 'inventory',
+            'action'      => 'stock.out.voided',
+            'entity_type' => 'StockOut',
+            'entity_id'   => (string) $stockOutA->id,
+        ]);
+
+        // Verify accessory products are rejected from Huram loans on both entry points
+        $accessory = Product::create([
+            'name'                 => 'LPG Hose 1.5m',
+            'price'                => 180.00,
+            'stock_quantity'       => 15,
+            'empty_quantity'       => 0,
+            'standard_capacity_kg' => null,
+        ]);
+
+        $this->actingAs($this->manager)->from(route('tank-loans.create'))->post(route('tank-loans.store'), [
+            'customer_id'        => $customer->id,
+            'product_id'         => $accessory->id,
+            'tank_condition_out' => 'filled',
+            'quantity_borrowed'  => 1,
+        ])->assertSessionHasErrors('product_id');
+
+        $this->actingAs($this->manager)->from(route('stock-outs.create'))->post(route('stock-outs.store'), [
+            'product_id'         => $accessory->id,
+            'reason'             => 'Loaned Tank (Huram)',
+            'customer_id'        => $customer->id,
+            'tank_condition_out' => 'filled',
+            'loan_quantity'      => 1,
+        ])->assertSessionHasErrors('product_id');
     }
 }

@@ -147,5 +147,14 @@
 * **Decision:**
   1. Track customer-borrowed cylinders and empty shells at `₱0.00` monetary charge using dedicated `tank_loans` and `tank_loan_returns` tables (`role:2,3` access).
   2. Place `Loaned Tanks` as the 3rd item under `CREDIT & RECEIVABLES` in the sidebar navigation (`resources/views/layouts/navigation.blade.php`) and display a `Borrowed: X Tank(s)` badge on `customers/index.blade.php` and `customers/show.blade.php`.
-  3. Support two synchronized atomic entry points (`Stock Out` with reason `Loaned Tank (Huram)` and `+ New Loaned Tank` on the `Loaned Tanks` module) and partial/full tank returns requiring explicit selection of `Returned as: Empty Shell` (incrementing `products.empty_quantity` via `stock_ins.empty_shells_received`) or `Returned as: Filled Tank` (incrementing `products.stock_quantity` via `stock_ins.quantity_received`).
+  3. Support two synchronized atomic entry points (`Stock Out` with reason `Loaned Tank (Huram)` and `+ New Loaned Tank` on the `Loaned Tanks` module) and partial/full tank returns requiring explicit selection of `Returned as: Empty Shell` (incrementing `products.empty_quantity` via `stock_ins.empty_shells_received` / `empty_received_qty`) or `Returned as: Filled Tank` (incrementing `products.stock_quantity` via `stock_ins.quantity_received`).
+* **Status:** Final (do not revisit without explicit new instruction)
+
+---
+
+## Decision 15: Centralized Audit Trail, Unified Inventory Movement Ledger & Empty Shell Synchronization
+
+* **Decision:**
+  1. Maintain a centralized `audit_logs` table (`AuditTrailService`) and a unified `inventory_movements` ledger (`InventoryLedgerService`) capturing before/after stock (`filled_qty_before/after`, `empty_qty_before/after`) and credit balance (`balance_before/after`) snapshots across POS sales, order voids, multi-item `StockIn`/`StockOut` batches, Level 3 Admin Owner `StockIn`/`StockOut` voids, and `Huram` tank loans/returns.
+  2. Synchronize `stock_ins.empty_received_qty` and `stock_ins.empty_shells_received` to a single authoritative integer (`max((int)empty_received_qty, (int)empty_shells_received)`) via `StockIn::booted()` and controller logic, never adding the two columns together.
 * **Status:** Final (do not revisit without explicit new instruction)

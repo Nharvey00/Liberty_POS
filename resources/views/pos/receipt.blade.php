@@ -136,7 +136,7 @@
             
             <div class="mt-6 flex justify-between gap-3 print:hidden">
                 <a href="{{ route('pos.create') }}" class="flex-1 text-center rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9] print:hidden">Back to POS</a>
-                <button onclick="window.print()" class="flex-1 rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print</button>
+                <button type="button" onclick="window.print()" class="flex-1 rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] print:hidden">🖨 Print</button>
             </div>
         </div>
     </div>

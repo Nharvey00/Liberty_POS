@@ -9,13 +9,25 @@ class Product extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'price', 'new_cylinder_price', 'stock_quantity', 'empty_quantity', 'standard_capacity_kg'];
+    protected $fillable = [
+        'name',
+        'sku',
+        'price',
+        'cost_price',
+        'new_cylinder_price',
+        'stock_quantity',
+        'empty_quantity',
+        'reorder_level',
+        'standard_capacity_kg',
+        'created_by',
+        'updated_by',
+    ];
 
     protected $appends = ['is_accessory', 'is_cylinder'];
 
     public function isAccessory(): bool
     {
-        return is_null($this->standard_capacity_kg);
+        return is_null($this->standard_capacity_kg) || (float) $this->standard_capacity_kg <= 0;
     }
 
     public function isCylinder(): bool
@@ -51,5 +63,20 @@ class Product extends Model
     public function tankLoans()
     {
         return $this->hasMany(TankLoan::class);
+    }
+
+    public function inventoryMovements()
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by')->withTrashed();
     }
 }

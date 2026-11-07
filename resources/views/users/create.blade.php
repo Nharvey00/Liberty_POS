@@ -3,7 +3,7 @@
         <h1 class="font-sans text-[19px] font-bold text-gray-900 m-0">Add Staff Account</h1>
     </x-slot>
 
-    <form method="POST" action="{{ route('users.store') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <form method="POST" action="{{ route('users.store') }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
         <div class="grid grid-cols-2 gap-4 mb-5">
             <div class="col-span-2 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_100px] gap-3">

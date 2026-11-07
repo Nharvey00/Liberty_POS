@@ -27,7 +27,11 @@
     </div>
 
     {{-- Payment Form --}}
-    <form method="POST" action="{{ route('payments.store', $account) }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
+    <div class="max-w-4xl">
+        <x-flash-messages />
+    </div>
+
+    <form method="POST" action="{{ route('payments.store', $account) }}" data-submit-once class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-4xl">
         @csrf
 
         <div class="grid grid-cols-2 gap-4 mb-5">
@@ -47,8 +51,9 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-5 border-t border-[#E5E9EF]">
-            <a href="{{ route('credit-accounts.show', $account) }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Cancel</a>
-            <button type="submit" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">Confirm Payment</button>
+            {{-- Cashiers cannot open the credit account page, so send them back to the POS --}}
+            <a href="{{ auth()->user()->isManagerOrOwner() ? route('credit-accounts.show', $account) : route('pos.create') }}" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9]">Cancel</a>
+            <button type="submit" data-loading-text="Processing…" class="rounded-lg px-[15px] py-[10px] text-[13px] font-semibold border border-[#1E8E5A] bg-[#1E8E5A] text-white hover:bg-[#176B45]">Confirm Payment</button>
         </div>
     </form>
 </x-app-layout>

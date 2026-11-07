@@ -26,31 +26,31 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
 
             // 3. Customers: standalone, no FK dependencies
-            CustomerSeeder::class,
+            // CustomerSeeder::class,
 
             // 4. Products: standalone, no FK dependencies
-            ProductSeeder::class,
+            // ProductSeeder::class,
 
             // 5. Credit Accounts: need Customers
-            CreditAccountSeeder::class,
+            // CreditAccountSeeder::class,
 
             // 6. Orders + Order Items + Credit Ledger Charges:
             //    need Customers, Users, Products, CreditAccounts
-            OrderSeeder::class,
+            // OrderSeeder::class,
 
             // 7. Stock Ins: need Products
-            StockInSeeder::class,
+            // StockInSeeder::class,
 
             // 8. Stock Outs: need Products
-            StockOutSeeder::class,
+            // StockOutSeeder::class,
 
             // 9. Payments + Credit Ledger Payment entries:
             //    need CreditAccounts (must run AFTER OrderSeeder)
-            PaymentSeeder::class,
+            // PaymentSeeder::class,
 
             // 10. Statements of Account: need CreditAccounts + Ledger data
             //     (must run LAST — calculates total_due from ledger)
-            StatementOfAccountSeeder::class,
+            // StatementOfAccountSeeder::class,
         ]);
     }
 }

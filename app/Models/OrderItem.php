@@ -13,15 +13,21 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'quantity',
+        'unit_price',
         'is_swap',
         'residual_kg',
         'actual_consumed_kg',
         'subtotal',
     ];
 
+    /**
+     * Note: 'is_swap' is intentionally NOT cast to boolean. The accessor/mutator below
+     * stores 'true'/'false' strings for PostgreSQL compatibility; a boolean cast would make
+     * Eloquent's dirty check treat both values as true and silently skip the UPDATE.
+     */
     protected $casts = [
-        'is_swap'            => 'boolean',
         'quantity'           => 'integer',
+        'unit_price'         => 'decimal:2',
         'residual_kg'        => 'decimal:2',
         'actual_consumed_kg' => 'decimal:2',
         'subtotal'           => 'decimal:2',

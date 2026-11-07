@@ -27,7 +27,6 @@ class TankLoanReturn extends Model
     protected $casts = [
         'quantity_returned' => 'integer',
         'returned_at'       => 'datetime',
-        'is_voided'         => 'boolean',
         'voided_at'         => 'datetime',
     ];
 

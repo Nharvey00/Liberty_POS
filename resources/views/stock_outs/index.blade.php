@@ -24,7 +24,7 @@
     <div x-data="{ ...liveSearch(), voidModalOpen: false, voidTargetId: null, voidTargetName: '', voidActionUrl: '' }" class="flex flex-col gap-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-3">
             <!-- Sub-Tabs -->
-            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
+            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl flex-wrap">
                 <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Products Catalog
                 </a>
@@ -34,8 +34,10 @@
                 <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold bg-white text-[#B5504B] shadow-xs transition-colors">
                     Stock Out History
                 </a>
+                <a href="{{ route('inventory-movements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                    Inventory Ledger
+                </a>
             </div>
-
             <div class="flex items-center gap-2.5 flex-wrap">
                 <form x-ref="form" method="GET" action="{{ route('stock-outs.index') }}" @submit.prevent="performSearch" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -54,9 +56,13 @@
                 <thead>
                     <tr>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Date Logged</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reference</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reason</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Product</th>
-                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Qty Removed</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Filled Removed</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Empty Removed</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Stock (Before → After)</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Recorded By</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Details / Status</th>
                         @if(Auth::user()?->isOwner())
                             <th class="text-right text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Actions</th>
@@ -66,22 +72,29 @@
                 <tbody>
                     @forelse($stockOuts as $stockOut)
                         <tr class="hover:bg-[#F4F6F9] transition-colors {{ $stockOut->is_voided ? 'bg-red-50/40 opacity-75' : '' }}">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430]">{{ $stockOut->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430] whitespace-nowrap">{{ $stockOut->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-semibold text-[#0B3B70]">{{ $stockOut->reference_no ?? 'ADJ-' . str_pad($stockOut->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold {{ $stockOut->reason === 'Loaned Tank (Huram)' ? 'bg-amber-100 text-amber-800' : 'bg-[#F7E9E8] text-[#B5504B]' }}">{{ $stockOut->reason }}</span>
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium {{ $stockOut->is_voided ? 'line-through text-gray-500' : '' }}">{{ $stockOut->product->name ?? 'N/A' }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold {{ $stockOut->is_voided ? 'line-through text-gray-400' : 'text-[#B5504B]' }}">
-                                @if($stockOut->quantity_removed > 0)
-                                    <div>-{{ number_format($stockOut->quantity_removed) }} <span class="text-[11px] font-normal text-[#5B6472]">Filled</span></div>
-                                @endif
-                                @if(($stockOut->empty_quantity_removed ?? 0) > 0)
-                                    <div>-{{ number_format($stockOut->empty_quantity_removed) }} <span class="text-[11px] font-normal text-[#5B6472]">Empty Shell(s)</span></div>
-                                @endif
-                                @if($stockOut->quantity_removed == 0 && ($stockOut->empty_quantity_removed ?? 0) == 0)
-                                    -0
+                                {{ $stockOut->quantity_removed > 0 ? '-' . number_format($stockOut->quantity_removed) : '0' }}
+                            </td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold {{ $stockOut->is_voided ? 'line-through text-gray-400' : 'text-[#5B6472]' }}">
+                                {{ ($stockOut->empty_quantity_removed ?? 0) > 0 ? '-' . number_format($stockOut->empty_quantity_removed) : '0' }}
+                            </td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
+                                @if(!is_null($stockOut->filled_qty_before) && !is_null($stockOut->filled_qty_after))
+                                    <div>Filled: <span class="font-medium text-[#1C2430]">{{ number_format($stockOut->filled_qty_before) }} → {{ number_format($stockOut->filled_qty_after) }}</span></div>
+                                    @if(!is_null($stockOut->empty_qty_before) && !is_null($stockOut->empty_qty_after) && ($stockOut->empty_qty_before != $stockOut->empty_qty_after || ($stockOut->empty_quantity_removed ?? 0) > 0))
+                                        <div class="text-[11.5px]">Empty: <span class="font-medium text-[#1C2430]">{{ number_format($stockOut->empty_qty_before) }} → {{ number_format($stockOut->empty_qty_after) }}</span></div>
+                                    @endif
+                                @else
+                                    —
                                 @endif
                             </td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">{{ $stockOut->user->name ?? 'System' }}</td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
                                 @if($stockOut->tankLoan && $stockOut->tankLoan->customer)
                                     <div class="font-medium text-[#1C2430]">
@@ -90,8 +103,8 @@
                                     @if($stockOut->tankLoan->notes)
                                         <div class="text-[11.5px] text-[#5B6472]">{{ $stockOut->tankLoan->notes }}</div>
                                     @endif
-                                @else
-                                    <div>{{ $stockOut->remarks ?? '—' }}</div>
+                                @elseif(!$stockOut->is_voided)
+                                    <div>—</div>
                                 @endif
 
                                 @if($stockOut->is_voided)
@@ -127,7 +140,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ Auth::user()?->isOwner() ? 6 : 5 }}" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
+                            <td colspan="{{ Auth::user()?->isOwner() ? 10 : 9 }}" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-out records found.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -24,7 +24,7 @@
     <div x-data="{ ...liveSearch(), voidModalOpen: false, voidTargetId: null, voidTargetName: '', voidActionUrl: '' }" class="flex flex-col gap-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-3">
             <!-- Sub-Tabs -->
-            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
+            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl flex-wrap">
                 <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Products Catalog
                 </a>
@@ -34,8 +34,10 @@
                 <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Stock Out History
                 </a>
+                <a href="{{ route('inventory-movements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                    Inventory Ledger
+                </a>
             </div>
-
             <div class="flex items-center gap-2.5 flex-wrap">
                 <form x-ref="form" method="GET" action="{{ route('stock-ins.index') }}" @submit.prevent="performSearch" class="flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2 min-w-[240px]">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -57,7 +59,9 @@
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Reference / PO</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Product</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Qty Received</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Stock (Before → After)</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Unit Cost</th>
+                        <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Recorded By</th>
                         <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Remarks / Status</th>
                         @if(Auth::user()?->isOwner())
                             <th class="text-right text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Actions</th>
@@ -66,13 +70,22 @@
                 </thead>
                 <tbody>
                     @forelse($stockIns as $stockIn)
+                        @php
+                            $emptyReceived = max((int) ($stockIn->empty_received_qty ?? 0), (int) ($stockIn->empty_shells_received ?? 0));
+                        @endphp
                         <tr class="hover:bg-[#F4F6F9] transition-colors {{ $stockIn->is_voided ? 'bg-red-50/40 opacity-75' : '' }}">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430]">{{ $stockIn->created_at->format('M d, Y - h:i A') }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430] whitespace-nowrap">{{ $stockIn->created_at->format('M d, Y - h:i A') }}</td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#0B3B70]">
-                                @if(($stockIn->empty_shells_received ?? 0) > 0 || $stockIn->tankLoanReturn)
+                                @if($stockIn->tankLoanReturn)
                                     <span class="inline-block px-2 py-0.5 rounded bg-blue-50 text-[#0B3B70] text-[11px] font-bold">HURAM-RETURN</span>
+                                    @if($stockIn->reference_no)
+                                        <div class="text-[11px] font-normal text-[#5B6472]">{{ $stockIn->reference_no }}</div>
+                                    @endif
                                 @else
                                     {{ $stockIn->reference_no ?? 'PO-DELIVERY' }}
+                                    @if($stockIn->supplier_name)
+                                        <div class="text-[11px] font-normal text-[#5B6472]">{{ $stockIn->supplier_name }}</div>
+                                    @endif
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium {{ $stockIn->is_voided ? 'line-through text-gray-500' : '' }}">{{ $stockIn->product->name ?? 'N/A' }}</td>
@@ -80,17 +93,28 @@
                                 @if($stockIn->quantity_received > 0)
                                     <div>+{{ number_format($stockIn->quantity_received) }} <span class="text-[11px] font-normal text-[#5B6472]">Filled</span></div>
                                 @endif
-                                @if(($stockIn->empty_shells_received ?? 0) > 0)
-                                    <div class="{{ $stockIn->is_voided ? 'line-through text-gray-400' : 'text-[#0B3B70]' }}">+{{ number_format($stockIn->empty_shells_received) }} <span class="text-[11px] font-normal text-[#5B6472]">Empty Shell(s)</span></div>
+                                @if($emptyReceived > 0)
+                                    <div class="{{ $stockIn->is_voided ? 'line-through text-gray-400' : 'text-[#0B3B70]' }}">+{{ number_format($emptyReceived) }} <span class="text-[11px] font-normal text-[#5B6472]">Empty Shell(s)</span></div>
                                 @endif
                                 @if($stockIn->empty_returned_qty > 0)
-                                    <div class="text-[11px] font-normal text-[#5B6472]">-{{ number_format($stockIn->empty_returned_qty) }} Empty to Supplier</div>
+                                    <div class="text-[11px] font-semibold text-[#B4700A]">-{{ number_format($stockIn->empty_returned_qty) }} Empty Returned</div>
                                 @endif
-                                @if($stockIn->quantity_received == 0 && ($stockIn->empty_shells_received ?? 0) == 0)
+                                @if($stockIn->quantity_received == 0 && $emptyReceived == 0 && ($stockIn->empty_returned_qty ?? 0) == 0)
                                     +0
                                 @endif
                             </td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
+                                @if(!is_null($stockIn->filled_qty_before) && !is_null($stockIn->filled_qty_after))
+                                    <div>Filled: <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->filled_qty_before) }} → {{ number_format($stockIn->filled_qty_after) }}</span></div>
+                                    @if(!is_null($stockIn->empty_qty_before) && !is_null($stockIn->empty_qty_after) && ($stockIn->empty_qty_before != $stockIn->empty_qty_after || $emptyReceived > 0))
+                                        <div class="text-[11.5px]">Empty: <span class="font-medium text-[#1C2430]">{{ number_format($stockIn->empty_qty_before) }} → {{ number_format($stockIn->empty_qty_after) }}</span></div>
+                                    @endif
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($stockIn->unit_cost ?? 0, 2) }}</td>
+                            <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">{{ $stockIn->user->name ?? 'System' }}</td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] text-[#5B6472]">
                                 <div>{{ $stockIn->remarks ?? '—' }}</div>
                                 @if($stockIn->is_voided)
@@ -114,7 +138,7 @@
                                 <td class="py-3 px-4 text-right border-b border-[#E5E9EF] whitespace-nowrap">
                                     @if(!$stockIn->is_voided)
                                         <button type="button"
-                                                @click="voidModalOpen = true; voidTargetId = {{ $stockIn->id }}; voidTargetName = '{{ addslashes($stockIn->product->name ?? 'Item') }} (+{{ $stockIn->quantity_received > 0 ? $stockIn->quantity_received . ' Filled' : $stockIn->empty_shells_received . ' Empty' }})'; voidActionUrl = '{{ route('stock-ins.void', $stockIn) }}'"
+                                                @click="voidModalOpen = true; voidTargetId = {{ $stockIn->id }}; voidTargetName = '{{ addslashes($stockIn->product->name ?? 'Item') }} (+{{ $stockIn->quantity_received > 0 ? $stockIn->quantity_received . ' Filled' : $emptyReceived . ' Empty' }})'; voidActionUrl = '{{ route('stock-ins.void', $stockIn) }}'"
                                                 class="px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-[#F7E9E8] text-[#B5504B] hover:bg-[#B5504B] hover:text-white transition-colors">
                                             Void
                                         </button>
@@ -126,7 +150,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ Auth::user()?->isOwner() ? 7 : 6 }}" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-in records found. Use the record button above to log a delivery.</td>
+                            <td colspan="{{ Auth::user()?->isOwner() ? 9 : 8 }}" class="py-8 text-center text-[13px] text-[#5B6472]">No stock-in records found. Use the record button above to log a delivery.</td>
                         </tr>
                     @endforelse
                 </tbody>
