@@ -130,6 +130,12 @@
                         <svg class="w-5 h-5 {{ request()->routeIs('statements.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Statements of Account</span>
                     </a>
+
+                    <a href="{{ route('tank-loans.index') }}" 
+                       class="flex items-center gap-3.5 px-4 py-2.5 rounded-[12px] text-[14px] font-semibold transition-colors {{ request()->routeIs('tank-loans.*') ? 'bg-[#2E66AD] text-white shadow-sm' : 'text-[#88A6D3] hover:bg-[#152441] hover:text-white' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('tank-loans.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h8v3H8z"/><rect x="6" y="6" width="12" height="15" rx="3"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+                        <span>Loaned Tanks</span>
+                    </a>
                 </div>
             </div>
 

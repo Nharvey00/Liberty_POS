@@ -7,6 +7,8 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\CreditAccount;
+use App\Models\StockIn;
+use App\Models\StockOut;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -87,12 +89,12 @@ class ReportController extends Controller
                 ->whereBetween('orders.created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('order_items.quantity');
                 
-            $stockIns = DB::table('stock_ins')
+            $stockIns = StockIn::valid()
                 ->where('product_id', $product->id)
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_received');
 
-            $stockOuts = DB::table('stock_outs')
+            $stockOuts = StockOut::valid()
                 ->where('product_id', $product->id)
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_removed');

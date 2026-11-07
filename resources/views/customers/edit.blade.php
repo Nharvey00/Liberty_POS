@@ -37,6 +37,7 @@
                 <select name="customer_type" id="customer_type" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="Tertiary" {{ old('customer_type', $customer->customer_type) == 'Tertiary' ? 'selected' : '' }}>Tertiary</option>
                     <option value="Household" {{ old('customer_type', $customer->customer_type) == 'Household' ? 'selected' : '' }}>Household</option>
+                    <option value="Industrial" {{ old('customer_type', $customer->customer_type) == 'Industrial' ? 'selected' : '' }}>Industrial</option>
                     <option value="MRO" {{ old('customer_type', $customer->customer_type) == 'MRO' ? 'selected' : '' }}>MRO</option>
                     <option value="Service Station" {{ old('customer_type', $customer->customer_type) == 'Service Station' ? 'selected' : '' }}>Service Station</option>
                     <option value="Commercial" {{ old('customer_type', $customer->customer_type) == 'Commercial' ? 'selected' : '' }}>Commercial</option>
@@ -76,17 +77,34 @@
                 <label for="default_discount_type" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Default Discount Type</label>
                 <select name="default_discount_type" id="default_discount_type" x-model="discountType" class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                     <option value="">None</option>
-                    <option value="senior">Senior (20%)</option>
-                    <option value="pwd">PWD (20%)</option>
-                    <option value="regular">regular</option>
-                    <option value="custom">Custom Amount</option>
+                    <option value="regular">Regular (Fixed ₱)</option>
+                    <option value="tertiary">Tertiary (Fixed ₱)</option>
+                    <option value="industrial">Industrial (Fixed ₱)</option>
+                    <option value="senior">Senior Citizen (%)</option>
+                    <option value="pwd">PWD (%)</option>
+                    @if(in_array($customer->default_discount_type, ['custom', 'promo']))
+                        <option value="{{ $customer->default_discount_type }}">{{ ucfirst($customer->default_discount_type) }} (Fixed ₱)</option>
+                    @endif
                 </select>
                 @error('default_discount_type') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div class="col-span-2 md:col-span-1">
-                <label for="default_discount_percentage" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Default Discount Percentage (%)</label>
-                <input type="number" step="0.01" min="0" max="100" name="default_discount_percentage" id="default_discount_percentage" value="{{ old('default_discount_percentage', $customer->default_discount_percentage) }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+            <div class="col-span-2 md:col-span-1" x-show="discountType !== ''">
+                <label for="default_discount_percentage" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">
+                    <span x-text="['senior', 'pwd'].includes(discountType) ? 'Default Discount Percentage (%)' : 'Default Discount Amount (₱)'">Default Discount Value</span>
+                </label>
+                <div class="relative">
+                    <span x-show="!['senior', 'pwd'].includes(discountType)" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">₱</span>
+                    <input type="number" step="0.01" min="0"
+                           :max="['senior', 'pwd'].includes(discountType) ? 100 : null"
+                           :placeholder="['senior', 'pwd'].includes(discountType) ? 'e.g. 20' : 'e.g. 50.00'"
+                           :class="!['senior', 'pwd'].includes(discountType) ? 'pl-8 pr-3' : 'px-3'"
+                           name="default_discount_percentage" id="default_discount_percentage"
+                           value="{{ old('default_discount_percentage', $customer->default_discount_percentage) }}"
+                           class="w-full py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <span x-show="['senior', 'pwd'].includes(discountType)" style="display: none;" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">%</span>
+                </div>
+                <span class="text-[11px] text-[#5B6472] mt-1 block" x-text="['senior', 'pwd'].includes(discountType) ? 'Statutory percentage rate deducted from subtotal (0–100%).' : 'Fixed Peso amount deducted per transaction (capped at order subtotal).'"></span>
                 @error('default_discount_percentage') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 

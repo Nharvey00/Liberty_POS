@@ -14,6 +14,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\StockInController;
 use App\Http\Controllers\StockOutController;
+use App\Http\Controllers\TankLoanController;
 use App\Http\Controllers\OrderVoidController;
 use App\Http\Controllers\ReportController;
 
@@ -77,6 +78,13 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('stock-ins', StockInController::class)->only(['index', 'create', 'store']);
         Route::resource('stock-outs', StockOutController::class)->only(['index', 'create', 'store']);
+
+        // Customer Loaned Tanks ("Huram" Tanks Module - Phase 4)
+        Route::get('/tank-loans', [TankLoanController::class, 'index'])->name('tank-loans.index');
+        Route::get('/tank-loans/create', [TankLoanController::class, 'create'])->name('tank-loans.create');
+        Route::post('/tank-loans', [TankLoanController::class, 'store'])->name('tank-loans.store');
+        Route::get('/tank-loans/customer/{customer}', [TankLoanController::class, 'showCustomer'])->name('tank-loans.customer');
+        Route::post('/tank-loans/{tankLoan}/return', [TankLoanController::class, 'returnTank'])->name('tank-loans.return');
         
         // Batch Statements (Feature 5)
         Route::post('/statements/batch', [StatementController::class, 'storeBatch'])->name('statements.batch');
@@ -95,6 +103,10 @@ Route::middleware(['auth'])->group(function () {
     // Level 3: Owner Administration
     Route::middleware(['role:3'])->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
+
+        // Phase 2: Voidable Stock In & Stock Out (Strictly Level 3 Admin Owner Only)
+        Route::post('/stock-ins/{stockIn}/void', [StockInController::class, 'void'])->name('stock-ins.void');
+        Route::post('/stock-outs/{stockOut}/void', [StockOutController::class, 'void'])->name('stock-outs.void');
     });
 
 });

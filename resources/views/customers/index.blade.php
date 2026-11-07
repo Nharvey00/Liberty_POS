@@ -51,7 +51,17 @@
                 <tbody>
                     @forelse($customers as $customer)
                         <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $customer->name }}</td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span>{{ $customer->name }}</span>
+                                    @php $borrowedCount = $customer->borrowed_tanks_count; @endphp
+                                    @if($borrowedCount > 0)
+                                        <a href="{{ route('tank-loans.customer', $customer) }}" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors">
+                                            Borrowed: {{ $borrowedCount }} Tank(s)
+                                        </a>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if(in_array($customer->customer_type, ['Coke (Residual)', 'Company']))
                                     <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E7EEF7] text-[#0B3B70]">Coke (Residual)</span>

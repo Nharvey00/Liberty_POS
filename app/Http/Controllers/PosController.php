@@ -116,10 +116,16 @@ class PosController extends Controller
                     ]);
                 }
 
-                // Mathematically cap discount to order subtotal
-                $requestedDiscount = (float)($order->discount_amount ?? 0);
+                // Calculate final deduction based on discount type and enforce hard floor at ₱0.00
+                $discountType = $order->discount_type ? strtolower($order->discount_type) : null;
+                if (in_array($discountType, ['senior', 'pwd'], true) && isset($validated['discount_rate']) && $validated['discount_rate'] !== '' && $validated['discount_rate'] !== null) {
+                    $rate = max(0, min(100, (float)$validated['discount_rate']));
+                    $requestedDiscount = round($totalAmount * ($rate / 100), 2);
+                } else {
+                    $requestedDiscount = max(0, (float)($order->discount_amount ?? 0));
+                }
                 $discountAmount = min($requestedDiscount, $totalAmount);
-                $finalTotal = max(0, $totalAmount - $discountAmount);
+                $finalTotal = max(0, round($totalAmount - $discountAmount, 2));
                 $order->update([
                     'discount_amount' => $discountAmount,
                     'total_amount' => $finalTotal,

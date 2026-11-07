@@ -20,7 +20,8 @@ class StoreOrderRequest extends FormRequest
             'customer_id'       => 'required_if:payment_method,Credit|nullable|exists:customers,id',
             'payment_method'    => 'required|in:Cash,Credit',
             'discount_amount'   => 'nullable|numeric|min:0',
-            'discount_type'     => 'nullable|in:none,regular,senior,pwd,promo',
+            'discount_rate'     => 'nullable|numeric|min:0|max:100',
+            'discount_type'     => 'nullable|in:none,regular,tertiary,industrial,senior,pwd,promo,custom',
             'discount_reference_name' => 'nullable|string|max:255',
             'discount_reference_id'   => 'nullable|string|max:255',
             'senior_id'         => 'nullable|string|max:50', // kept for backwards compatibility if needed
