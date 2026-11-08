@@ -263,4 +263,40 @@ class AuditTrailAccountabilityTest extends TestCase
         $this->assertEquals(1250.00, (float) $ledgers[1]->balance_after);
         $this->assertEquals((float) $ledgers[1]->balance_after, (float) $account->fresh()->remaining_balance);
     }
+
+    public function test_single_login_and_logout_produce_exactly_one_audit_log_entry_each(): void
+    {
+        $user = User::factory()->create([
+            'first_name' => 'Marco',
+            'last_name'  => 'LoginTest',
+            'email'      => 'marco.login@liberty.test',
+            'password'   => bcrypt('Password123!'),
+            'role_id'    => 2,
+        ]);
+
+        // 1. Single login POST must record exactly 1 "Signed In" (auth.login) audit entry
+        $this->post('/login', [
+            'email'    => 'marco.login@liberty.test',
+            'password' => 'Password123!',
+        ])->assertRedirect(route('dashboard', absolute: false));
+
+        $loginLogs = AuditLog::where('module', 'auth')
+            ->where('action', 'auth.login')
+            ->where('actor_user_id', $user->id)
+            ->get();
+
+        $this->assertCount(1, $loginLogs);
+        $this->assertSame('Signed In', $loginLogs->first()->action_label);
+
+        // 2. Single logout POST must record exactly 1 "Signed Out" (auth.logout) audit entry
+        $this->post('/logout')->assertRedirect('/');
+
+        $logoutLogs = AuditLog::where('module', 'auth')
+            ->where('action', 'auth.logout')
+            ->where('actor_user_id', $user->id)
+            ->get();
+
+        $this->assertCount(1, $logoutLogs);
+        $this->assertSame('Signed Out', $logoutLogs->first()->action_label);
+    }
 }

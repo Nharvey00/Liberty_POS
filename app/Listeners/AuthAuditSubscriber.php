@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 
 class AuthAuditSubscriber
@@ -111,15 +110,5 @@ class AuthAuditSubscriber
             ],
             'reason'                => 'User password reset completed',
         ], $user);
-    }
-
-    public function subscribe(Dispatcher $events): array
-    {
-        return [
-            Login::class         => 'handleUserLogin',
-            Logout::class        => 'handleUserLogout',
-            Failed::class        => 'handleFailedLogin',
-            PasswordReset::class => 'handlePasswordReset',
-        ];
     }
 }

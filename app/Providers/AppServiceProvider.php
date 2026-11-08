@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Listeners\AuthAuditSubscriber;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -28,6 +26,5 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Paginator::useTailwind();
-        Event::subscribe(AuthAuditSubscriber::class);
     }
 }
