@@ -124,4 +124,41 @@ class Customer extends Model
     {
         return $this->hasOne(CreditAccount::class);
     }
+
+    public function tankLoans()
+    {
+        return $this->hasMany(TankLoan::class);
+    }
+
+    public function activeTankLoans()
+    {
+        return $this->hasMany(TankLoan::class)
+                    ->whereIn('status', ['borrowed', 'partially_returned'])
+                    ->whereColumn('quantity_borrowed', '>', 'quantity_returned');
+    }
+
+    public function getBorrowedTanksCountAttribute(): int
+    {
+        if (array_key_exists('borrowed_tanks_count', $this->attributes)) {
+            return max(0, (int) $this->attributes['borrowed_tanks_count']);
+        }
+
+        if ($this->relationLoaded('activeTankLoans')) {
+            return (int) $this->activeTankLoans->sum(fn ($l) => max(0, (int) $l->quantity_borrowed - (int) $l->quantity_returned));
+        }
+
+        if ($this->relationLoaded('tankLoans')) {
+            return (int) $this->tankLoans
+                ->where('status', '!=', 'voided')
+                ->sum(fn ($l) => max(0, (int) $l->quantity_borrowed - (int) $l->quantity_returned));
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasTable('tank_loans')) {
+            return 0;
+        }
+
+        return (int) $this->activeTankLoans()
+            ->get(['quantity_borrowed', 'quantity_returned'])
+            ->sum(fn ($l) => max(0, (int) $l->quantity_borrowed - (int) $l->quantity_returned));
+    }
 }

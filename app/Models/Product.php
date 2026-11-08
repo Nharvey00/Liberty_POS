@@ -60,6 +60,11 @@ class Product extends Model
         return $this->hasMany(StockOut::class);
     }
 
+    public function tankLoans()
+    {
+        return $this->hasMany(TankLoan::class);
+    }
+
     public function inventoryMovements()
     {
         return $this->hasMany(InventoryMovement::class);

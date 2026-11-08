@@ -24,7 +24,7 @@ class StoreStockOutRequest extends FormRequest
                 $qtyRemoved   = $item['quantity_removed'] ?? 0;
                 $emptyRemoved = $item['empty_quantity_removed'] ?? ($item['empty_quantity'] ?? 0);
 
-                if ($productId) {
+                if ($productId && $this->input('reason') !== 'Loaned Tank (Huram)') {
                     $product = Product::find($productId);
                     if ($product && $product->isAccessory()) {
                         $emptyRemoved = 0;
@@ -41,6 +41,22 @@ class StoreStockOutRequest extends FormRequest
             return;
         }
 
+        if ($this->input('reason') === 'Loaned Tank (Huram)' && $this->filled('loan_quantity')) {
+            $loanQty = max(0, (int) $this->input('loan_quantity', 0));
+            $condition = $this->input('tank_condition_out', 'filled');
+            if ($condition === 'empty_shell') {
+                $this->merge([
+                    'quantity_removed'       => 0,
+                    'empty_quantity_removed' => $loanQty,
+                ]);
+            } else {
+                $this->merge([
+                    'quantity_removed'       => $loanQty,
+                    'empty_quantity_removed' => 0,
+                ]);
+            }
+        }
+
         if (!$this->filled('quantity_removed')) {
             $this->merge(['quantity_removed' => 0]);
         }
@@ -49,7 +65,7 @@ class StoreStockOutRequest extends FormRequest
             $this->merge(['empty_quantity_removed' => 0]);
         }
 
-        if ($this->filled('product_id')) {
+        if ($this->filled('product_id') && $this->input('reason') !== 'Loaned Tank (Huram)') {
             $product = Product::find($this->product_id);
             if ($product && $product->isAccessory()) {
                 $this->merge([
@@ -72,6 +88,9 @@ class StoreStockOutRequest extends FormRequest
                 'movement_category'              => 'nullable|string|max:60',
                 'reason'                         => 'required|string|max:255',
                 'remarks'                        => 'nullable|string|max:255',
+                'customer_id'                    => 'required_if:reason,Loaned Tank (Huram)|nullable|exists:customers,id',
+                'tank_condition_out'             => 'nullable|in:filled,empty_shell',
+                'loan_quantity'                  => 'nullable|integer|min:1',
             ];
         }
 
@@ -84,12 +103,17 @@ class StoreStockOutRequest extends FormRequest
             'movement_category'      => 'nullable|string|max:60',
             'reason'                 => 'required|string|max:255',
             'remarks'                => 'nullable|string|max:255',
+            'customer_id'            => 'required_if:reason,Loaned Tank (Huram)|nullable|exists:customers,id',
+            'tank_condition_out'     => 'required_if:reason,Loaned Tank (Huram)|nullable|in:filled,empty_shell',
+            'loan_quantity'          => 'nullable|integer|min:1',
         ];
     }
 
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            $isHuram = $this->input('reason') === 'Loaned Tank (Huram)';
+
             if ($this->has('items') && is_array($this->input('items'))) {
                 foreach ($this->input('items') as $index => $item) {
                     $qty   = (int) ($item['quantity_removed'] ?? 0);
@@ -100,6 +124,16 @@ class StoreStockOutRequest extends FormRequest
                             'Item #' . ($index + 1) . ': At least one filled unit or empty shell must be removed.'
                         );
                     }
+
+                    if ($isHuram && !empty($item['product_id'])) {
+                        $product = Product::find($item['product_id']);
+                        if ($product && $product->isAccessory()) {
+                            $validator->errors()->add(
+                                "items.{$index}.product_id",
+                                'Only LPG cylinders can be loaned as Huram tanks.'
+                            );
+                        }
+                    }
                 }
                 return;
             }
@@ -108,6 +142,13 @@ class StoreStockOutRequest extends FormRequest
             $empty = (int)$this->input('empty_quantity_removed', 0);
             if ($qty <= 0 && $empty <= 0) {
                 $validator->errors()->add('quantity_removed', 'At least one filled unit or empty shell must be removed.');
+            }
+
+            if ($isHuram && $this->filled('product_id')) {
+                $product = Product::find($this->product_id);
+                if ($product && $product->isAccessory()) {
+                    $validator->errors()->add('product_id', 'Only LPG cylinders can be loaned as Huram tanks.');
+                }
             }
         });
     }

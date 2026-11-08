@@ -65,11 +65,11 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span x-show="cart.length > 0" 
+                    <span x-show="cart.length > 0" x-cloak
                           class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#0B3B70] text-white" 
                           x-text="cartItemCount() + ' item(s)'"></span>
                     <button type="button" 
-                            x-show="cart.length > 0" 
+                            x-show="cart.length > 0" x-cloak
                             @click="cart = []" 
                             class="text-[11px] font-semibold text-[#B5504B] hover:text-[#913b37] hover:underline cursor-pointer">
                         Clear All
@@ -96,7 +96,7 @@
                 <!-- Scrollable Items Area (High-Density UI, Compact Single-Row Items) -->
                 <div class="px-3.5 py-2 flex-1 overflow-y-auto min-h-0">
                     <!-- Cart Items Column Header (Visible when cart has items) -->
-                    <div x-show="cart.length > 0" class="grid grid-cols-12 gap-2 text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1.5 bg-[#F1F5F9] rounded border border-[#E2E8F0] mb-2 items-center">
+                    <div x-show="cart.length > 0" x-cloak class="grid grid-cols-12 gap-2 text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1.5 bg-[#F1F5F9] rounded border border-[#E2E8F0] mb-2 items-center">
                         <div class="col-span-4">Item Name</div>
                         <div class="col-span-2 text-center">Unit Price</div>
                         <div class="col-span-3 text-center">Quantity</div>
@@ -210,88 +210,91 @@
 
                 <!-- Fixed Footer / Discount & Checkout (Anchored at the bottom) -->
                 <div class="p-3.5 border-t border-[#E2E8F0] bg-white shrink-0 shadow-lg space-y-2.5">
-                    <!-- Discount Logic Workflow -->
-                    <template x-if="hasDefaultDiscount">
-                        <div class="p-2.5 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl space-y-2">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span class="block text-[10.5px] font-bold text-[#4338CA] uppercase tracking-wider">Applied Discount</span>
-                                    <span class="text-[12px] font-semibold text-[#312E81]" x-text="discountType.charAt(0).toUpperCase() + discountType.slice(1) + ' Discount'"></span>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-[13px] font-bold text-[#312E81]" x-text="'-₱' + calculateDiscountAmount().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></div>
-                                    <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefName"></div>
-                                    <div class="text-[10px] text-[#4F46E5] font-medium" x-show="['senior', 'pwd'].includes(discountType)" x-text="discountRefId"></div>
-                                </div>
-                            </div>
-                            <template x-if="needsDiscountDetails">
-                                <button type="button" @click="openDiscountModal()" class="w-full py-1.5 text-[11px] font-bold text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FEF3C7] rounded-lg transition-colors">
-                                    ID details missing — add Senior/PWD ID details
-                                </button>
-                            </template>
-                            <!-- Hidden inputs for backend -->
-                            <input type="hidden" name="discount_type" :value="discountType">
-                            <input type="hidden" name="discount_amount" :value="calculateDiscountAmount()">
-                            <input type="hidden" name="discount_reference_name" :value="discountRefName">
-                            <input type="hidden" name="discount_reference_id" :value="discountRefId">
-                        </div>
-                    </template>
-
-                    <template x-if="!hasDefaultDiscount">
-                        <div class="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
-                            <!-- Discount Type dropdown FIRST. Defaults to "None" -->
-                            <div class="flex items-center gap-2">
-                                <label class="block text-[10.5px] font-bold text-[#334155] uppercase tracking-wider shrink-0">
+                    <!-- Discount Logic Workflow (Always Editable, Auto-Populated from Customer Default) -->
+                    <div class="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <label class="block text-[10.5px] font-bold text-[#334155] uppercase tracking-wider">
                                     Discount Type
                                 </label>
-                                <select name="discount_type" 
-                                        x-model="discountType" 
-                                        @change="onDiscountTypeChange()" 
-                                        class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-medium bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                                    <option value="none">None</option>
-                                    <option value="regular">Regular</option>
-                                    <option value="senior">Senior</option>
-                                    <option value="pwd">PWD</option>
-                                    <option value="promo">Promo</option>
-                                </select>
+                                <span x-show="hasDefaultDiscount" style="display: none;" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE]">
+                                    Auto-filled
+                                </span>
                             </div>
+                            <select name="discount_type" 
+                                    x-model="discountType" 
+                                    @change="onDiscountTypeChange()" 
+                                    class="flex-1 px-2.5 py-1.5 border border-[#CBD5E1] rounded-lg text-[12px] font-medium bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                                <option value="none">None</option>
+                                <option value="regular">Regular</option>
+                                <option value="tertiary">Tertiary</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="senior">Senior</option>
+                                <option value="pwd">PWD</option>
+                                <option value="promo">Promo</option>
+                            </select>
+                        </div>
 
-                            <!-- Dynamic UI logic: Discount Amount number input ONLY appears if user selects type other than "None" -->
-                            <div x-show="discountType !== 'none'" 
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 -translate-y-1"
-                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="pt-1.5 border-t border-[#E2E8F0] space-y-2">
+                        <!-- Dynamic UI logic: Discount Value input appears if type !== "none" -->
+                        <div x-show="discountType !== 'none'" x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="pt-1.5 border-t border-[#E2E8F0] space-y-2">
+                            
+                            <!-- Percentage Input for Senior / PWD -->
+                            <template x-if="['senior', 'pwd'].includes(discountType)">
                                 <div class="flex items-center gap-2">
-                                    <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount:</label>
+                                    <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Rate (%):</label>
+                                    <div class="relative flex-1">
+                                        <input type="number" 
+                                               x-model.number="discountRate" 
+                                               @input="isDiscountManuallyOverridden = true"
+                                               min="0" 
+                                               max="100" 
+                                               step="0.01" 
+                                               placeholder="20" 
+                                               class="w-full pl-2.5 pr-7 py-1 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                                        <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">%</div>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-[#B5504B] shrink-0" x-text="'-₱' + calculateDiscountAmount().toFixed(2)"></span>
+                                </div>
+                            </template>
+
+                            <!-- Fixed Peso Input for Regular / Tertiary / Industrial / Promo / Custom -->
+                            <template x-if="!['senior', 'pwd', 'none'].includes(discountType)">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[11px] font-bold text-[#334155] shrink-0">Discount Amount (₱):</label>
                                     <div class="relative flex-1">
                                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-500 font-bold text-[12px]">₱</div>
                                         <input type="number" 
-                                               name="discount_amount"
                                                x-model.number="discountValue" 
                                                @input="isDiscountManuallyOverridden = true"
-                                               :min="0" 
-                                               :max="calculateSubtotal()" 
+                                               min="0" 
                                                step="0.01" 
                                                placeholder="0.00" 
                                                class="w-full pl-7 pr-2 py-1 border border-[#CBD5E1] rounded-lg text-[12px] font-semibold bg-white focus:ring-1 focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                                     </div>
                                 </div>
-                                
-                                <input type="hidden" name="discount_reference_name" :value="discountRefName">
-                                <input type="hidden" name="discount_reference_id" :value="discountRefId">
-                                
-                                <template x-if="['senior', 'pwd'].includes(discountType)">
-                                    <div class="pt-1.5 border-t border-dashed border-[#E2E8F0]">
-                                        <button type="button" @click="openDiscountModal()" class="w-full py-2 flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0] rounded-lg transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                            <span x-text="discountRefName ? 'Edit Details (' + discountRefName + ')' : 'Add ' + (discountType === 'senior' ? 'Senior' : 'PWD') + ' Details'"></span>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
+                            </template>
+
+                            <!-- Hidden inputs submitted to PosController::store -->
+                            <input type="hidden" name="discount_amount" :value="calculateDiscountAmount()">
+                            <input type="hidden" name="discount_rate" :value="['senior', 'pwd'].includes(discountType) ? discountRate : ''">
+                            <input type="hidden" name="discount_reference_name" :value="discountRefName">
+                            <input type="hidden" name="discount_reference_id" :value="discountRefId">
+                            
+                            <template x-if="['senior', 'pwd'].includes(discountType)">
+                                <div class="pt-1.5 border-t border-dashed border-[#E2E8F0]">
+                                    <button type="button" @click="openDiscountModal()" class="w-full py-1.5 flex items-center justify-center gap-2 text-[11px] font-bold rounded-lg transition-colors"
+                                            :class="needsDiscountDetails ? 'text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FEF3C7]' : 'text-[#0B3B70] bg-[#E7EEF7] hover:bg-[#D4E0F0]'">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        <span x-text="discountRefName && discountRefId ? 'ID Details: ' + discountRefName + ' (' + discountRefId + ')' : 'Add ' + (discountType === 'senior' ? 'Senior' : 'PWD') + ' ID Details'"></span>
+                                    </button>
+                                </div>
+                            </template>
                         </div>
-                    </template>
+                    </div>
 
                     <!-- Payment Method -->
                     <div>
@@ -340,7 +343,7 @@
     </div> <!-- Close flex container -->
 
     <!-- Checkout Confirmation Modal -->
-    <div x-show="showConfirmModal" 
+    <div x-show="showConfirmModal" x-cloak
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -432,7 +435,7 @@
         </div>
 
         <!-- Discount Details Modal -->
-        <div x-show="showDiscountModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        <div x-show="showDiscountModal" x-cloak style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
              @keydown.escape.window="cancelDiscountDetails()">
             <div @click.away="cancelDiscountDetails()" x-show="showDiscountModal" x-transition.opacity
                  role="dialog" aria-modal="true" aria-labelledby="discount-details-title"
@@ -441,7 +444,7 @@
                     <svg class="w-6 h-6 text-[#0B3B70]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
                 </div>
                 <h3 id="discount-details-title" class="text-[17px] font-bold text-center text-gray-900 mb-6" x-text="discountType === 'senior' ? 'Senior Citizen Details' : 'PWD Details'"></h3>
-                <div x-show="discountDetailsError" role="alert" class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-3 py-2 rounded-lg text-[12px] font-semibold" x-text="discountDetailsError"></div>
+                <div x-show="discountDetailsError" x-cloak role="alert" class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-3 py-2 rounded-lg text-[12px] font-semibold" x-text="discountDetailsError"></div>
                 <div class="space-y-4">
                     <div>
                         <label for="discount_ref_name_input" class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">Customer Name *</label>
@@ -473,6 +476,7 @@
                 paymentMethod: 'Cash',
                 discountType: 'none',
                 discountValue: 0,
+                discountRate: 0,
                 discountRefName: '',
                 discountRefId: '',
                 discountDetailsSnapshot: { name: '', id: '' },
@@ -482,23 +486,7 @@
                 isSubmitting: false,
                 isDiscountManuallyOverridden: false,
 
-                init() {
-                    this.$watch('cart', () => {
-                        if (this.discountType === 'none') return;
-                        if (!this.isDiscountManuallyOverridden) {
-                            const customer = this.selectedCustomer;
-                            if (customer && this.defaultDiscountTypeFor(customer) === this.discountType) {
-                                this.applyDefaultDiscount(customer);
-                            }
-                        } else {
-                            // A manual discount can never exceed the (possibly reduced) subtotal
-                            const subtotal = this.calculateSubtotal();
-                            if (parseFloat(this.discountValue) > subtotal) {
-                                this.discountValue = subtotal;
-                            }
-                        }
-                    }, { deep: true });
-                },
+                init() {},
 
                 /* ---------- Customer helpers ---------- */
 
@@ -510,23 +498,26 @@
                     return !!customer && RESIDUAL_CUSTOMER_TYPES.includes(customer.customer_type);
                 },
 
-                // Legacy profiles saved as "custom" are treated as "promo" (the only manual type checkout accepts)
+                // Legacy profiles saved as "custom" are treated as "promo"
                 defaultDiscountTypeFor(customer) {
-                    const type = customer ? customer.default_discount_type : null;
+                    const type = customer ? String(customer.default_discount_type || '').toLowerCase() : '';
                     if (!type || type === 'none') return null;
                     return type === 'custom' ? 'promo' : type;
                 },
 
-                // Senior/PWD fall back to the statutory 20% when the profile has no percentage saved
-                defaultDiscountPercentFor(customer) {
-                    const pct = parseFloat(customer ? customer.default_discount_percentage : NaN);
-                    if (!isNaN(pct) && pct > 0) return pct;
-                    return ['senior', 'pwd'].includes(this.defaultDiscountTypeFor(customer)) ? 20 : 0;
-                },
-
                 applyDefaultDiscount(customer) {
-                    const calculated = this.calculateSubtotal() * (this.defaultDiscountPercentFor(customer) / 100);
-                    this.discountValue = Math.max(0, Math.round(calculated * 100) / 100);
+                    const type = this.defaultDiscountTypeFor(customer);
+                    const configuredVal = (customer && customer.default_discount_percentage !== null && customer.default_discount_percentage !== '')
+                        ? parseFloat(customer.default_discount_percentage)
+                        : NaN;
+
+                    if (['senior', 'pwd'].includes(type)) {
+                        this.discountRate = (!isNaN(configuredVal) && configuredVal > 0) ? Math.min(100, configuredVal) : 20;
+                        this.discountValue = 0;
+                    } else {
+                        this.discountValue = (!isNaN(configuredVal) && configuredVal > 0) ? Math.round(configuredVal * 100) / 100 : 0;
+                        this.discountRate = 0;
+                    }
                 },
 
                 get hasDefaultDiscount() {
@@ -636,11 +627,12 @@
                     if (customer && defaultType) {
                         this.discountType = defaultType;
                         this.applyDefaultDiscount(customer);
-                        this.discountRefName = customer.default_discount_ref_name || '';
+                        this.discountRefName = customer.default_discount_ref_name || (['senior', 'pwd'].includes(defaultType) ? customer.name : '');
                         this.discountRefId = customer.default_discount_ref_id || '';
                     } else {
                         this.discountType = 'none';
                         this.discountValue = 0;
+                        this.discountRate = 0;
                         this.discountRefName = '';
                         this.discountRefId = '';
                     }
@@ -733,22 +725,32 @@
 
                 onDiscountTypeChange() {
                     this.isDiscountManuallyOverridden = false;
+                    const customer = this.selectedCustomer;
+
                     if (this.discountType === 'none') {
                         this.discountValue = 0;
+                        this.discountRate = 0;
+                    } else if (customer && this.defaultDiscountTypeFor(customer) === this.discountType) {
+                        this.applyDefaultDiscount(customer);
+                    } else if (['senior', 'pwd'].includes(this.discountType)) {
+                        this.discountRate = 20;
+                        this.discountValue = 0;
                     } else {
-                        const customer = this.selectedCustomer;
-                        if (customer && this.defaultDiscountTypeFor(customer) === this.discountType) {
-                            this.applyDefaultDiscount(customer);
-                        } else {
-                            this.discountValue = 0;
-                        }
+                        this.discountValue = 0;
+                        this.discountRate = 0;
                     }
+
                     if (!['senior', 'pwd'].includes(this.discountType)) {
                         this.discountRefName = '';
                         this.discountRefId = '';
                     } else {
-                        // Automatically pop up the modal when Senior/PWD is selected
-                        this.openDiscountModal();
+                        if (customer) {
+                            this.discountRefName = this.discountRefName || customer.default_discount_ref_name || customer.name || '';
+                            this.discountRefId = this.discountRefId || customer.default_discount_ref_id || '';
+                        }
+                        if (!this.discountRefName || !this.discountRefId) {
+                            this.openDiscountModal();
+                        }
                     }
                 },
 
@@ -782,6 +784,7 @@
                     if (!this.hasDefaultDiscount && (!snapshot.name || !snapshot.id)) {
                         this.discountType = 'none';
                         this.discountValue = 0;
+                        this.discountRate = 0;
                         this.discountRefName = '';
                         this.discountRefId = '';
                     }
@@ -791,9 +794,23 @@
                     if (this.discountType === 'none') {
                         return 0;
                     }
+                    const subtotal = this.calculateSubtotal();
+                    if (subtotal <= 0) {
+                        return 0;
+                    }
+
+                    if (['senior', 'pwd'].includes(this.discountType)) {
+                        const rate = parseFloat(this.discountRate);
+                        if (isNaN(rate) || rate <= 0) return 0;
+                        const clampedRate = Math.min(100, Math.max(0, rate));
+                        const raw = Math.round((subtotal * (clampedRate / 100)) * 100) / 100;
+                        return Math.min(raw, subtotal);
+                    }
+
                     const amount = parseFloat(this.discountValue);
-                    if (isNaN(amount) || amount < 0) return 0;
-                    return Math.min(amount, this.calculateSubtotal());
+                    if (isNaN(amount) || amount <= 0) return 0;
+                    const raw = Math.round(amount * 100) / 100;
+                    return Math.min(raw, subtotal);
                 },
 
                 calculateTotal() {

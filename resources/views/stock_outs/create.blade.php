@@ -18,6 +18,11 @@
           x-data="{
               products: {{ Js::from($products) }},
               items: {{ Js::from(array_values($initialItems)) }},
+              reason: '{{ old('reason', 'Damaged / leaking') }}',
+              tankConditionOut: '{{ old('tank_condition_out', 'filled') }}',
+              get isHuram() {
+                  return this.reason === 'Loaned Tank (Huram)';
+              },
               addItem() {
                   this.items.push({
                       product_id: '',
@@ -145,13 +150,45 @@
 
             <div class="md:col-span-2">
                 <label for="reason" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reason for Deduction <span class="text-[#B5504B]">*</span></label>
-                <select name="reason" id="reason" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                    <option value="Damaged / leaking" {{ old('reason') == 'Damaged / leaking' ? 'selected' : '' }}>Damaged / Leaking Tank</option>
-                    <option value="Inventory count correction" {{ old('reason') == 'Inventory count correction' ? 'selected' : '' }}>Inventory Count Correction</option>
-                    <option value="Other" {{ old('reason') == 'Other' ? 'selected' : '' }}>Other</option>
+                <select name="reason" id="reason" x-model="reason" required class="w-full pl-3 pr-10 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                    <option value="Damaged / leaking">Damaged / Leaking Tank</option>
+                    <option value="Loaned Tank (Huram)">Loaned Tank (Huram) — Customer Borrowed (₱0)</option>
+                    <option value="Inventory count correction">Inventory Count Correction</option>
+                    <option value="Other">Other</option>
                 </select>
                 @error('reason') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
+
+            <!-- Entry Point A: Loaned Tank (Huram) Fields -->
+            <template x-if="isHuram">
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
+                    <div class="md:col-span-2 flex items-center justify-between flex-wrap gap-1">
+                        <span class="text-[12px] font-bold text-amber-800 uppercase tracking-wider">Loaned Tank (Huram) — ₱0.00 Monetary Charge</span>
+                        <span class="text-[11px] text-amber-700">Automatically syncs with Loaned Tanks &amp; Customer Profile</span>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label for="customer_id" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Borrowing Customer <span class="text-[#B5504B]">*</span></label>
+                        <select name="customer_id" id="customer_id" required class="w-full pl-3 pr-8 py-2.5 border border-[#E5E9EF] rounded-lg text-[13.5px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                            <option value="">-- Select Customer --</option>
+                            @foreach($customers ?? [] as $customer)
+                                <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                    {{ $customer->name }} ({{ $customer->customer_type }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('customer_id') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <label for="tank_condition_out" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Tank Condition Borrowed <span class="text-[#B5504B]">*</span></label>
+                        <select name="tank_condition_out" id="tank_condition_out" x-model="tankConditionOut" required class="w-full pl-3 pr-8 py-2.5 border border-[#E5E9EF] rounded-lg text-[13.5px] bg-white focus:ring-[#0B3B70] focus:border-[#0B3B70]">
+                            <option value="filled">Filled Tank (Deducts Filled Stock)</option>
+                            <option value="empty_shell">Empty Cylinder Shell (Deducts Empty Stock)</option>
+                        </select>
+                        @error('tank_condition_out') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+            </template>
 
             <div class="md:col-span-2">
                 <label for="remarks" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Remarks / Details</label>

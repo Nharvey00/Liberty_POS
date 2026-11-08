@@ -22,7 +22,11 @@ class StoreStockInRequest extends FormRequest
                     continue;
                 }
                 $productId = $item['product_id'] ?? null;
-                $emptyReceived = $item['empty_received_qty'] ?? ($item['empty_quantity'] ?? 0);
+                $emptyReceived = max(
+                    (int) ($item['empty_received_qty'] ?? 0),
+                    (int) ($item['empty_shells_received'] ?? 0),
+                    (int) ($item['empty_quantity'] ?? 0)
+                );
                 $emptyReturned = $item['empty_returned_qty'] ?? 0;
                 $qtyReceived   = $item['quantity_received'] ?? 0;
 
@@ -35,29 +39,30 @@ class StoreStockInRequest extends FormRequest
                 }
 
                 $normalizedItems[] = [
-                    'product_id'         => $productId,
-                    'quantity_received'  => ($qtyReceived !== '' && $qtyReceived !== null) ? $qtyReceived : 0,
-                    'empty_received_qty' => ($emptyReceived !== '' && $emptyReceived !== null) ? $emptyReceived : 0,
-                    'empty_returned_qty' => ($emptyReturned !== '' && $emptyReturned !== null) ? $emptyReturned : 0,
-                    'unit_cost'          => ($item['unit_cost'] ?? '') !== '' ? $item['unit_cost'] : null,
+                    'product_id'            => $productId,
+                    'quantity_received'     => ($qtyReceived !== '' && $qtyReceived !== null) ? $qtyReceived : 0,
+                    'empty_received_qty'    => $emptyReceived,
+                    'empty_shells_received' => $emptyReceived,
+                    'empty_returned_qty'    => ($emptyReturned !== '' && $emptyReturned !== null) ? $emptyReturned : 0,
+                    'unit_cost'             => ($item['unit_cost'] ?? '') !== '' ? $item['unit_cost'] : null,
                 ];
             }
             $this->merge(['items' => $normalizedItems]);
             return;
         }
 
-        if (!$this->filled('empty_received_qty') && $this->filled('empty_quantity')) {
-            $this->merge([
-                'empty_received_qty' => $this->input('empty_quantity'),
-            ]);
-        }
+        $emptyReceivedSingle = max(
+            (int) $this->input('empty_received_qty', 0),
+            (int) $this->input('empty_shells_received', 0),
+            (int) $this->input('empty_quantity', 0)
+        );
+        $this->merge([
+            'empty_received_qty'    => $emptyReceivedSingle,
+            'empty_shells_received' => $emptyReceivedSingle,
+        ]);
 
         if (!$this->filled('quantity_received')) {
             $this->merge(['quantity_received' => 0]);
-        }
-
-        if (!$this->filled('empty_received_qty')) {
-            $this->merge(['empty_received_qty' => 0]);
         }
 
         if (!$this->filled('empty_returned_qty')) {
@@ -68,9 +73,10 @@ class StoreStockInRequest extends FormRequest
             $product = Product::find($this->product_id);
             if ($product && $product->isAccessory()) {
                 $this->merge([
-                    'empty_received_qty' => 0,
-                    'empty_returned_qty' => 0,
-                    'empty_quantity'     => 0,
+                    'empty_received_qty'    => 0,
+                    'empty_shells_received' => 0,
+                    'empty_returned_qty'    => 0,
+                    'empty_quantity'        => 0,
                 ]);
             }
         }
@@ -80,29 +86,31 @@ class StoreStockInRequest extends FormRequest
     {
         if ($this->has('items')) {
             return [
-                'items'                      => 'required|array|min:1',
-                'items.*.product_id'         => 'required|exists:products,id',
-                'items.*.quantity_received'  => 'nullable|integer|min:0',
-                'items.*.empty_received_qty' => 'nullable|integer|min:0',
-                'items.*.empty_returned_qty' => 'nullable|integer|min:0',
-                'items.*.unit_cost'          => 'nullable|numeric|min:0',
-                'reference_no'               => 'nullable|string|max:100',
-                'supplier_name'              => 'nullable|string|max:150',
-                'unit_cost'                  => 'nullable|numeric|min:0',
-                'remarks'                    => 'nullable|string|max:255',
+                'items'                         => 'required|array|min:1',
+                'items.*.product_id'            => 'required|exists:products,id',
+                'items.*.quantity_received'     => 'nullable|integer|min:0',
+                'items.*.empty_received_qty'    => 'nullable|integer|min:0',
+                'items.*.empty_shells_received' => 'nullable|integer|min:0',
+                'items.*.empty_returned_qty'    => 'nullable|integer|min:0',
+                'items.*.unit_cost'             => 'nullable|numeric|min:0',
+                'reference_no'                  => 'nullable|string|max:100',
+                'supplier_name'                 => 'nullable|string|max:150',
+                'unit_cost'                     => 'nullable|numeric|min:0',
+                'remarks'                       => 'nullable|string|max:255',
             ];
         }
 
         return [
-            'product_id'         => 'required|exists:products,id',
-            'quantity_received'  => 'nullable|integer|min:0',
-            'empty_received_qty' => 'nullable|integer|min:0',
-            'empty_returned_qty' => 'nullable|integer|min:0',
-            'empty_quantity'     => 'nullable|integer|min:0',
-            'reference_no'       => 'nullable|string|max:100',
-            'supplier_name'      => 'nullable|string|max:150',
-            'unit_cost'          => 'nullable|numeric|min:0',
-            'remarks'            => 'nullable|string|max:255',
+            'product_id'            => 'required|exists:products,id',
+            'quantity_received'     => 'nullable|integer|min:0',
+            'empty_received_qty'    => 'nullable|integer|min:0',
+            'empty_shells_received' => 'nullable|integer|min:0',
+            'empty_returned_qty'    => 'nullable|integer|min:0',
+            'empty_quantity'        => 'nullable|integer|min:0',
+            'reference_no'          => 'nullable|string|max:100',
+            'supplier_name'         => 'nullable|string|max:150',
+            'unit_cost'             => 'nullable|numeric|min:0',
+            'remarks'               => 'nullable|string|max:255',
         ];
     }
 
@@ -146,6 +154,7 @@ class StoreStockInRequest extends FormRequest
                         $product = Product::find($item['product_id']);
                         if ($product && $product->isAccessory()) {
                             $validated['items'][$idx]['empty_received_qty'] = 0;
+                            $validated['items'][$idx]['empty_shells_received'] = 0;
                             $validated['items'][$idx]['empty_returned_qty'] = 0;
                         }
                     }
@@ -154,6 +163,7 @@ class StoreStockInRequest extends FormRequest
                 $product = Product::find($validated['product_id']);
                 if ($product && $product->isAccessory()) {
                     $validated['empty_received_qty'] = 0;
+                    $validated['empty_shells_received'] = 0;
                     $validated['empty_returned_qty'] = 0;
                 }
             }

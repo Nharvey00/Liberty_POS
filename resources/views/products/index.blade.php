@@ -13,22 +13,27 @@
 
     <!-- Inventory Sub-Tabs & Action Toolbar -->
     <div x-data="liveSearch()" class="flex flex-col gap-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-3">
+    <div class="flex flex-wrap items-center justify-between mb-1 gap-2 md:gap-4">
         @if(Auth::user()->isManagerOrOwner())
             <!-- Sub-Tabs -->
-            <div class="flex items-center gap-1.5 bg-[#E5E9EF]/60 p-1 rounded-xl">
-                <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold {{ request('status') !== 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
+            <div class="flex flex-wrap gap-2 md:gap-4 items-center bg-[#E5E9EF]/60 p-1 rounded-xl">
+                <a href="{{ route('products.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap {{ request('status') !== 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
                     Products Catalog
                 </a>
-                <a href="{{ route('stock-ins.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                <a href="{{ route('stock-ins.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Stock In History
                 </a>
-                <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                <a href="{{ route('stock-outs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
                     Stock Out History
                 </a>
-                <a href="{{ route('products.index', ['status' => 'deleted']) }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold {{ request('status') === 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
-                    Deleted Products
+                <a href="{{ route('inventory-movements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                    Inventory Ledger
                 </a>
+                @if(auth()->user()?->isOwner())
+                    <a href="{{ route('products.index', ['status' => 'deleted']) }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap {{ request('status') === 'deleted' ? 'bg-white text-[#0B3B70] shadow-xs' : 'text-[#5B6472] hover:text-[#1C2430]' }} transition-colors">
+                        Deleted Products
+                    </a>
+                @endif
             </div>
         @else
             <div></div>
@@ -84,19 +89,21 @@
                     <tbody>
                         @forelse($tankProducts as $product)
                             <tr class="hover:bg-[#F4F6F9] transition-colors">
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $product->name }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($product->price, 2) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format((float) $product->standard_capacity_kg, 2) }} kg</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold">{{ number_format($product->stock_quantity) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">{{ number_format($product->empty_quantity) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity + $product->empty_quantity) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                <td class="py-3 px-4 text-sm border-b border-[#E5E9EF] font-semibold text-[#1C2430] max-w-[240px]">
+                                    <div class="truncate" title="{{ $product->name }}">{{ $product->name }}</div>
+                                </td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">₱{{ number_format($product->price, 2) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">{{ number_format((float) $product->standard_capacity_kg, 2) }} kg</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold whitespace-nowrap">{{ number_format($product->stock_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">{{ number_format($product->empty_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70] whitespace-nowrap">{{ number_format($product->stock_quantity + $product->empty_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">
                                     @if($product->trashed())
-                                        <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#F7E9E8] text-[#B5504B]">Deleted</span>
                                     @elseif($product->stock_quantity <= 10)
-                                        <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-amber-100 text-[#B4700A]">Low Stock</span>
                                     @else
-                                        <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E5F5EC] text-[#1E8E5A]">Healthy</span>
                                     @endif
                                 </td>
                                 <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
@@ -108,7 +115,7 @@
                                                 <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
                                                     Delete
                                                 </button>
-                                            @else
+                                            @elseif(auth()->user()?->isOwner())
                                                 <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
                                                     @csrf
                                                     <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
@@ -158,16 +165,18 @@
                     <tbody>
                         @forelse($accessoryProducts as $product)
                             <tr class="hover:bg-[#F4F6F9] transition-colors">
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $product->name }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">₱{{ number_format($product->price, 2) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70]">{{ number_format($product->stock_quantity) }}</td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                                <td class="py-3 px-4 text-sm border-b border-[#E5E9EF] font-semibold text-[#1C2430] max-w-[260px]">
+                                    <div class="truncate" title="{{ $product->name }}">{{ $product->name }}</div>
+                                </td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">₱{{ number_format($product->price, 2) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold text-[#0B3B70] whitespace-nowrap">{{ number_format($product->stock_quantity) }}</td>
+                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">
                                     @if($product->trashed())
-                                        <span class="text-[12.5px] font-semibold text-[#B5504B]">Deleted</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#F7E9E8] text-[#B5504B]">Deleted</span>
                                     @elseif($product->stock_quantity <= 10)
-                                        <span class="text-[12.5px] font-semibold text-[#B4700A]">Low Stock</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-amber-100 text-[#B4700A]">Low Stock</span>
                                     @else
-                                        <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Healthy</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E5F5EC] text-[#1E8E5A]">Healthy</span>
                                     @endif
                                 </td>
                                 <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">
@@ -179,7 +188,7 @@
                                                 <button type="button" @click="deleteAction = '{{ route('products.destroy', $product) }}'; showDeleteModal = true" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#B5504B] bg-[#F7E9E8] hover:bg-[#F0D5D3] rounded-md transition-colors cursor-pointer border border-[#B5504B]/20">
                                                     Delete
                                                 </button>
-                                            @else
+                                            @elseif(auth()->user()?->isOwner())
                                                 <form action="{{ route('products.restore', $product) }}" method="POST" class="m-0 p-0 inline">
                                                     @csrf
                                                     <button type="submit" class="px-2.5 py-1 text-[11.5px] font-semibold text-[#1E8E5A] bg-[#E5F5EC] hover:bg-[#D1EBD9] rounded-md transition-colors cursor-pointer border border-[#1E8E5A]/20">
@@ -207,7 +216,7 @@
     </div> <!-- Close liveSearch -->
 
     <!-- Delete Confirmation Modal -->
-    <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div x-show="showDeleteModal" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div @click.away="showDeleteModal = false" x-show="showDeleteModal" x-transition.opacity class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
             <div class="flex items-center justify-center w-12 h-12 mx-auto bg-[#F7E9E8] rounded-full mb-4">
                 <svg class="w-6 h-6 text-[#B5504B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>

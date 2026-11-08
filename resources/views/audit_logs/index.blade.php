@@ -6,9 +6,6 @@
                 <p class="text-[13px] text-[#5B6472] mt-[2px]">Who did what, and when, across sales, inventory, credit, and staff accounts.</p>
             </div>
             <div class="flex items-center gap-2.5">
-                <a href="{{ route('inventory-movements.index') }}" class="rounded-lg px-4 py-2 text-[13px] font-semibold border border-[#E5E9EF] bg-white text-[#1C2430] hover:bg-[#F4F6F9] transition-colors">
-                    Inventory Ledger
-                </a>
                 <a href="{{ route('audit-logs.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] transition-colors">
                     <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     <span>Export CSV</span>
@@ -23,6 +20,16 @@
     @endphp
 
     <div x-data="liveSearch()" class="flex flex-col gap-4">
+        {{-- Reports & Analytics Sub-Navigation Tabs --}}
+        <div class="flex flex-wrap gap-2 md:gap-4 items-center bg-[#E5E9EF]/60 p-1 rounded-xl self-start w-fit print:hidden">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">Overview Hub</a>
+            <a href="{{ route('reports.sales') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">Sales Report</a>
+            <a href="{{ route('reports.inventory') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">Inventory Report</a>
+            <a href="{{ route('reports.utang') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">Utang (Credit) Report</a>
+            <a href="{{ route('reports.discounts') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">Discounts Summary</a>
+            <a href="{{ route('audit-logs.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap bg-white text-[#0B3B70] shadow-xs transition-colors">Audit Trail</a>
+        </div>
+
         {{-- Category Tabs --}}
         <nav aria-label="Activity categories" class="flex items-center gap-1 bg-[#E5E9EF]/60 p-1 rounded-xl overflow-x-auto self-start max-w-full">
             <a href="{{ route('audit-logs.index', $baseQuery) }}"

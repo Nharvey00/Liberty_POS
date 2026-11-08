@@ -69,16 +69,22 @@ class PosController extends Controller
                 $year = date('Y');
                 $auditedItemsSummary = [];
 
+                $effectiveDiscountType = (!empty($validated['discount_type']) && strtolower(trim((string) $validated['discount_type'])) !== 'none')
+                    ? strtolower(trim((string) $validated['discount_type']))
+                    : null;
+
                 $order = Order::create([
                     'customer_id' => $customer ? $customer->id : null,
                     'user_id' => Auth::id(),
                     'total_amount' => 0, 
                     'payment_method' => $validated['payment_method'],
-                    'discount_amount' => (isset($validated['discount_amount']) && $validated['discount_amount'] !== '') ? (float)$validated['discount_amount'] : 0,
-                    'discount_type' => (!empty($validated['discount_type']) && $validated['discount_type'] !== 'none') ? $validated['discount_type'] : null,
-                    'discount_reference_name' => !empty($validated['discount_reference_name']) ? $validated['discount_reference_name'] : null,
-                    'discount_reference_id' => !empty($validated['discount_reference_id']) ? $validated['discount_reference_id'] : null,
-                    'senior_id' => !empty($validated['discount_reference_id']) ? $validated['discount_reference_id'] : (!empty($validated['senior_id']) ? $validated['senior_id'] : null),
+                    'discount_amount' => ($effectiveDiscountType !== null && isset($validated['discount_amount']) && $validated['discount_amount'] !== '') ? max(0, (float)$validated['discount_amount']) : 0,
+                    'discount_type' => $effectiveDiscountType,
+                    'discount_reference_name' => ($effectiveDiscountType !== null && !empty($validated['discount_reference_name'])) ? $validated['discount_reference_name'] : null,
+                    'discount_reference_id' => ($effectiveDiscountType !== null && !empty($validated['discount_reference_id'])) ? $validated['discount_reference_id'] : null,
+                    'senior_id' => $effectiveDiscountType !== null
+                        ? (!empty($validated['discount_reference_id']) ? $validated['discount_reference_id'] : (!empty($validated['senior_id']) ? $validated['senior_id'] : null))
+                        : null,
                 ]);
 
                 $invoiceNumber = 'INV-' . $year . '-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
@@ -189,10 +195,18 @@ class PosController extends Controller
                     ];
                 }
 
-                // Mathematically cap discount to order subtotal
-                $requestedDiscount = (float)($order->discount_amount ?? 0);
+                // Calculate final deduction based on discount type and enforce hard floor at ₱0.00
+                $discountType = $order->discount_type ? strtolower($order->discount_type) : null;
+                if ($discountType === null || $discountType === 'none') {
+                    $requestedDiscount = 0.0;
+                } elseif (in_array($discountType, ['senior', 'pwd'], true) && isset($validated['discount_rate']) && $validated['discount_rate'] !== '' && $validated['discount_rate'] !== null) {
+                    $rate = max(0, min(100, (float)$validated['discount_rate']));
+                    $requestedDiscount = round($totalAmount * ($rate / 100), 2);
+                } else {
+                    $requestedDiscount = max(0, (float)($order->discount_amount ?? 0));
+                }
                 $discountAmount = min($requestedDiscount, $totalAmount);
-                $finalTotal = max(0, $totalAmount - $discountAmount);
+                $finalTotal = max(0, round($totalAmount - $discountAmount, 2));
                 $order->update([
                     'discount_amount' => $discountAmount,
                     'total_amount' => $finalTotal,
@@ -265,6 +279,9 @@ class PosController extends Controller
 
             return redirect()->route('pos.show', $order->id)->with('success', 'Transaction completed successfully.');
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('POS transaction database error', ['message' => $e->getMessage()]);
+            return back()->withErrors('Transaction failed due to a database error. Please try again.');
         } catch (\Exception $e) {
             return back()->withErrors('Transaction failed: ' . $e->getMessage());
         } finally {

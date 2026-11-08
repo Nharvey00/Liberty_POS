@@ -3,24 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Order;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Services\AuditTrailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
     /**
-     * Display a listing of customers with eager-loaded credit balances.
+     * Display a listing of customers with eager-loaded credit balances and active tank loans.
      */
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $query = Customer::with('creditAccount')
+        $relations = ['creditAccount'];
+        if (Schema::hasTable('tank_loans')) {
+            $relations[] = 'activeTankLoans';
+        }
+
+        $query = Customer::with($relations)
             ->orderBy('first_name')
             ->orderBy('last_name');
+
+        $statusFilter = strtolower(trim((string) $request->query('status', '')));
+        if (in_array($statusFilter, ['deleted', 'trashed', 'archived'], true)) {
+            if (!auth()->check() || !auth()->user()->isOwner()) {
+                abort(403, 'Only the Admin Owner can view deleted customer records.');
+            }
+            $query->onlyTrashed();
+        }
 
         if ($search) {
             $query->search($search);
@@ -70,7 +85,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Display the specified customer profile and daily volume matrix.
+     * Display the specified customer profile, daily volume matrix, monthly summary breakdown, and itemized purchase audit log.
      */
     public function show(Customer $customer, Request $request)
     {
@@ -78,12 +93,20 @@ class CustomerController extends Controller
         $startOfMonth = Carbon::parse($currentMonth)->startOfMonth();
         $endOfMonth = Carbon::parse($currentMonth)->endOfMonth();
 
-        // Load related monthly orders and items along with the credit account
-        $customer->load(['orders' => function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                  ->with('items')
-                  ->orderBy('created_at', 'desc');
-        }, 'creditAccount']);
+        $relations = [
+            'orders' => function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                      ->with(['items.product', 'user'])
+                      ->orderBy('created_at', 'desc');
+            },
+            'creditAccount',
+        ];
+
+        if (Schema::hasTable('tank_loans')) {
+            $relations[] = 'activeTankLoans.product';
+        }
+
+        $customer->load($relations);
 
         $daysInMonth = $endOfMonth->daysInMonth;
         $dailyVolumes = array_fill(1, $daysInMonth, 0);
@@ -97,7 +120,86 @@ class CustomerController extends Controller
             $dailyVolumes[$day] += ($qty > 0 ? (int)$qty : 1);
         }
 
-        return view('customers.show', compact('customer', 'dailyVolumes', 'currentMonth', 'daysInMonth'));
+        // Phase 3A: Monthly Summary Breakdown (Strictly excluding voided POS sales)
+        $validOrders = Order::valid()
+            ->where('customer_id', $customer->id)
+            ->with('items')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $monthlyBreakdown = $validOrders
+            ->groupBy(fn ($order) => $order->created_at->format('Y-m'))
+            ->map(function ($monthOrders, $monthKey) {
+                $totalQty = 0;
+                $grossAmount = 0.0;
+                $totalDiscount = 0.0;
+                $netSpend = 0.0;
+
+                foreach ($monthOrders as $order) {
+                    $qty = (int) $order->items->sum('quantity');
+                    $totalQty += $qty;
+                    $net = (float) $order->total_amount;
+                    $disc = (float) ($order->discount_amount ?? 0);
+                    $grossAmount += ($net + $disc);
+                    $totalDiscount += $disc;
+                    $netSpend += $net;
+                }
+
+                return [
+                    'month_key' => $monthKey,
+                    'month_label' => Carbon::createFromFormat('Y-m', $monthKey)->format('F Y'),
+                    'orders_count' => $monthOrders->count(),
+                    'total_qty' => $totalQty,
+                    'gross_amount' => round($grossAmount, 2),
+                    'total_discount' => round($totalDiscount, 2),
+                    'net_spend' => round($netSpend, 2),
+                ];
+            })
+            ->values();
+
+        $lifetimeSummary = [
+            'orders_count' => $monthlyBreakdown->sum('orders_count'),
+            'total_qty' => $monthlyBreakdown->sum('total_qty'),
+            'gross_amount' => round($monthlyBreakdown->sum('gross_amount'), 2),
+            'total_discount' => round($monthlyBreakdown->sum('total_discount'), 2),
+            'net_spend' => round($monthlyBreakdown->sum('net_spend'), 2),
+        ];
+
+        // Phase 3B: Itemized Purchase Audit Log (Filterable)
+        $auditMonth = $request->input('audit_month', 'all');
+        $auditPaymentMethod = $request->input('payment_method', 'all');
+
+        $auditQuery = Order::where('customer_id', $customer->id)
+            ->with([
+                'items.product' => fn ($q) => $q->withTrashed(),
+                'user'          => fn ($q) => $q->withTrashed(),
+                'voidedByUser'  => fn ($q) => $q->withTrashed(),
+            ])
+            ->orderBy('created_at', 'desc');
+
+        if ($auditMonth !== 'all' && preg_match('/^\d{4}-\d{2}$/', $auditMonth)) {
+            $mStart = Carbon::parse($auditMonth)->startOfMonth();
+            $mEnd = Carbon::parse($auditMonth)->endOfMonth();
+            $auditQuery->whereBetween('created_at', [$mStart, $mEnd]);
+        }
+
+        if ($auditPaymentMethod !== 'all' && $auditPaymentMethod !== '') {
+            $auditQuery->where('payment_method', $auditPaymentMethod);
+        }
+
+        $auditOrders = $auditQuery->get();
+
+        return view('customers.show', compact(
+            'customer',
+            'dailyVolumes',
+            'currentMonth',
+            'daysInMonth',
+            'monthlyBreakdown',
+            'lifetimeSummary',
+            'auditOrders',
+            'auditMonth',
+            'auditPaymentMethod'
+        ));
     }
 
     /**
@@ -159,6 +261,25 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Referential Integrity Guard 1: Cannot delete customer with an unpaid credit (utang) balance
+        $customer->loadMissing('creditAccount');
+        if ($customer->creditAccount) {
+            $ledgerBalance = round((float) $customer->creditAccount->remaining_balance, 2);
+            $rawBalance = round((float) ($customer->creditAccount->getRawOriginal('remaining_balance') ?? 0), 2);
+            if ($ledgerBalance > 0 || ($ledgerBalance == 0.0 && $rawBalance > 0)) {
+                return redirect()
+                    ->back()
+                    ->withErrors(['customer' => 'Cannot delete customer with an unpaid credit (utang) balance. Please settle the outstanding balance first.']);
+            }
+        }
+
+        // Referential Integrity Guard 2: Cannot delete customer with active unreturned loaned (Huram) tanks
+        if (Schema::hasTable('tank_loans') && $customer->activeTankLoans()->exists()) {
+            return redirect()
+                ->back()
+                ->withErrors(['customer' => 'Cannot delete customer with active unreturned loaned (Huram) tanks. Please record the tank returns first.']);
+        }
+
         $customerName = $customer->name;
         $customer->delete();
 
@@ -177,6 +298,35 @@ class CustomerController extends Controller
         return redirect()
             ->route('customers.index')
             ->with('success', 'Customer record deleted successfully.');
+    }
+
+    /**
+     * Restore a soft-deleted customer record (Strictly Level 3 Admin Owner Only).
+     */
+    public function restore($id)
+    {
+        if (!auth()->user()?->isOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->restore();
+
+        AuditTrailService::record([
+            'module'                => 'customers',
+            'action'                => 'customer.updated',
+            'entity_type'           => 'Customer',
+            'entity_id'             => $customer->id,
+            'transaction_reference' => 'CUS-' . str_pad((string) $customer->id, 5, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => ['name' => $customer->name, 'status' => 'archived'],
+            'after_values'          => ['name' => $customer->name, 'status' => 'active'],
+            'reason'                => 'Customer profile restored by Admin Owner',
+        ]);
+
+        return redirect()
+            ->route('customers.index', ['status' => 'deleted'])
+            ->with('success', 'Customer record restored successfully.');
     }
 
     /**

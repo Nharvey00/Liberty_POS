@@ -88,14 +88,18 @@
                             </div>
                             <svg class="w-4 h-4 transition-transform duration-200 text-[#88A6D3]" :class="invOpen ? 'rotate-180 text-white' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="invOpen" 
+                        <div x-show="invOpen" x-cloak
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
                              class="pl-4 pr-1 mt-1 space-y-0.5 border-l-2 border-[#1E3B68] ml-6">
+                            @php
+                                $isDeletedProductsView = request()->routeIs('products.index') && request('status') === 'deleted';
+                                $isActiveProductsView = request()->routeIs('products.*') && !$isDeletedProductsView;
+                            @endphp
                             <a href="{{ route('products.index') }}" 
-                               class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors {{ request()->routeIs('products.*') ? 'bg-[#1D4E89] text-white font-bold' : 'text-[#88A6D3] hover:text-white hover:bg-[#152441]' }}">
-                                <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('products.*') ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
+                               class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors {{ $isActiveProductsView ? 'bg-[#1D4E89] text-white font-bold' : 'text-[#88A6D3] hover:text-white hover:bg-[#152441]' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $isActiveProductsView ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
                                 <span>Products</span>
                             </a>
                             <a href="{{ route('stock-ins.index') }}" 
@@ -113,6 +117,13 @@
                                 <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('inventory-movements.*') ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
                                 <span>Inventory Ledger</span>
                             </a>
+                            @if(auth()->user()?->isOwner())
+                                <a href="{{ route('products.index', ['status' => 'deleted']) }}" 
+                                   class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors {{ $isDeletedProductsView ? 'bg-[#1D4E89] text-white font-bold' : 'text-[#88A6D3] hover:text-white hover:bg-[#152441]' }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $isDeletedProductsView ? 'bg-[#38BDF8]' : 'bg-[#546E9C]' }}"></span>
+                                    <span>Deleted Products</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endif
@@ -135,6 +146,12 @@
                         <svg class="w-5 h-5 {{ request()->routeIs('statements.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Statements of Account</span>
                     </a>
+
+                    <a href="{{ route('tank-loans.index') }}" 
+                       class="flex items-center gap-3.5 px-4 py-2.5 rounded-[12px] text-[14px] font-semibold transition-colors {{ request()->routeIs('tank-loans.*') ? 'bg-[#2E66AD] text-white shadow-sm' : 'text-[#88A6D3] hover:bg-[#152441] hover:text-white' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('tank-loans.*') ? 'text-white' : 'text-[#88A6D3]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h8v3H8z"/><rect x="6" y="6" width="12" height="15" rx="3"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+                        <span>Loaned Tanks</span>
+                    </a>
                 </div>
             </div>
 
@@ -152,7 +169,7 @@
                             </div>
                             <svg class="w-4 h-4 transition-transform duration-200 text-[#88A6D3]" :class="repOpen ? 'rotate-180 text-white' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="repOpen" 
+                        <div x-show="repOpen" x-cloak
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"

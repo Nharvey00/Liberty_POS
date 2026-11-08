@@ -20,7 +20,8 @@ class StoreOrderRequest extends FormRequest
             'customer_id'       => 'required_if:payment_method,Credit|nullable|exists:customers,id',
             'payment_method'    => 'required|in:Cash,Credit',
             'discount_amount'   => 'nullable|numeric|min:0',
-            'discount_type'     => 'nullable|in:none,regular,senior,pwd,promo',
+            'discount_rate'     => 'nullable|numeric|min:0|max:100',
+            'discount_type'     => 'nullable|in:none,regular,tertiary,industrial,senior,pwd,promo,custom',
             'discount_reference_name' => 'nullable|string|max:255',
             'discount_reference_id'   => 'nullable|string|max:255',
             'senior_id'         => 'nullable|string|max:50', // kept for backwards compatibility if needed
@@ -41,6 +42,17 @@ class StoreOrderRequest extends FormRequest
             $customerId = $this->input('customer_id');
             $customer = $customerId ? Customer::find($customerId) : null;
             $isCokeResidual = $customer && in_array($customer->customer_type, ['Coke (Residual)', 'Company', 'Corporate']);
+
+            // Block new Credit (Utang) transactions for missing or inactive credit accounts
+            if ($this->input('payment_method') === 'Credit' && $customer) {
+                $creditAccount = $customer->creditAccount;
+                if (!$creditAccount) {
+                    $validator->errors()->add('customer_id', 'This customer does not have an approved credit account.');
+                } elseif (!$creditAccount->is_active) {
+                    $validator->errors()->add('customer_id', "This customer's credit account is inactive. Credit (Utang) transactions are not allowed.");
+                }
+            }
+
             $items = $this->input('items', []);
 
             if (!is_array($items)) {
@@ -123,6 +135,9 @@ class StoreOrderRequest extends FormRequest
             }
 
             $discountType = $this->input('discount_type');
+            $normalizedDiscountType = (!empty($discountType) && strtolower(trim((string) $discountType)) !== 'none')
+                ? strtolower(trim((string) $discountType))
+                : null;
 
             // Fix #6: Discount cannot exceed the order subtotal
             $discount = (float)$this->input('discount_amount', 0);
@@ -134,7 +149,7 @@ class StoreOrderRequest extends FormRequest
                     );
                 }
                 
-                if (!$customerId && !in_array($discountType, ['senior', 'pwd'])) {
+                if ($normalizedDiscountType !== null && !$customerId && !in_array($normalizedDiscountType, ['senior', 'pwd'], true)) {
                     $validator->errors()->add(
                         'customer_id',
                         'A registered customer must be selected to apply this discount.'
@@ -142,7 +157,7 @@ class StoreOrderRequest extends FormRequest
                 }
             }
 
-            if (in_array($discountType, ['senior', 'pwd'])) {
+            if (in_array($normalizedDiscountType, ['senior', 'pwd'], true)) {
                 if (empty($this->input('discount_reference_name'))) {
                     $validator->errors()->add(
                         'discount_reference_name',

@@ -11,14 +11,27 @@
     @endif
 
     <div x-data="liveSearch()" class="flex flex-col gap-4">
-    <div class="flex items-center justify-between mb-1 gap-3 flex-wrap">
-        <form x-ref="form" method="GET" action="{{ route('credit-accounts.index') }}" @submit.prevent="performSearch" class="flex-1 min-w-[200px] max-w-[300px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
-            <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
-        </form>
-        <div class="flex gap-2.5 flex-wrap items-center">
-            <a href="{{ route('credit-accounts.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52]">+ Approve Credit Account</a>
+    <div class="flex flex-wrap items-center justify-between mb-1 gap-2 md:gap-4">
+        <!-- Credit & Receivables Sub-Navigation -->
+        <div class="flex flex-wrap gap-2 md:gap-4 items-center bg-[#E5E9EF]/60 p-1 rounded-xl">
+            <a href="{{ route('credit-accounts.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap bg-white text-[#0B3B70] shadow-xs transition-colors">
+                Credit Accounts (Utang)
+            </a>
+            <a href="{{ route('statements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                Statements of Account
+            </a>
+            <a href="{{ route('tank-loans.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                Loaned Tanks (Huram)
+            </a>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <form x-ref="form" method="GET" action="{{ route('credit-accounts.index') }}" @submit.prevent="performSearch" class="min-w-[240px] flex items-center gap-2 bg-white border border-[#E5E9EF] rounded-lg px-3 py-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6472" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" name="search" x-model="query" @input.debounce.500ms="performSearch" placeholder="Search accounts..." class="border-none outline-none font-inherit w-full bg-transparent p-0 focus:ring-0 text-[13px]">
+                <button type="button" x-show="query.length > 0" @click="query = ''; performSearch()" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]" style="display: none;">✕</button>
+            </form>
+            <a href="{{ route('credit-accounts.create') }}" class="rounded-lg px-[15px] py-[8px] text-[13px] font-semibold border border-[#0B3B70] bg-[#0B3B70] text-white hover:bg-[#082A52] whitespace-nowrap">+ Approve Credit Account</a>
         </div>
     </div>
 
@@ -39,11 +52,13 @@
                     @forelse($accounts as $account)
                         @php $balance = $account->remaining_balance; @endphp
                         <tr class="hover:bg-[#F4F6F9] transition-colors">
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">{{ $account->customer->name }}</td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472]">
+                            <td class="py-3 px-4 text-sm border-b border-[#E5E9EF] font-semibold text-[#1C2430] max-w-[240px]">
+                                <div class="truncate" title="{{ $account->customer->name }}">{{ $account->customer->name }}</div>
+                            </td>
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#5B6472] whitespace-nowrap">
                                 {{ $account->agreed_monthly_payment ? '₱' . number_format($account->agreed_monthly_payment, 2) : '—' }}
                             </td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">
                                 @if($balance > 0)
                                     <span class="font-bold text-[#B5504B]">₱{{ number_format($balance, 2) }}</span>
                                 @elseif($balance < 0)
@@ -52,11 +67,11 @@
                                     <span class="text-[#1E8E5A] font-semibold">₱0.00</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
+                            <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">
                                 @if($account->is_active)
-                                    <span class="text-[12.5px] font-semibold text-[#1E8E5A]">Active</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E5F5EC] text-[#1E8E5A]">Active</span>
                                 @else
-                                    <span class="text-[12.5px] font-semibold text-[#5B6472]">Inactive</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-[#5B6472]">Inactive</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 border-b border-[#E5E9EF] text-right whitespace-nowrap">

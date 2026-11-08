@@ -7,6 +7,8 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\CreditAccount;
+use App\Models\StockIn;
+use App\Models\StockOut;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -88,18 +90,27 @@ class ReportController extends Controller
                 ->whereBetween('orders.created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('order_items.quantity');
                 
-            // Supplier deliveries only: automatic void-reversal restocks are excluded because
-            // voided sales are already excluded from the "sold" figure above.
-            $stockIns = DB::table('stock_ins')
+            // Supplier deliveries only: voided Stock In records, automatic order-void restocks,
+            // and customer Huram tank returns are excluded so supplier delivery totals remain accurate.
+            $stockInsQuery = StockIn::valid()
                 ->where('product_id', $product->id)
                 ->where(function ($q) {
                     $q->whereNull('reference_no')
-                      ->orWhere('reference_no', 'not like', 'VOID-%');
-                })
+                      ->orWhere(function ($sub) {
+                          $sub->where('reference_no', 'not like', 'VOID-%')
+                              ->where('reference_no', 'not like', 'HURAM-RET-%');
+                      });
+                });
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('tank_loan_returns')) {
+                $stockInsQuery->whereDoesntHave('tankLoanReturn');
+            }
+
+            $stockIns = $stockInsQuery
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_received');
 
-            $stockOuts = DB::table('stock_outs')
+            $stockOuts = StockOut::valid()
                 ->where('product_id', $product->id)
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_removed');
