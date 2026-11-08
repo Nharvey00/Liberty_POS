@@ -24,33 +24,15 @@ class DatabaseSeeder extends Seeder
 
             // 2. Users: need Roles
             UserSeeder::class,
-
-            // 3. Customers: standalone, no FK dependencies
-            // CustomerSeeder::class,
-
-            // 4. Products: standalone, no FK dependencies
-            // ProductSeeder::class,
-
-            // 5. Credit Accounts: need Customers
-            // CreditAccountSeeder::class,
-
-            // 6. Orders + Order Items + Credit Ledger Charges:
-            //    need Customers, Users, Products, CreditAccounts
-            // OrderSeeder::class,
-
-            // 7. Stock Ins: need Products
-            // StockInSeeder::class,
-
-            // 8. Stock Outs: need Products
-            // StockOutSeeder::class,
-
-            // 9. Payments + Credit Ledger Payment entries:
-            //    need CreditAccounts (must run AFTER OrderSeeder)
-            // PaymentSeeder::class,
-
-            // 10. Statements of Account: need CreditAccounts + Ledger data
-            //     (must run LAST — calculates total_due from ledger)
-            // StatementOfAccountSeeder::class,
         ]);
+
+        // 3. Comprehensive LPG Operational Demo Data (15 Products, 10 Customers,
+        //    Orders, Stock Ins/Outs + Voids, Credit Accounts, and Huram Tank Loans)
+        //    CRITICAL PRODUCTION GUARD: Only seed fake demo data in local or testing!
+        if (app()->environment(['local', 'testing'])) {
+            $this->call([
+                ComprehensiveLpgDemoSeeder::class,
+            ]);
+        }
     }
 }

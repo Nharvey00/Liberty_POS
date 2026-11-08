@@ -29,6 +29,14 @@ class CustomerController extends Controller
             ->orderBy('first_name')
             ->orderBy('last_name');
 
+        $statusFilter = strtolower(trim((string) $request->query('status', '')));
+        if (in_array($statusFilter, ['deleted', 'trashed', 'archived'], true)) {
+            if (!auth()->check() || !auth()->user()->isOwner()) {
+                abort(403, 'Only the Admin Owner can view deleted customer records.');
+            }
+            $query->onlyTrashed();
+        }
+
         if ($search) {
             $query->search($search);
         }
@@ -162,7 +170,11 @@ class CustomerController extends Controller
         $auditPaymentMethod = $request->input('payment_method', 'all');
 
         $auditQuery = Order::where('customer_id', $customer->id)
-            ->with(['items.product', 'user', 'voidedByUser'])
+            ->with([
+                'items.product' => fn ($q) => $q->withTrashed(),
+                'user'          => fn ($q) => $q->withTrashed(),
+                'voidedByUser'  => fn ($q) => $q->withTrashed(),
+            ])
             ->orderBy('created_at', 'desc');
 
         if ($auditMonth !== 'all' && preg_match('/^\d{4}-\d{2}$/', $auditMonth)) {
@@ -249,6 +261,25 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Referential Integrity Guard 1: Cannot delete customer with an unpaid credit (utang) balance
+        $customer->loadMissing('creditAccount');
+        if ($customer->creditAccount) {
+            $ledgerBalance = round((float) $customer->creditAccount->remaining_balance, 2);
+            $rawBalance = round((float) ($customer->creditAccount->getRawOriginal('remaining_balance') ?? 0), 2);
+            if ($ledgerBalance > 0 || ($ledgerBalance == 0.0 && $rawBalance > 0)) {
+                return redirect()
+                    ->back()
+                    ->withErrors(['customer' => 'Cannot delete customer with an unpaid credit (utang) balance. Please settle the outstanding balance first.']);
+            }
+        }
+
+        // Referential Integrity Guard 2: Cannot delete customer with active unreturned loaned (Huram) tanks
+        if (Schema::hasTable('tank_loans') && $customer->activeTankLoans()->exists()) {
+            return redirect()
+                ->back()
+                ->withErrors(['customer' => 'Cannot delete customer with active unreturned loaned (Huram) tanks. Please record the tank returns first.']);
+        }
+
         $customerName = $customer->name;
         $customer->delete();
 
@@ -267,6 +298,35 @@ class CustomerController extends Controller
         return redirect()
             ->route('customers.index')
             ->with('success', 'Customer record deleted successfully.');
+    }
+
+    /**
+     * Restore a soft-deleted customer record (Strictly Level 3 Admin Owner Only).
+     */
+    public function restore($id)
+    {
+        if (!auth()->user()?->isOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->restore();
+
+        AuditTrailService::record([
+            'module'                => 'customers',
+            'action'                => 'customer.updated',
+            'entity_type'           => 'Customer',
+            'entity_id'             => $customer->id,
+            'transaction_reference' => 'CUS-' . str_pad((string) $customer->id, 5, '0', STR_PAD_LEFT),
+            'status'                => 'completed',
+            'before_values'         => ['name' => $customer->name, 'status' => 'archived'],
+            'after_values'          => ['name' => $customer->name, 'status' => 'active'],
+            'reason'                => 'Customer profile restored by Admin Owner',
+        ]);
+
+        return redirect()
+            ->route('customers.index', ['status' => 'deleted'])
+            ->with('success', 'Customer record restored successfully.');
     }
 
     /**

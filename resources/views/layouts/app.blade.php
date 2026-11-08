@@ -20,6 +20,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        [x-cloak] { display: none !important; }
         @media print {
             @page { margin: 5mm; }
             body {
@@ -44,7 +45,7 @@
 <body x-data="{ sidebarOpen: false }" class="font-sans text-[#0F1D3A] antialiased bg-[#F1F5F9] m-0 flex min-h-screen text-[14px]">
 
     <!-- Mobile Sidebar Backdrop Overlay -->
-    <div x-show="sidebarOpen" 
+    <div x-show="sidebarOpen" x-cloak
          x-transition.opacity.duration.200ms
          @click="sidebarOpen = false" 
          class="fixed inset-0 bg-black/50 z-40 md:hidden print:hidden" 

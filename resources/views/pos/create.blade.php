@@ -65,11 +65,11 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span x-show="cart.length > 0" 
+                    <span x-show="cart.length > 0" x-cloak
                           class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#0B3B70] text-white" 
                           x-text="cartItemCount() + ' item(s)'"></span>
                     <button type="button" 
-                            x-show="cart.length > 0" 
+                            x-show="cart.length > 0" x-cloak
                             @click="cart = []" 
                             class="text-[11px] font-semibold text-[#B5504B] hover:text-[#913b37] hover:underline cursor-pointer">
                         Clear All
@@ -96,7 +96,7 @@
                 <!-- Scrollable Items Area (High-Density UI, Compact Single-Row Items) -->
                 <div class="px-3.5 py-2 flex-1 overflow-y-auto min-h-0">
                     <!-- Cart Items Column Header (Visible when cart has items) -->
-                    <div x-show="cart.length > 0" class="grid grid-cols-12 gap-2 text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1.5 bg-[#F1F5F9] rounded border border-[#E2E8F0] mb-2 items-center">
+                    <div x-show="cart.length > 0" x-cloak class="grid grid-cols-12 gap-2 text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1.5 bg-[#F1F5F9] rounded border border-[#E2E8F0] mb-2 items-center">
                         <div class="col-span-4">Item Name</div>
                         <div class="col-span-2 text-center">Unit Price</div>
                         <div class="col-span-3 text-center">Quantity</div>
@@ -236,7 +236,7 @@
                         </div>
 
                         <!-- Dynamic UI logic: Discount Value input appears if type !== "none" -->
-                        <div x-show="discountType !== 'none'" 
+                        <div x-show="discountType !== 'none'" x-cloak
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
@@ -343,7 +343,7 @@
     </div> <!-- Close flex container -->
 
     <!-- Checkout Confirmation Modal -->
-    <div x-show="showConfirmModal" 
+    <div x-show="showConfirmModal" x-cloak
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -435,7 +435,7 @@
         </div>
 
         <!-- Discount Details Modal -->
-        <div x-show="showDiscountModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        <div x-show="showDiscountModal" x-cloak style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
              @keydown.escape.window="cancelDiscountDetails()">
             <div @click.away="cancelDiscountDetails()" x-show="showDiscountModal" x-transition.opacity
                  role="dialog" aria-modal="true" aria-labelledby="discount-details-title"
@@ -444,7 +444,7 @@
                     <svg class="w-6 h-6 text-[#0B3B70]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
                 </div>
                 <h3 id="discount-details-title" class="text-[17px] font-bold text-center text-gray-900 mb-6" x-text="discountType === 'senior' ? 'Senior Citizen Details' : 'PWD Details'"></h3>
-                <div x-show="discountDetailsError" role="alert" class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-3 py-2 rounded-lg text-[12px] font-semibold" x-text="discountDetailsError"></div>
+                <div x-show="discountDetailsError" x-cloak role="alert" class="mb-4 bg-[#F7E9E8] border border-[#B5504B] text-[#B5504B] px-3 py-2 rounded-lg text-[12px] font-semibold" x-text="discountDetailsError"></div>
                 <div class="space-y-4">
                     <div>
                         <label for="discount_ref_name_input" class="block text-[12px] font-bold text-[#334155] uppercase tracking-wider mb-1.5">Customer Name *</label>

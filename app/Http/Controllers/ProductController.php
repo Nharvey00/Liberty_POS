@@ -61,10 +61,12 @@ class ProductController extends Controller
             $baseQuery->where('name', $like, "%{$search}%");
         }
 
-        if (auth()->check() && auth()->user()->isManagerOrOwner()) {
-            if ($request->query('status') === 'deleted') {
-                $baseQuery->onlyTrashed();
+        $statusFilter = strtolower(trim((string) $request->query('status', '')));
+        if (in_array($statusFilter, ['deleted', 'trashed', 'archived'], true)) {
+            if (!auth()->check() || !auth()->user()->isOwner()) {
+                abort(403, 'Only the Admin Owner can view deleted product records.');
             }
+            $baseQuery->onlyTrashed();
         }
 
         $tankProducts = (clone $baseQuery)
@@ -252,6 +254,13 @@ class ProductController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Referential Integrity Guard: Cannot archive/delete a cylinder product while customers hold unreturned loaned (Huram) tanks
+        if (\Illuminate\Support\Facades\Schema::hasTable('tank_loans') && \App\Models\TankLoan::active()->where('product_id', $product->id)->exists()) {
+            return redirect()
+                ->back()
+                ->withErrors(['product' => 'Cannot archive or delete this product while customers still hold unreturned loaned (Huram) tanks.']);
+        }
+
         $referenceNo = $product->sku ?: ('PRD-' . str_pad((string) $product->id, 4, '0', STR_PAD_LEFT));
 
         $product->delete();
@@ -280,7 +289,7 @@ class ProductController extends Controller
 
     public function restore($id)
     {
-        if (!auth()->user()->isManagerOrOwner()) {
+        if (!auth()->user()?->isOwner()) {
             abort(403, 'Unauthorized action.');
         }
 

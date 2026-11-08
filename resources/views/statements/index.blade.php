@@ -10,6 +10,19 @@
         </div>
     @endif
 
+    <!-- Credit & Receivables Sub-Navigation -->
+    <div class="flex flex-wrap gap-2 md:gap-4 items-center bg-[#E5E9EF]/60 p-1 rounded-xl mb-5 self-start w-fit print:hidden">
+        <a href="{{ route('credit-accounts.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+            Credit Accounts (Utang)
+        </a>
+        <a href="{{ route('statements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap bg-white text-[#0B3B70] shadow-xs transition-colors">
+            Statements of Account
+        </a>
+        <a href="{{ route('tank-loans.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+            Loaned Tanks (Huram)
+        </a>
+    </div>
+
     <div class="mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <form method="GET" action="{{ route('statements.index') }}" x-data="customerAutocomplete()" class="flex-1 flex flex-wrap items-center gap-3">
             <div class="relative min-w-[200px]">
@@ -20,7 +33,7 @@
                         <a href="{{ route('statements.index') }}" class="text-[#5B6472] hover:text-[#1C2430] text-[11px]">✕</a>
                     @endif
                 </div>
-                <div x-show="open && suggestions.length > 0" class="absolute top-full left-0 z-10 w-full bg-white mt-1 border border-[#E5E9EF] rounded-lg shadow-lg max-h-60 overflow-y-auto" style="display: none;">
+                <div x-show="open && suggestions.length > 0" x-cloak class="absolute top-full left-0 z-10 w-full bg-white mt-1 border border-[#E5E9EF] rounded-lg shadow-lg max-h-60 overflow-y-auto" style="display: none;">
                     <template x-for="(suggestion, index) in suggestions" :key="suggestion.id">
                         <div @click="selectSuggestion(suggestion)" @mouseenter="highlightedIndex = index" :class="{'bg-[#F4F6F9]': highlightedIndex === index}" class="px-3 py-2 cursor-pointer text-[13px] text-[#1C2430] border-b border-[#E5E9EF] last:border-b-0">
                             <span x-text="suggestion.name"></span>

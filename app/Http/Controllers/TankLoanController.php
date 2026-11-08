@@ -24,6 +24,10 @@ class TankLoanController extends Controller
      */
     public function index(Request $request)
     {
+        if (!Auth::user()?->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $search = $request->query('search');
         $statusFilter = $request->query('status', 'all');
 
@@ -44,7 +48,13 @@ class TankLoanController extends Controller
             ->sum('quantity_returned');
 
         // Main Loaned Tanks Query
-        $query = TankLoan::with(['customer', 'product', 'createdByUser', 'stockOut', 'returns'])
+        $query = TankLoan::with([
+                'customer'      => fn ($q) => $q->withTrashed(),
+                'product'       => fn ($q) => $q->withTrashed(),
+                'createdByUser' => fn ($q) => $q->withTrashed(),
+                'stockOut',
+                'returns',
+            ])
             ->orderByRaw("CASE WHEN status IN ('borrowed', 'partially_returned') THEN 0 WHEN status = 'returned' THEN 1 ELSE 2 END")
             ->orderBy('borrowed_at', 'desc')
             ->orderBy('id', 'desc');
@@ -89,6 +99,10 @@ class TankLoanController extends Controller
      */
     public function create(Request $request)
     {
+        if (!Auth::user()?->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $products = Product::orderBy('name')->get()->reject(fn ($p) => $p->isAccessory())->values();
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
         $selectedCustomerId = $request->query('customer_id');
@@ -101,6 +115,10 @@ class TankLoanController extends Controller
      */
     public function store(Request $request)
     {
+        if (!Auth::user()?->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'product_id' => 'required|exists:products,id',
@@ -251,15 +269,23 @@ class TankLoanController extends Controller
      */
     public function showCustomer(Customer $customer)
     {
+        if (!Auth::user()?->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $customer->load([
             'tankLoans' => function ($query) {
                 $query->with([
-                    'product',
-                    'createdByUser',
+                    'product'       => fn ($q) => $q->withTrashed(),
+                    'createdByUser' => fn ($q) => $q->withTrashed(),
                     'stockOut',
-                    'voidedByUser',
+                    'voidedByUser'  => fn ($q) => $q->withTrashed(),
                     'returns' => function ($rq) {
-                        $rq->with(['receivedByUser', 'stockIn', 'voidedByUser'])->orderBy('returned_at', 'desc');
+                        $rq->with([
+                            'receivedByUser' => fn ($q) => $q->withTrashed(),
+                            'stockIn',
+                            'voidedByUser'   => fn ($q) => $q->withTrashed(),
+                        ])->orderBy('returned_at', 'desc');
                     },
                 ])
                 ->orderByRaw("CASE WHEN status IN ('borrowed', 'partially_returned') THEN 0 WHEN status = 'returned' THEN 1 ELSE 2 END")
@@ -289,6 +315,10 @@ class TankLoanController extends Controller
      */
     public function returnTank(Request $request, TankLoan $tankLoan)
     {
+        if (!Auth::user()?->isManagerOrOwner()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
             'quantity_returned' => 'required|integer|min:1',
             'returned_as' => 'required|in:empty_shell,filled',
@@ -299,7 +329,7 @@ class TankLoanController extends Controller
             AuditTrailService::resetCorrelationId();
             $correlationId = AuditTrailService::correlationId();
 
-            $lockedLoan = TankLoan::with('customer')->lockForUpdate()->findOrFail($tankLoan->id);
+            $lockedLoan = TankLoan::with(['customer' => fn ($q) => $q->withTrashed()])->lockForUpdate()->findOrFail($tankLoan->id);
 
             if ($lockedLoan->status === 'voided') {
                 throw ValidationException::withMessages([
@@ -309,6 +339,12 @@ class TankLoanController extends Controller
 
             $remaining = max(0, (int) $lockedLoan->quantity_borrowed - (int) $lockedLoan->quantity_returned);
             $qtyToReturn = (int) $validated['quantity_returned'];
+
+            if ($qtyToReturn <= 0) {
+                throw ValidationException::withMessages([
+                    'quantity_returned' => 'Quantity returned must be at least 1.',
+                ]);
+            }
 
             if ($remaining <= 0) {
                 throw ValidationException::withMessages([
@@ -364,7 +400,7 @@ class TankLoanController extends Controller
                 'remarks'               => $remarks,
             ]);
 
-            $referenceNo = 'SI-' . date('Ymd') . '-' . str_pad((string) $stockIn->id, 4, '0', STR_PAD_LEFT);
+            $referenceNo = 'HURAM-RET-' . date('Ymd') . '-' . str_pad((string) $stockIn->id, 4, '0', STR_PAD_LEFT);
             $stockIn->update(['reference_no' => $referenceNo]);
 
             // 3. Create TankLoanReturn audit record

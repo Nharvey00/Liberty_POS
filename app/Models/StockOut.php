@@ -79,4 +79,44 @@ class StockOut extends Model
     {
         return $this->hasOne(TankLoan::class, 'stock_out_id');
     }
+
+    public function movement()
+    {
+        return $this->hasOne(InventoryMovement::class, 'source_id')
+            ->where('source_type', 'StockOut')
+            ->oldest('id');
+    }
+
+    public function getShortReasonAttribute(): string
+    {
+        $reason = trim((string) $this->reason);
+        if (str_contains($reason, ' — ')) {
+            return trim(explode(' — ', $reason, 2)[0]);
+        }
+        return $reason !== '' ? $reason : 'Adjustment';
+    }
+
+    public function getNotesAttribute(): ?string
+    {
+        if (!empty($this->tankLoan?->notes)) {
+            return trim((string) $this->tankLoan->notes);
+        }
+
+        $movementReason = trim((string) ($this->movement?->reason ?? ''));
+        if ($movementReason !== '') {
+            if (str_contains($movementReason, ' — ')) {
+                return trim(explode(' — ', $movementReason, 2)[1]);
+            }
+            if ($movementReason !== trim((string) $this->reason)) {
+                return $movementReason;
+            }
+        }
+
+        $rawReason = trim((string) $this->reason);
+        if (str_contains($rawReason, ' — ')) {
+            return trim(explode(' — ', $rawReason, 2)[1]);
+        }
+
+        return null;
+    }
 }

@@ -135,6 +135,9 @@ class StoreOrderRequest extends FormRequest
             }
 
             $discountType = $this->input('discount_type');
+            $normalizedDiscountType = (!empty($discountType) && strtolower(trim((string) $discountType)) !== 'none')
+                ? strtolower(trim((string) $discountType))
+                : null;
 
             // Fix #6: Discount cannot exceed the order subtotal
             $discount = (float)$this->input('discount_amount', 0);
@@ -146,7 +149,7 @@ class StoreOrderRequest extends FormRequest
                     );
                 }
                 
-                if (!$customerId && !in_array($discountType, ['senior', 'pwd'])) {
+                if ($normalizedDiscountType !== null && !$customerId && !in_array($normalizedDiscountType, ['senior', 'pwd'], true)) {
                     $validator->errors()->add(
                         'customer_id',
                         'A registered customer must be selected to apply this discount.'
@@ -154,7 +157,7 @@ class StoreOrderRequest extends FormRequest
                 }
             }
 
-            if (in_array($discountType, ['senior', 'pwd'])) {
+            if (in_array($normalizedDiscountType, ['senior', 'pwd'], true)) {
                 if (empty($this->input('discount_reference_name'))) {
                     $validator->errors()->add(
                         'discount_reference_name',

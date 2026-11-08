@@ -224,6 +224,16 @@ class StockInController extends Controller
                 ]);
             }
 
+            $linkedReturn = null;
+            if (Schema::hasTable('tank_loan_returns')) {
+                $linkedReturn = TankLoanReturn::where('stock_in_id', $lockedStockIn->id)->lockForUpdate()->first();
+                if ($linkedReturn && $linkedReturn->is_voided) {
+                    throw ValidationException::withMessages([
+                        'void_reason' => 'The linked customer tank return (Huram) has already been voided.'
+                    ]);
+                }
+            }
+
             $product = Product::withTrashed()->lockForUpdate()->findOrFail($lockedStockIn->product_id);
 
             $qtyReceived = (int) $lockedStockIn->quantity_received;
@@ -264,26 +274,23 @@ class StockInController extends Controller
             $lockedStockIn->save();
 
             // LINKED HURAM RETURN SAFEGUARD: If linked to a TankLoanReturn, reverse return count on parent TankLoan
-            if (Schema::hasTable('tank_loan_returns')) {
-                $linkedReturn = TankLoanReturn::where('stock_in_id', $lockedStockIn->id)->lockForUpdate()->first();
-                if ($linkedReturn && !$linkedReturn->is_voided) {
-                    $tankLoan = TankLoan::lockForUpdate()->find($linkedReturn->tank_loan_id);
-                    if ($tankLoan) {
-                        $newReturned = max(0, (int) $tankLoan->quantity_returned - (int) $linkedReturn->quantity_returned);
-                        $tankLoan->quantity_returned = $newReturned;
-                        if ($tankLoan->status !== 'voided') {
-                            $tankLoan->status = $newReturned > 0 ? 'partially_returned' : 'borrowed';
-                            $tankLoan->returned_at = null;
-                        }
-                        $tankLoan->save();
+            if ($linkedReturn && !$linkedReturn->is_voided) {
+                $tankLoan = TankLoan::lockForUpdate()->find($linkedReturn->tank_loan_id);
+                if ($tankLoan) {
+                    $newReturned = max(0, (int) $tankLoan->quantity_returned - (int) $linkedReturn->quantity_returned);
+                    $tankLoan->quantity_returned = $newReturned;
+                    if ($tankLoan->status !== 'voided') {
+                        $tankLoan->status = $newReturned > 0 ? 'partially_returned' : 'borrowed';
+                        $tankLoan->returned_at = null;
                     }
-
-                    $linkedReturn->is_voided = true;
-                    $linkedReturn->voided_at = now();
-                    $linkedReturn->voided_by = Auth::id();
-                    $linkedReturn->void_reason = $validated['void_reason'];
-                    $linkedReturn->save();
+                    $tankLoan->save();
                 }
+
+                $linkedReturn->is_voided = true;
+                $linkedReturn->voided_at = now();
+                $linkedReturn->voided_by = Auth::id();
+                $linkedReturn->void_reason = $validated['void_reason'];
+                $linkedReturn->save();
             }
 
             $voidRef = 'VOID-' . ($lockedStockIn->reference_no ?? ('SI-' . $lockedStockIn->id));

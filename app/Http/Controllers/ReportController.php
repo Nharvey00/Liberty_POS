@@ -90,14 +90,23 @@ class ReportController extends Controller
                 ->whereBetween('orders.created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('order_items.quantity');
                 
-            // Supplier deliveries only: voided Stock In records and automatic order-void restocks
-            // are excluded so supplier delivery totals remain accurate.
-            $stockIns = StockIn::valid()
+            // Supplier deliveries only: voided Stock In records, automatic order-void restocks,
+            // and customer Huram tank returns are excluded so supplier delivery totals remain accurate.
+            $stockInsQuery = StockIn::valid()
                 ->where('product_id', $product->id)
                 ->where(function ($q) {
                     $q->whereNull('reference_no')
-                      ->orWhere('reference_no', 'not like', 'VOID-%');
-                })
+                      ->orWhere(function ($sub) {
+                          $sub->where('reference_no', 'not like', 'VOID-%')
+                              ->where('reference_no', 'not like', 'HURAM-RET-%');
+                      });
+                });
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('tank_loan_returns')) {
+                $stockInsQuery->whereDoesntHave('tankLoanReturn');
+            }
+
+            $stockIns = $stockInsQuery
                 ->whereBetween('created_at', [Carbon::parse($fromDate)->startOfDay(), Carbon::parse($toDate)->endOfDay()])
                 ->sum('quantity_received');
 

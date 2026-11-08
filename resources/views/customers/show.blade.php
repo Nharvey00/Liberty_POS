@@ -252,7 +252,7 @@
                                 @forelse($order->items ?? [] as $item)
                                     <div class="flex items-center gap-1.5 {{ $isVoided ? 'line-through text-gray-500' : 'text-[#1C2430]' }}">
                                         <span class="font-bold text-[#0B3B70]">{{ $item->quantity }}x</span>
-                                        <span class="font-medium">{{ $item->product->name ?? 'Deleted Product' }}</span>
+                                        <span class="font-medium">{{ $item->product?->name ?? 'Deleted Product' }}</span>
                                     </div>
                                 @empty
                                     <span class="text-gray-400">—</span>
@@ -282,7 +282,7 @@
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF] font-medium text-[#1C2430]">
-                                {{ $order->user->name ?? 'System / Staff' }}
+                                {{ $order->user?->name ?? 'System / Staff' }}
                             </td>
                             <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF]">
                                 @if($isVoided)

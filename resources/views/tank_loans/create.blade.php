@@ -4,7 +4,7 @@
         <div class="text-[12.5px] text-[#5B6472] mt-[2px]">Log a customer-borrowed LPG tank or empty shell (₱0.00 monetary charge)</div>
     </x-slot>
 
-    <form method="POST" action="{{ route('tank-loans.store') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-3xl">
+    <form method="POST" action="{{ route('tank-loans.store') }}" class="bg-white border border-[#E5E9EF] rounded-[16px] p-6 max-w-3xl" data-submit-once>
         @csrf
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">

@@ -32,6 +32,19 @@
         returnedAs: 'empty_shell'
     }" class="flex flex-col gap-5">
 
+        <!-- Credit & Receivables Sub-Navigation -->
+        <div class="flex flex-wrap gap-2 md:gap-4 items-center bg-[#E5E9EF]/60 p-1 rounded-xl self-start w-fit">
+            <a href="{{ route('credit-accounts.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                Credit Accounts (Utang)
+            </a>
+            <a href="{{ route('statements.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap text-[#5B6472] hover:text-[#1C2430] transition-colors">
+                Statements of Account
+            </a>
+            <a href="{{ route('tank-loans.index') }}" class="px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold whitespace-nowrap bg-white text-[#0B3B70] shadow-xs transition-colors">
+                Loaned Tanks (Huram)
+            </a>
+        </div>
+
         <!-- Summary Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-[#E5E9EF] rounded-[16px] p-5">
@@ -84,19 +97,17 @@
 
         <!-- Loaned Tanks Table -->
         <div class="bg-white border border-[#E5E9EF] rounded-[16px] overflow-hidden">
-            <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-                <table class="w-full border-collapse">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Date Borrowed</th>
-                            <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Customer</th>
-                            <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Tank / Item</th>
-                            <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Condition Out</th>
-                            <th class="text-center text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Borrowed</th>
-                            <th class="text-center text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Returned</th>
-                            <th class="text-center text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Remaining</th>
-                            <th class="text-left text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Status</th>
-                            <th class="text-right text-[11.5px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-4 border-b border-[#E5E9EF] whitespace-nowrap">Actions</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Date Borrowed</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Customer</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Tank &amp; Condition</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Qty (Out / Ret / Rem)</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Details / Notes</th>
+                            <th class="text-left text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Status</th>
+                            <th class="text-right text-[11px] uppercase tracking-[0.02em] text-[#5B6472] font-semibold py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,65 +115,67 @@
                             @php
                                 $remaining = max(0, (int) $loan->quantity_borrowed - (int) $loan->quantity_returned);
                                 $isVoided = $loan->status === 'voided';
+                                $borrowedAt = $loan->borrowed_at ?? $loan->created_at;
                             @endphp
                             <tr class="hover:bg-[#F4F6F9] transition-colors {{ $isVoided ? 'bg-red-50/40 opacity-75' : '' }}">
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-[#1C2430] whitespace-nowrap">
-                                    <div>{{ ($loan->borrowed_at ?? $loan->created_at)->format('M d, Y - h:i A') }}</div>
-                                    <div class="text-[11px] text-[#5B6472]">by {{ $loan->createdByUser->name ?? 'Staff' }}</div>
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">
+                                    <div class="text-sm font-medium text-[#1C2430]">{{ $borrowedAt->format('M d, Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ $borrowedAt->format('h:i A') }}</div>
                                 </td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-semibold text-[#1C2430]">
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] max-w-[160px]">
                                     @if($loan->customer)
-                                        <a href="{{ route('tank-loans.customer', $loan->customer_id) }}" class="text-[#0B3B70] hover:underline">
-                                            {{ $loan->customer->name }}
+                                        <a href="{{ route('tank-loans.customer', $loan->customer_id) }}" class="block text-sm font-semibold text-[#0B3B70] hover:underline truncate" title="{{ $loan->customer?->name }}">
+                                            {{ $loan->customer?->name }}
                                         </a>
                                     @else
-                                        <span>Unknown Customer</span>
-                                    @endif
-                                    @if($loan->notes)
-                                        <div class="text-[11px] font-normal text-[#5B6472]">{{ $loan->notes }}</div>
+                                        <span class="block text-sm font-semibold text-[#1C2430] truncate">Unknown Customer</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-medium {{ $isVoided ? 'line-through text-gray-500' : 'text-[#1C2430]' }}">
-                                    {{ $loan->product->name ?? 'Deleted Product' }}
-                                </td>
-                                <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF]">
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] max-w-[170px]">
+                                    <div class="text-sm font-medium truncate mb-1 {{ $isVoided ? 'line-through text-gray-500' : 'text-[#1C2430]' }}" title="{{ $loan->product?->name ?? 'Deleted Product' }}">
+                                        {{ $loan->product?->name ?? 'Deleted Product' }}
+                                    </div>
                                     @if($loan->tank_condition_out === 'filled')
-                                        <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Filled Tank</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E5F5EC] text-[#1E8E5A]">Filled Tank</span>
                                     @else
-                                        <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-[#E7EEF7] text-[#0B3B70]">Empty Shell</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E7EEF7] text-[#0B3B70]">Empty Shell</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-center font-bold text-[#1C2430]">
-                                    {{ number_format($loan->quantity_borrowed) }}
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">
+                                    <div class="flex flex-col text-xs">
+                                        <div><span class="text-gray-500">Borrowed:</span> <span class="font-medium text-gray-900">{{ number_format($loan->quantity_borrowed) }}</span></div>
+                                        <div><span class="text-gray-500">Returned:</span> <span class="font-medium text-gray-900">{{ number_format($loan->quantity_returned) }}</span></div>
+                                        <div><span class="text-gray-500">Remaining:</span> <span class="font-medium {{ $remaining > 0 && !$isVoided ? 'text-red-600' : 'text-gray-400' }}">{{ $isVoided ? 0 : number_format($remaining) }}</span></div>
+                                    </div>
                                 </td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-center font-bold text-[#1E8E5A]">
-                                    {{ number_format($loan->quantity_returned) }}
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] max-w-[200px] whitespace-normal">
+                                    @if($loan->notes)
+                                        <div class="line-clamp-2 text-xs text-gray-500 whitespace-normal" title="{{ $loan->notes }}">{{ $loan->notes }}</div>
+                                    @endif
+                                    <div class="text-xs text-gray-500 whitespace-normal">by {{ $loan->createdByUser?->name ?? 'Staff' }}</div>
                                 </td>
-                                <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] text-center font-bold {{ $remaining > 0 && !$isVoided ? 'text-amber-700' : 'text-gray-400' }}">
-                                    {{ $isVoided ? 0 : number_format($remaining) }}
-                                </td>
-                                <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF]">
+                                <td class="py-3 px-3 border-b border-[#E5E9EF] whitespace-nowrap">
                                     @if($loan->status === 'borrowed')
-                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">Borrowed</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-amber-100 text-amber-800">Borrowed</span>
                                     @elseif($loan->status === 'partially_returned')
-                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-[#0B3B70]">Partially Returned</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-blue-100 text-[#0B3B70]">Partially Returned</span>
                                     @elseif($loan->status === 'returned')
-                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E5F5EC] text-[#1E8E5A]">Returned</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#E5F5EC] text-[#1E8E5A]">Returned</span>
                                     @else
-                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F7E9E8] text-[#B5504B]">Voided</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#F7E9E8] text-[#B5504B]">Voided</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-right border-b border-[#E5E9EF] whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="py-3 px-3 text-right border-b border-[#E5E9EF] whitespace-nowrap">
+                                    <div class="flex flex-col gap-2 items-end">
                                         @if(!$isVoided && $remaining > 0)
                                             <button type="button"
-                                                    @click="returnModalOpen = true; returnLoanId = {{ $loan->id }}; returnActionUrl = '{{ route('tank-loans.return', $loan) }}'; returnCustomerName = '{{ addslashes($loan->customer->name ?? 'Customer') }}'; returnProductName = '{{ addslashes($loan->product->name ?? 'Tank') }}'; returnMaxQty = {{ $remaining }}; returnQty = {{ $remaining }}; returnedAs = 'empty_shell';"
-                                                    class="px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-[#1E8E5A] text-white hover:bg-[#176B45] transition-colors">
+                                                    @click="returnModalOpen = true; returnLoanId = {{ $loan->id }}; returnActionUrl = '{{ route('tank-loans.return', $loan) }}'; returnCustomerName = '{{ addslashes($loan->customer?->name ?? 'Customer') }}'; returnProductName = '{{ addslashes($loan->product?->name ?? 'Tank') }}'; returnMaxQty = {{ $remaining }}; returnQty = {{ $remaining }}; returnedAs = 'empty_shell';"
+                                                    class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#1E8E5A] text-white hover:bg-[#176B45] transition-colors whitespace-nowrap">
                                                 Return Tank
                                             </button>
                                         @endif
                                         @if($loan->customer_id)
-                                            <a href="{{ route('tank-loans.customer', $loan->customer_id) }}" class="text-[12px] font-bold text-[#0B3B70] hover:underline">
+                                            <a href="{{ route('tank-loans.customer', $loan->customer_id) }}" class="text-xs font-bold text-[#0B3B70] hover:underline whitespace-nowrap">
                                                 Customer Log
                                             </a>
                                         @endif
@@ -171,7 +184,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="py-8 text-center text-[13px] text-[#5B6472]">No loaned tank (Huram) records found. Click "+ New Loaned Tank" above to record a borrowed tank.</td>
+                                <td colspan="7" class="py-8 text-center text-[13px] text-[#5B6472]">No loaned tank (Huram) records found. Click "+ New Loaned Tank" above to record a borrowed tank.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -183,7 +196,7 @@
         </div>
 
         <!-- Entry Point B Modal: + New Loaned Tank -->
-        <div x-show="newLoanModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div x-show="newLoanModalOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div @click.away="newLoanModalOpen = false" class="bg-white rounded-2xl border border-[#E5E9EF] shadow-xl max-w-lg w-full p-6">
                 <div class="flex items-center justify-between mb-3">
                     <div>
@@ -193,7 +206,7 @@
                     <button type="button" @click="newLoanModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
 
-                <form method="POST" action="{{ route('tank-loans.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('tank-loans.store') }}" class="space-y-4" data-submit-once>
                     @csrf
                     <div>
                         <label class="block text-[11.5px] font-bold uppercase text-[#5B6472] mb-1.5">Borrowing Customer <span class="text-[#B5504B]">*</span></label>
@@ -246,7 +259,7 @@
         </div>
 
         <!-- Return Tank Modal (Mandatory Empty Shell vs. Filled Tank Selection) -->
-        <div x-show="returnModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div x-show="returnModalOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div @click.away="returnModalOpen = false" class="bg-white rounded-2xl border border-[#E5E9EF] shadow-xl max-w-md w-full p-6">
                 <div class="flex items-center justify-between mb-3">
                     <div>
@@ -256,7 +269,7 @@
                     <button type="button" @click="returnModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
 
-                <form method="POST" :action="returnActionUrl" class="space-y-4">
+                <form method="POST" :action="returnActionUrl" class="space-y-4" data-submit-once>
                     @csrf
                     <div>
                         <label class="block text-[11.5px] font-bold uppercase text-[#5B6472] mb-1.5">

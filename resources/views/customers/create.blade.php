@@ -99,12 +99,12 @@
                 @error('default_discount_type') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div class="col-span-2 md:col-span-1" x-show="discountType !== ''">
+            <div class="col-span-2 md:col-span-1" x-show="discountType !== ''" x-cloak>
                 <label for="default_discount_percentage" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">
                     <span x-text="['senior', 'pwd'].includes(discountType) ? 'Default Discount Percentage (%)' : 'Default Discount Amount (₱)'">Default Discount Value</span>
                 </label>
                 <div class="relative">
-                    <span x-show="!['senior', 'pwd'].includes(discountType)" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">₱</span>
+                    <span x-show="!['senior', 'pwd'].includes(discountType)" x-cloak class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">₱</span>
                     <input type="number" step="0.01" min="0"
                            :max="['senior', 'pwd'].includes(discountType) ? 100 : null"
                            :placeholder="['senior', 'pwd'].includes(discountType) ? 'e.g. 20' : 'e.g. 50.00'"
@@ -112,19 +112,19 @@
                            name="default_discount_percentage" id="default_discount_percentage"
                            x-model="discountPct"
                            class="w-full py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
-                    <span x-show="['senior', 'pwd'].includes(discountType)" style="display: none;" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">%</span>
+                    <span x-show="['senior', 'pwd'].includes(discountType)" x-cloak style="display: none;" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#5B6472] font-bold text-[14px]">%</span>
                 </div>
                 <span class="text-[11px] text-[#5B6472] mt-1 block" x-text="['senior', 'pwd'].includes(discountType) ? 'Statutory percentage rate deducted from subtotal (0–100%).' : 'Fixed Peso amount deducted per transaction (capped at order subtotal).'"></span>
                 @error('default_discount_percentage') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" style="display: none;">
+            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" x-cloak style="display: none;">
                 <label for="default_discount_ref_name" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reference Name (e.g. Senior/PWD Name)</label>
                 <input type="text" name="default_discount_ref_name" id="default_discount_ref_name" value="{{ old('default_discount_ref_name') }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 @error('default_discount_ref_name') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" style="display: none;">
+            <div class="col-span-2 md:col-span-1" x-show="['senior', 'pwd'].includes(discountType)" x-cloak style="display: none;">
                 <label for="default_discount_ref_id" class="block text-[11.5px] font-semibold text-[#5B6472] mb-1.5">Reference ID Number</label>
                 <input type="text" name="default_discount_ref_id" id="default_discount_ref_id" value="{{ old('default_discount_ref_id') }}" class="w-full px-3 py-2.5 border border-[#E5E9EF] rounded-lg text-[14px] focus:ring-[#0B3B70] focus:border-[#0B3B70]">
                 @error('default_discount_ref_id') <span class="text-[#B5504B] text-[11px] mt-1 block">{{ $message }}</span> @enderror

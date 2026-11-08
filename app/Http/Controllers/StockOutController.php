@@ -21,13 +21,16 @@ class StockOutController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $query = StockOut::with(['product', 'user', 'approver', 'voidedByUser', 'tankLoan.customer'])->latest();
+        $query = StockOut::with(['product', 'user', 'approver', 'voidedByUser', 'tankLoan.customer', 'movement'])->latest();
 
         if ($search) {
             $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
             $query->where(function ($q) use ($search, $like) {
                 $q->where('reason', $like, "%{$search}%")
                   ->orWhere('reference_no', $like, "%{$search}%")
+                  ->orWhereHas('movement', function ($mq) use ($search, $like) {
+                      $mq->where('reason', $like, "%{$search}%");
+                  })
                   ->orWhereHas('product', function ($pq) use ($search, $like) {
                       $pq->withTrashed()->where('name', $like, "%{$search}%");
                   });
@@ -91,8 +94,8 @@ class StockOutController extends Controller
                 $category     = 'supplier_return';
             }
 
-            $isHuram = $validated['reason'] === 'Loaned Tank (Huram)';
-            $stockOutReason = $isHuram ? 'Loaned Tank (Huram)' : $reasonText;
+            $isHuram = in_array($validated['reason'], ['Loaned Tank (Huram)', 'Loaned (Huram)'], true);
+            $stockOutReason = trim((string) $validated['reason']);
 
             foreach ($items as $index => $itemData) {
                 $product = Product::lockForUpdate()->findOrFail($itemData['product_id']);

@@ -48,6 +48,12 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        if ($user->isOwner() && \App\Models\User::where('role_id', 3)->count() <= 1) {
+            return Redirect::route('profile.edit')->withErrors([
+                'password' => 'Cannot delete the sole System Owner account.',
+            ], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();

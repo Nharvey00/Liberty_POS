@@ -20,9 +20,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuditLogController;
 
 // Public redirect
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+Route::redirect('/', '/login');
 
 // Authenticated Routes (Requires login)
 Route::middleware(['auth'])->group(function () {
@@ -72,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
             'customers' => CustomerController::class,
             'credit-accounts' => CreditAccountController::class,
         ]);
+        Route::post('/customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
         
         // Products (Create, Edit, Delete only - Read is in Level 1 block)
         Route::resource('products', ProductController::class)->except(['index', 'show']);

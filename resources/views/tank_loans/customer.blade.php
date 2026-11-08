@@ -104,10 +104,10 @@
                             <tr class="hover:bg-[#F4F6F9] transition-colors {{ $isVoided ? 'bg-red-50/40 opacity-75' : '' }}">
                                 <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] whitespace-nowrap">
                                     <div class="font-medium text-[#1C2430]">{{ ($loan->borrowed_at ?? $loan->created_at)->format('M d, Y - h:i A') }}</div>
-                                    <div class="text-[11px] text-[#5B6472]">Logged by {{ $loan->createdByUser->name ?? 'Staff' }}</div>
+                                    <div class="text-[11px] text-[#5B6472]">Logged by {{ $loan->createdByUser?->name ?? 'Staff' }}</div>
                                 </td>
                                 <td class="py-3 px-4 text-[13px] border-b border-[#E5E9EF] font-bold {{ $isVoided ? 'line-through text-gray-500' : 'text-[#1C2430]' }}">
-                                    {{ $loan->product->name ?? 'Deleted Product' }}
+                                    {{ $loan->product?->name ?? 'Deleted Product' }}
                                 </td>
                                 <td class="py-3 px-4 text-[12.5px] border-b border-[#E5E9EF]">
                                     @if($loan->tank_condition_out === 'filled')
@@ -149,7 +149,7 @@
                                 <td class="py-3 px-4 text-right border-b border-[#E5E9EF] whitespace-nowrap">
                                     @if(!$isVoided && $remaining > 0)
                                         <button type="button"
-                                                @click="returnModalOpen = true; returnActionUrl = '{{ route('tank-loans.return', $loan) }}'; returnProductName = '{{ addslashes($loan->product->name ?? 'Tank') }}'; returnMaxQty = {{ $remaining }}; returnQty = {{ $remaining }}; returnedAs = 'empty_shell';"
+                                                @click="returnModalOpen = true; returnActionUrl = '{{ route('tank-loans.return', $loan) }}'; returnProductName = '{{ addslashes($loan->product?->name ?? 'Tank') }}'; returnMaxQty = {{ $remaining }}; returnQty = {{ $remaining }}; returnedAs = 'empty_shell';"
                                                 class="px-3 py-1.5 rounded-md text-[12px] font-bold bg-[#1E8E5A] text-white hover:bg-[#176B45] transition-colors">
                                             Return Tank
                                         </button>
@@ -169,13 +169,13 @@
         </div>
 
         <!-- + New Loaned Tank Modal for this Customer -->
-        <div x-show="newLoanModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div x-show="newLoanModalOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div @click.away="newLoanModalOpen = false" class="bg-white rounded-2xl border border-[#E5E9EF] shadow-xl max-w-md w-full p-6">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-[16px] font-bold text-[#1C2430]">Loan Tank to {{ $customer->name }}</h3>
                     <button type="button" @click="newLoanModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
-                <form method="POST" action="{{ route('tank-loans.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('tank-loans.store') }}" class="space-y-4" data-submit-once>
                     @csrf
                     <input type="hidden" name="customer_id" value="{{ $customer->id }}">
                     <input type="hidden" name="redirect_to_customer" value="1">
@@ -220,7 +220,7 @@
         </div>
 
         <!-- Return Tank Modal -->
-        <div x-show="returnModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div x-show="returnModalOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div @click.away="returnModalOpen = false" class="bg-white rounded-2xl border border-[#E5E9EF] shadow-xl max-w-md w-full p-6">
                 <div class="flex items-center justify-between mb-3">
                     <div>
@@ -230,7 +230,7 @@
                     <button type="button" @click="returnModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
 
-                <form method="POST" :action="returnActionUrl" class="space-y-4">
+                <form method="POST" :action="returnActionUrl" class="space-y-4" data-submit-once>
                     @csrf
                     <div>
                         <label class="block text-[11.5px] font-bold uppercase text-[#5B6472] mb-1.5">
